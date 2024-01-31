@@ -62,6 +62,7 @@ local cam_lock = replicated_storage:WaitForChild('EntityInfo'):WaitForChild('Cam
 local cf_new = CFrame.new
 local current_rooms = workspace:WaitForChild('CurrentRooms')
 local dev_computer_movement_mode = Enum.DevComputerMovementMode
+local fire_proximity_prompt = fireproximityprompt or fireProximityPrompt or FireProximityPrompt or fire_proximity_prompt
 local keyboard_mouse = dev_computer_movement_mode.KeyboardMouse
 local math_clamp = math.clamp
 local never = Enum.AdornCullingMode.Never
@@ -166,9 +167,8 @@ local connection_1 = render_stepped:Connect(function()
 			if parent.Name == 'Rooms_Locker' and y > -4 and (hrp.Position - path.Position).Magnitude < 5 and not hrp:IsGrounded() then
 				local hide_prompt = parent:FindFirstChild('HidePrompt')
 
-				if hide_prompt then
-					hide_prompt:InputHoldBegin()
-					task_defer(hide_prompt.InputHoldEnd, hide_prompt)
+				if fire_proximity_prompt then
+					fire_proximity_prompt(hide_prompt)
 				end
 			end
 		end
