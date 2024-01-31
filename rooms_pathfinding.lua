@@ -5,7 +5,6 @@ local _4 = Color3.new(0, 0.2514, 0)
 
 -- source code
 
-local cf_new = CFrame.new
 local instance_new = Instance.new
 local properties = {Text = '', Title = ''}
 local replicated_storage = game:GetService('ReplicatedStorage')
@@ -27,24 +26,30 @@ local function notify(text, title, id, volume)
 end
 
 if game.PlaceId ~= 6839171747 then
-	notify('The game detected appears to not be rooms. Please execute this while in rooms.', 'Invalid place', 'rbxassetid://550209561', 5)
+	notify('The game detected appears to not be rooms. Please execute this while in rooms.', 'Invalid place', 'rbxassetid://550209561', 4)
 	return
 end
 
-local game_data = replicated_storage:FindFirstChild('GameData')
+local game_data = replicated_storage:WaitForChild('GameData', 1.4)
 
 if not game_data or game_data.Floor.Value ~= 'Rooms' then
-	notify('The game detected appears to not be rooms. Please execute this while in rooms.', 'Invalid place', 'rbxassetid://550209561', 5)
+	notify('The game detected appears to not be rooms. Please execute this while in rooms.', 'Invalid place', 'rbxassetid://550209561', 4)
 	return
 end
 
 local core_gui = game:GetService('CoreGui')
+local latest_room = game_data:WaitForChild('LatestRoom')
 local plr = game:GetService('Players').LocalPlayer
 local ui = pcall(tostring, core_gui) and core_gui or plr:WaitForChild('PlayerGui')
 local vec3_new = Vector3.new
 
-if ui:FindFirstChild('PathfindBricks') then
-	notify('The script has been already activated.', 'Rooms', 'rbxassetid://550209561', 5)
+if latest_room.Value == 1000 then
+	notify('You\'ve already reached A-1000 room.', 'Rooms', 'rbxassetid://550209561', 4)
+	return
+end
+
+if ui:FindFirstChild('PathfindUI') then
+	notify('The script has been already activated.', 'Rooms', 'rbxassetid://550209561', 4)
 	return
 end
 
@@ -52,46 +57,44 @@ end
 
 notify('The script has been activated.', 'Rooms', '', 0)
 
+local boxes = {}
 local cam_lock = replicated_storage:WaitForChild('EntityInfo'):WaitForChild('CamLock')
+local cf_new = CFrame.new
 local current_rooms = workspace:WaitForChild('CurrentRooms')
 local dev_computer_movement_mode = Enum.DevComputerMovementMode
-local get_listeners = getconnections or get_signal_cons
 local keyboard_mouse = dev_computer_movement_mode.KeyboardMouse
-local latest_room = game_data:WaitForChild('LatestRoom')
 local math_clamp = math.clamp
 local never = Enum.AdornCullingMode.Never
 local offset = vec3_new(0, -2.5, 0)
 local path = game:GetService('PathfindingService'):CreatePath({AgentCanJump = false, AgentRadius = 0.6, WaypointSpacing = 2})
 local path_compute_async = path.ComputeAsync
-local pathfind_bricks = instance_new('ScreenGui')
+local pathfind_ui = instance_new('ScreenGui')
 local physical_properties = PhysicalProperties.new(9e9, 9e9, 9e9, 1, 1)
 local render_stepped = game:GetService('RunService').RenderStepped
 local scriptable = dev_computer_movement_mode.Scriptable
 local stick_size = vec3_new(0.5, 1.44, 0.5)
 local task_defer = task.defer
 local terrain = workspace.Terrain
-pathfind_bricks.Archivable = false
-pathfind_bricks.ClipToDeviceSafeArea = false
-pathfind_bricks.DisplayOrder = 2514
-pathfind_bricks.Name = 'PathfindBricks'
-pathfind_bricks.ResetOnSpawn = false
-pathfind_bricks.ScreenInsets = Enum.ScreenInsets.None
-pathfind_bricks.Parent = ui
-
-local pathfind_folder = instance_new('Folder')
-pathfind_folder.Archivable = false
-pathfind_folder.Name = 'Path'
-pathfind_folder.Parent = pathfind_bricks
+local virtual_user = game:GetService('VirtualUser')
+local virtual_user_button1_up = virtual_user.Button1Down
+local zero_vec2 = Vector2.zero
+pathfind_ui.Archivable = false
+pathfind_ui.ClipToDeviceSafeArea = false
+pathfind_ui.DisplayOrder = 2514
+pathfind_ui.Name = 'PathfindUI'
+pathfind_ui.ResetOnSpawn = false
+pathfind_ui.ScreenInsets = Enum.ScreenInsets.None
+pathfind_ui.Parent = ui
 
 local text_lbl = instance_new('TextLabel')
 text_lbl.Archivable = false
 text_lbl.BackgroundTransparency = 1
 text_lbl.Size = UDim2.new(0, 350, 0, 100)
-text_lbl.TextColor3 = _4
-text_lbl.TextSize = 48
-text_lbl.TextStrokeColor3 = Color3.new(1, 1, 1)
+text_lbl.TextColor3 = Color3.new(1, 1, 1)
+text_lbl.TextSize = 40
+text_lbl.TextStrokeColor3 = _4
 text_lbl.TextStrokeTransparency = 0
-text_lbl.Parent = pathfind_bricks
+text_lbl.Parent = pathfind_ui
 
 local function get_locker()
 	local closest
@@ -126,51 +129,33 @@ end
 local function latest_room_changed()
 	local value = latest_room.Value
 	text_lbl.Text = 'Room: ' .. math_clamp(value, 1, 1000)
-
-	if value ~= 1000 then
-		plr.DevComputerMovementMode = scriptable
-	else
-		pathfind_folder:ClearAllChildren()
-		plr.DevComputerMovementMode = keyboard_mouse
-		notify('Thank you for using my script!', 'Rooms', 'rbxassetid://4590662766', 3)
-	end
+	local is_end = value == 1000
+	plr.DevComputerMovementMode = is_end and keyboard_mouse or scriptable
+	if not is_end then return end
+	notify('Thank you for using my script!', 'Rooms', 'rbxassetid://4590662766', 3)
+	pathfind_ui:Destroy()
 end
 
-latest_room:GetPropertyChangedSignal('Value'):Connect(latest_room_changed)
-latest_room_changed()
+local connection_0 = plr.Idled:Connect(function()
+	if not pathfind_ui.Parent then return end
+	pcall(virtual_user_button1_up, virtual_user, zero_vec2)
+	render_stepped:Wait()
+	task_defer(pcall, virtual_user_button1_up, virtual_user, zero_vec2)
+end)
 
-if get_listeners then
-	local idled_listeners = get_listeners(plr.Idled)
-
-	for idx = 1, #idled_listeners do
-		local listener = idled_listeners[idx]
-		local disable = listener.Disable
-		if disable then disable(listener) end
-		local disconnect = listener.Disconnect
-		if disconnect then disconnect(listener) end
-	end
-end
-
-local a90 = plr.PlayerGui.MainUI.Initiator.Main_Game.RemoteListener.Modules:FindFirstChild('A90')
-
-if a90 then
-	a90:Destroy()
-end
-
-local connection = render_stepped:Connect(function()
-	if not pathfind_bricks.Parent then return end
+local connection_1 = render_stepped:Connect(function()
+	if not pathfind_ui.Parent then return end
 	local char = plr.Character
 	if not char then return end
 	local collision = char.Collision
 	local h = char.Humanoid
 	local hrp = char.HumanoidRootPart
+	local monster = workspace:FindFirstChild('A60') or workspace:FindFirstChild('A120')
+	local path = get_path()
 	collision.CanCollide = false
 	collision.CustomPhysicalProperties = physical_properties
 	h.WalkSpeed = 21
 	hrp.CanCollide = false
-
-	local monster = workspace:FindFirstChild('A60') or workspace:FindFirstChild('A120')
-	local path = get_path()
 
 	if monster then
 		local y = monster.Main.Position.Y
@@ -182,12 +167,8 @@ local connection = render_stepped:Connect(function()
 				local hide_prompt = parent:FindFirstChild('HidePrompt')
 
 				if hide_prompt then
-					if fireproximityprompt then
-						fireproximityprompt(hide_prompt)
-					else
-						hide_prompt:InputHoldBegin()
-						task_defer(hide_prompt.InputHoldEnd, hide_prompt)
-					end
+					hide_prompt:InputHoldBegin()
+					task_defer(hide_prompt.InputHoldEnd, hide_prompt)
 				end
 			end
 		end
@@ -201,22 +182,32 @@ local connection = render_stepped:Connect(function()
 	end
 end)
 
-while pathfind_bricks.Parent do
+local connection_2 = latest_room:GetPropertyChangedSignal('Value'):Connect(latest_room_changed)
+latest_room_changed()
+
+local a90 = plr.PlayerGui.MainUI.Initiator.Main_Game.RemoteListener.Modules:FindFirstChild('A90')
+
+if a90 then
+	a90:Destroy()
+end
+
+while pathfind_ui.Parent do
+	for idx = 1, #boxes do boxes[idx].Parent = nil end
 	local destination = get_path()
-	if not destination then pathfind_folder:ClearAllChildren() render_stepped:Wait() continue end
+	if not destination then  render_stepped:Wait() continue end
 	local char = plr.Character
-	if not char then pathfind_folder:ClearAllChildren() render_stepped:Wait() continue end
+	if not char then render_stepped:Wait() continue end
 	local h = char.Humanoid
 	local h_move_to_finished = h.MoveToFinished
 	local hrp = char.HumanoidRootPart
 	local succ = pcall(path_compute_async, path, hrp.Position + offset, destination.Position)
-	if not succ or path.Status == 5 then pathfind_folder:ClearAllChildren() render_stepped:Wait() continue end
+	if not succ or path.Status == 5 then render_stepped:Wait() continue end
 	local waypoints = path:GetWaypoints()
 	local waypoints_len = #waypoints
-	if waypoints_len <= 0 then pathfind_folder:ClearAllChildren() render_stepped:Wait() continue end
+	if waypoints_len <= 0 then render_stepped:Wait() continue end
 
 	for idx = 1, waypoints_len do
-		local box = instance_new('BoxHandleAdornment')
+		local box = boxes[idx] or instance_new('BoxHandleAdornment')
 		box.AdornCullingMode = never
 		box.Adornee = terrain
 		box.AlwaysOnTop = true
@@ -226,7 +217,8 @@ while pathfind_bricks.Parent do
 		box.Size = stick_size
 		box.Transparency = 0.64
 		box.ZIndex = 4
-		box.Parent = pathfind_folder
+		box.Parent = pathfind_ui
+		boxes[idx] = box
 	end
 
 	for idx = 1, waypoints_len do
@@ -236,4 +228,12 @@ while pathfind_bricks.Parent do
 	end
 end
 
-connection:Disconnect()
+connection_0:Disconnect()
+connection_1:Disconnect()
+connection_2:Disconnect()
+
+for idx = 1, #boxes do
+	boxes[idx]:Destroy()
+end
+
+table.clear(boxes)
