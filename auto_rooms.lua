@@ -69,7 +69,7 @@ local keyboard_mouse = dev_computer_movement_mode.KeyboardMouse
 local math_clamp = math.clamp
 local never = Enum.AdornCullingMode.Never
 local offset = vec3_new(0, -2.5, 0)
-local path = game:GetService('PathfindingService'):CreatePath({AgentCanJump = false, AgentRadius = 0.6, WaypointSpacing = 2})
+local path = game:GetService('PathfindingService'):CreatePath({AgentCanJump = false, AgentRadius = 0.6, WaypointSpacing = 6})
 local path_compute_async = path.ComputeAsync
 local pathfind_ui = instance_new('ScreenGui')
 local physical_properties = PhysicalProperties.new(9e9, 9e9, 9e9, 1, 1)
@@ -161,7 +161,7 @@ local connection_1 = render_stepped:Connect(function()
 	local path = get_path()
 	collision.CanCollide = false
 	collision.CustomPhysicalProperties = physical_properties
-	h.WalkSpeed = 21
+	h.WalkSpeed = 144 -- 20
 	hrp.CanCollide = false
 
 	if monster then
