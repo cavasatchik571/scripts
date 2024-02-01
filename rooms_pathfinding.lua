@@ -62,6 +62,8 @@ local cam_lock = replicated_storage:WaitForChild('EntityInfo'):WaitForChild('Cam
 local cf_new = CFrame.new
 local current_rooms = workspace:WaitForChild('CurrentRooms')
 local dev_computer_movement_mode = Enum.DevComputerMovementMode
+local dev_touch_movement_mode = Enum.DevTouchMovementMode
+local dynamic_thumbstick = dev_touch_movement_mode.DynamicThumbstick
 local fire_proximity_prompt = fireproximityprompt or fireProximityPrompt or FireProximityPrompt or fire_proximity_prompt
 local keyboard_mouse = dev_computer_movement_mode.KeyboardMouse
 local math_clamp = math.clamp
@@ -72,7 +74,8 @@ local path_compute_async = path.ComputeAsync
 local pathfind_ui = instance_new('ScreenGui')
 local physical_properties = PhysicalProperties.new(9e9, 9e9, 9e9, 1, 1)
 local render_stepped = game:GetService('RunService').RenderStepped
-local scriptable = dev_computer_movement_mode.Scriptable
+local scriptable_0 = dev_computer_movement_mode.Scriptable
+local scriptable_1 = dev_touch_movement_mode.Scriptable
 local stick_size = vec3_new(0.5, 1.44, 0.5)
 local task_defer = task.defer
 local terrain = workspace.Terrain
@@ -131,7 +134,8 @@ local function latest_room_changed()
 	local value = latest_room.Value
 	text_lbl.Text = 'Room: ' .. math_clamp(value, 1, 1000)
 	local is_end = value == 1000
-	plr.DevComputerMovementMode = is_end and keyboard_mouse or scriptable
+	plr.DevComputerMovementMode = is_end and keyboard_mouse or scriptable_0
+	plr.DevTouchMovementMode = is_end and dynamic_thumbstick or scriptable_1
 	if not is_end then return end
 	notify('Thank you for using my script!', 'Rooms', 'rbxassetid://4590662766', 3)
 	pathfind_ui:Destroy()
@@ -182,14 +186,10 @@ local connection_1 = render_stepped:Connect(function()
 	end
 end)
 
+local a90 = plr.PlayerGui.MainUI.Initiator.Main_Game.RemoteListener.Modules:FindFirstChild('A90')
+if a90 then a90:Destroy() end
 local connection_2 = latest_room:GetPropertyChangedSignal('Value'):Connect(latest_room_changed)
 latest_room_changed()
-
-local a90 = plr.PlayerGui.MainUI.Initiator.Main_Game.RemoteListener.Modules:FindFirstChild('A90')
-
-if a90 then
-	a90:Destroy()
-end
 
 while pathfind_ui.Parent do
 	for idx = 1, #boxes do boxes[idx].Parent = nil end
