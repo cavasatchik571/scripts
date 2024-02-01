@@ -219,7 +219,7 @@ while pathfind_ui.Parent do
 	end
 	
 	if hrp:IsGrounded() then continue end
-	hrp.CFrame += dest_pos - hrp_pos
+	hrp.Position = dest_pos
 end
 
 connection_0:Disconnect()
