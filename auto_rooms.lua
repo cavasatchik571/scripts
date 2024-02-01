@@ -76,8 +76,10 @@ local render_stepped = game:GetService('RunService').RenderStepped
 local scriptable_0 = dev_computer_movement_mode.Scriptable
 local scriptable_1 = dev_touch_movement_mode.Scriptable
 local stick_size = vec3_new(0.5, 1.44, 0.5)
+local table_clear = table.clear
 local task_defer = task.defer
 local terrain = workspace.Terrain
+local tp_offset = cf_new(0, 0, 1.5)
 local virtual_user = game:GetService('VirtualUser')
 local virtual_user_button1_up = virtual_user.Button1Down
 local zero_vec2 = Vector2.zero
@@ -126,16 +128,14 @@ end
 
 local function get_path()
 	local monster = workspace:FindFirstChild('A60') or workspace:FindFirstChild('A120')
-	return monster and monster.Main.Position.Y > -4 and get_locker() or ((current_rooms:FindFirstChild(tostring(latest_room.Value)) or game):FindFirstChild('Door') or game):FindFirstChild('Door')
+	return monster and monster.Main.Position.Y > -4 and get_locker() or
+		((current_rooms:FindFirstChild(tostring(latest_room.Value)) or game):FindFirstChild('Door') or game):FindFirstChild('Door')
 end
 
 local function latest_room_changed()
 	local value = latest_room.Value
 	text_lbl.Text = 'Room: ' .. math_clamp(value, 1, 1000)
-	local is_end = value == 1000
-	plr.DevComputerMovementMode = is_end and keyboard_mouse or scriptable_0
-	plr.DevTouchMovementMode = is_end and dynamic_thumbstick or scriptable_1
-	if not is_end then return end
+	if value ~= 1000 then return end
 	notify('Thank you for using my script!', 'Rooms', 'rbxassetid://4590662766', 3)
 	pathfind_ui:Destroy()
 end
@@ -181,23 +181,20 @@ end)
 
 local a90 = plr.PlayerGui.MainUI.Initiator.Main_Game.RemoteListener.Modules:FindFirstChild('A90')
 if a90 then a90:Destroy() end
-
 local connection_2 = latest_room:GetPropertyChangedSignal('Value'):Connect(latest_room_changed)
 latest_room_changed()
 
 while pathfind_ui.Parent do
 	render_stepped:Wait()
-	
 	for idx = 1, #boxes do boxes[idx].Parent = nil end
 	local destination = get_path()
 	if not destination then  render_stepped:Wait() continue end
 	local char = plr.Character
 	if not char then render_stepped:Wait() continue end
-	local dest_pos = destination.Position
-	local h = char.Humanoid
+	local dest_cf = destination.CFrame
 	local hrp = char.HumanoidRootPart
 	local hrp_pos = hrp.Position
-	local succ = pcall(path_compute_async, path, hrp_pos + offset, dest_pos)
+	local succ = pcall(path_compute_async, path, hrp_pos + offset, dest_cf.Position)
 	if not succ or path.Status == 5 then render_stepped:Wait() continue end
 	local waypoints = path:GetWaypoints()
 	local waypoints_len = #waypoints
@@ -218,16 +215,19 @@ while pathfind_ui.Parent do
 		boxes[idx] = box
 	end
 	
+	table_clear(waypoints)
 	if hrp:IsGrounded() then continue end
-	char:PivotTo(cf_new(dest_pos))
+	char:PivotTo(dest_cf * tp_offset)
 end
 
 connection_0:Disconnect()
 connection_1:Disconnect()
 connection_2:Disconnect()
+plr.DevComputerMovementMode = keyboard_mouse
+plr.DevTouchMovementMode = dynamic_thumbstick
 
 for idx = 1, #boxes do
 	boxes[idx]:Destroy()
 end
 
-table.clear(boxes)
+table_clear(boxes)
