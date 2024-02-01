@@ -126,7 +126,7 @@ end
 
 local function get_path()
 	local monster = workspace:FindFirstChild('A60') or workspace:FindFirstChild('A120')
-	return monster and monster.Main.Position.Y > -4 and get_locker() or current_rooms[latest_room.Value].Door.Door
+	return monster and monster.Main.Position.Y > -4 and get_locker() or ((current_rooms[latest_room.Value] or game):FindFirstChild('Door') or game):FindFirstChild('Door')
 end
 
 local function latest_room_changed()
