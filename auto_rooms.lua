@@ -219,7 +219,7 @@ while pathfind_ui.Parent do
 	end
 	
 	if hrp:IsGrounded() then continue end
-	hrp.Position = dest_pos
+	char:PivotTo(cf_new(dest_pos))
 end
 
 connection_0:Disconnect()
