@@ -12,9 +12,6 @@ while env.auto_loot do
 	for idx = 1, #descendants do
 		local descendant = descendants[idx]
 		if descendant.Name ~= 'LootPrompt' or not descendant:IsA('ProximityPrompt') then continue end
-		descendant.Enabled = true
-		descendant.HoldDuration = 0
-		descendant.MaxActivationDistance = 64
 		fireproximityprompt(descendant)
 	end
 	
