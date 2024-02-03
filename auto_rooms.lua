@@ -63,6 +63,7 @@ local cf_new = CFrame.new
 local current_rooms = workspace:WaitForChild('CurrentRooms')
 local dev_computer_movement_mode = Enum.DevComputerMovementMode
 local dev_touch_movement_mode = Enum.DevTouchMovementMode
+local door_offset = vec3_new(0, 0, -1.5)
 local dynamic_thumbstick = dev_touch_movement_mode.DynamicThumbstick
 local fire_proximity_prompt = fireproximityprompt or fireProximityPrompt or FireProximityPrompt or fire_proximity_prompt
 local keyboard_mouse = dev_computer_movement_mode.KeyboardMouse
@@ -161,7 +162,7 @@ local connection_1 = render_stepped:Connect(function()
 	local path = get_path()
 	collision.CanCollide = false
 	collision.CustomPhysicalProperties = physical_properties
-	h.WalkSpeed = 64 -- 20
+	h.WalkSpeed = 64
 	hrp.CanCollide = false
 
 	if monster then
@@ -172,19 +173,18 @@ local connection_1 = render_stepped:Connect(function()
 
 			if parent.Name == 'Rooms_Locker' and y > -4 and (hrp.Position - path.Position).Magnitude < 5 and not hrp:IsGrounded() then
 				local hide_prompt = parent:FindFirstChild('HidePrompt')
-
-				if fire_proximity_prompt then
-					fire_proximity_prompt(hide_prompt)
-				end
+				if not fire_proximity_prompt or not hide_prompt then return end
+				fire_proximity_prompt(hide_prompt)
 			end
 		end
-
-		if y < -4 and hrp:IsGrounded() then
-			cam_lock:FireServer()
-		end
+		
+		if y >= -4 or not hrp:IsGrounded() then return end
+		cam_lock:FireServer()
 	else
 		if hrp:IsGrounded() then return end
 		cam_lock:FireServer()
+		if hrp.Position.Y > -100 or not path then return end
+		char:PivotTo(path.CFrame * door_offset)
 	end
 end)
 
