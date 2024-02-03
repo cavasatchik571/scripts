@@ -162,7 +162,7 @@ local connection_1 = render_stepped:Connect(function()
 	local path = get_path()
 	collision.CanCollide = false
 	collision.CustomPhysicalProperties = physical_properties
-	h.WalkSpeed = 64
+	h.WalkSpeed = 44
 	hrp.CanCollide = false
 
 	if monster then
