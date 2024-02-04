@@ -1,4 +1,3 @@
---!strict
 -- check
 
 if game.PlaceId ~= 6839171747 then return end
