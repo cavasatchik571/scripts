@@ -18,7 +18,10 @@ local vec3_y_axis = Vector3.yAxis
 local vec3_zero = Vector3.zero
 
 local backpack = plr:WaitForChild('Backpack')
-local hrp = plr.Character:WaitForChild('HumanoidRootPart')
+local char = plr.Character
+local h = char:WaitForChild('Humanoid')
+local hrp = char:WaitForChild('HumanoidRootPart')
+local offset = Vector3.new(0, 0, 1.5)
 
 -- functions
 
@@ -47,7 +50,7 @@ local function get_safe_pos()
 	for idx = 1, #children do
 		local cf, new_size = children[idx]:GetBoundingBox()
 		local new_safe_pos = cf.Position + new_size * vec3_y_axis
-		
+
 		if new_safe_pos.Y > safe_pos.Y then
 			safe_pos = new_safe_pos
 		end
@@ -82,13 +85,25 @@ while env.auto_doors do
 			local assets = current_room:WaitForChild('Assets')
 			local key = assets:FindFirstChild('KeyObtain')
 			
-			if key and not backpack:FindFirstChild('Key') then
-				set_pos(key:GetPivot().Position)
+			if key then
+				local backpack_key = backpack:FindFirstChild('Key')
+
+				if backpack_key then
+					h:UnequipAllTools()
+					render_stepped:Wait()
+					backpack_key.Parent = char
+				end
+
+				if key and not char:FindFirstChild('Key') then
+					set_pos(key:GetPivot().Position)
+				else
+					set_pos(current_room:WaitForChild('Door'):WaitForChild('Door').CFrame * offset)
+				end
 			else
-				set_pos(current_room:WaitForChild('Door'):WaitForChild('Door').Position)
+				set_pos(current_room:WaitForChild('Door'):WaitForChild('Door').CFrame * offset)
 			end
 		end
 	end
-	
+
 	render_stepped:Wait()
 end
