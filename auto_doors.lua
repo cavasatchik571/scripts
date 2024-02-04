@@ -1,4 +1,4 @@
--- checka
+-- check
 
 if game.PlaceId ~= 6839171747 then return end
 local env = (getgenv or function() end)() or _ENV or shared or _G
