@@ -11,7 +11,7 @@ if not new_auto_doors then return end
 
 local current_camera = workspace.CurrentCamera
 local current_rooms = workspace:WaitForChild('CurrentRooms')
-local plr = game:GetService('Players').LocalPlayer.Character
+local plr = game:GetService('Players').LocalPlayer
 local latest_room = game:GetService('ReplicatedStorage'):WaitForChild('GameData'):WaitForChild('LatestRoom')
 local render_stepped = game:GetService('RunService').RenderStepped
 local table_clear = table.clear
