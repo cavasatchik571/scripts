@@ -94,10 +94,10 @@ while env.auto_doors do
 					backpack_key.Parent = char
 				end
 
-				if key and not char:FindFirstChild('Key') then
-					set_pos(key:GetPivot().Position)
-				else
+				if char:FindFirstChild('Key') then
 					set_pos(current_room:WaitForChild('Door'):WaitForChild('Door').CFrame * offset)
+				else
+					set_pos(key:GetPivot().Position)
 				end
 			else
 				set_pos(current_room:WaitForChild('Door'):WaitForChild('Door').CFrame * offset)
