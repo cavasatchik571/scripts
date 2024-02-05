@@ -46,7 +46,7 @@ local function is_monster_near()
 		local name = child.Name
 		if name ~= 'RushMoving' and name ~= 'AmbushMoving' then continue end
 		local monster_pos = child:GetPivot().Position
-		if (monster_pos - pos_0).Magnitude > 500 and (monster_pos - pos_1).Magnitude > 500 then continue end
+		if (monster_pos - pos_0).Magnitude > 200 and (monster_pos - pos_1).Magnitude > 200 then continue end
 		table_clear(children)
 		return true
 	end
