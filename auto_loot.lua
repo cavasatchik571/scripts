@@ -1,3 +1,5 @@
+-- source code
+
 if game.PlaceId ~= 6839171747 then return end
 local env = (getgenv or function() end)() or _ENV or shared or _G or {}
 local new_auto_loot = not env.auto_loot and true or nil
