@@ -2,10 +2,10 @@
 
 local chr = utf8.char
 local df = function() end
-local ds = decompile or decompiler or df
+local ds = decompile or decompiler
 local env = (getgenv or df)() or _ENV or shared or _G
-local gsbc = getscriptbytecode or get_script_bytecode or df
-local gsh = getscripthash or get_script_hash or df
+local gsbc = getscriptbytecode or get_script_bytecode
+local gsh = getscripthash or get_script_hash
 local gsub = string.gsub
 local len = utf8.len
 local ord = utf8.codepoint
