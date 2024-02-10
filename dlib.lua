@@ -29,7 +29,7 @@ local function sb(a)
 end
 
 local function ss(a)
-	return 'Value: \'' .. tostring(a) .. '\'; Type: ' .. type(a) .. '; Type (accurate): ' .. typeof(a) .. ';'
+	return ' \'' .. tostring(a) .. '\' (type: ' .. type(a) .. '; accurate type: ' .. typeof(a) .. ');'
 end
 
 local function yds(a)
