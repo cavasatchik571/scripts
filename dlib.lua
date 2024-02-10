@@ -3,7 +3,7 @@
 local chr = utf8.char
 local df = function() end
 local ds = decompile or decompiler or df
-local env = (getgenv or df) or _ENV or shared or _G
+local env = (getgenv or df)() or _ENV or shared or _G
 local gsbc = getscriptbytecode or get_script_bytecode or df
 local gsh = getscripthash or get_script_hash or df
 local gsub = string.gsub
