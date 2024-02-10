@@ -39,16 +39,16 @@ local function yds(a)
 	local k, l = pcall(gsh, a)
 	if not k then k, l = pcall(grsh, a) end
 	local gsis, ae, als, arc, ars, as = pcall(gsi, a)
-	local si = gsis and ('\n--\tEnabled: ' .. ss(ae) .. '\n' ..
-		'\n--\tLinked source: ' .. ss(als) .. '\n' ..
-		'\n--\tRun context: ' .. ss(arc) .. '\n' ..
-		'\n--\tRuntime source: ' .. ss(ars) .. '\n' ..
+	local si = gsis and ('\n--\tEnabled: ' .. ss(ae) ..
+		'\n--\tLinked source: ' .. ss(als) ..
+		'\n--\tRun context: ' .. ss(arc) ..
+		'\n--\tRuntime source: ' .. ss(ars) ..
 		'\n--\tSource: ' .. ss(as)) or ''
 	local m, n = pcall(gsbc, a)
-	return '-- Decrypted bytecode: ' .. sb(m and n or '') .. '\n\n' ..
-		'-- Decrypted hash: ' .. (k and l or '') .. '\n\n' ..
-		'-- Information: ' .. si .. '\n\n' ..
-		'-- Library (dlib), \'yds\' function.\n'
+	return '-- Decrypted bytecode: ' .. sb(m and n or '') .. '\n' ..
+		'-- Decrypted hash: ' .. (k and l or '') .. '\n' ..
+		'-- Information:' .. si .. '\n' ..
+		'\n-- Library (dlib), \'yds\' function.\n'
 end
 
 -- code
