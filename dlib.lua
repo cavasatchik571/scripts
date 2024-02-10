@@ -39,11 +39,11 @@ local function yds(a)
 	local k, l = pcall(gsh, a)
 	if not k then k, l = pcall(grsh, a) end
 	local gsis, ae, als, arc, ars, as = pcall(gsi, a)
-	local si = gsis and ('\n\t--Enabled: ' .. ss(ae) ..
-		'\n\t--Linked source: ' .. ss(als) ..
-		'\n\t--Run context: ' .. ss(arc) ..
-		'\n\t--Runtime source: ' .. ss(ars) ..
-		'\n\t--Source: ' .. ss(as)) or ''
+	local si = gsis and ('\n    -- Enabled: ' .. ss(ae) ..
+		'\n    -- Linked source: ' .. ss(als) ..
+		'\n    -- Run context: ' .. ss(arc) ..
+		'\n    -- Runtime source: ' .. ss(ars) ..
+		'\n    -- Source: ' .. ss(as)) or ''
 	local m, n = pcall(gsbc, a)
 	return '-- Decrypted bytecode: ' .. sb(m and n or '') .. '\n' ..
 		'-- Decrypted hash: ' .. (k and l or '') .. '\n' ..
