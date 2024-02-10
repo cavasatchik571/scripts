@@ -45,8 +45,8 @@ local function yds(a)
 		'\n--\tRuntime source: ' .. ss(ars) .. '\n' ..
 		'\n--\tSource: ' .. ss(as)) or ''
 	local m, n = pcall(gsbc, a)
-	return '-- Decrypted bytecode: ' .. sb(k and l or '') .. '\n\n' ..
-		'-- Decrypted hash: ' .. (m and n or '') .. '\n\n' ..
+	return '-- Decrypted bytecode: ' .. sb(m and n or '') .. '\n\n' ..
+		'-- Decrypted hash: ' .. (k and l or '') .. '\n\n' ..
 		'-- Information: ' .. si .. '\n\n' ..
 		'-- Library (dlib), \'yds\' function.\n'
 end
