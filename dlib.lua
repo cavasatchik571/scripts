@@ -1,14 +1,14 @@
 -- variables
 
-local chr = utf8.char
+local chr = string.char
 local df = function() end
 local ds = decompile or decompiler
 local env = (getgenv or df)() or _ENV or shared or _G
 local gsbc = getscriptbytecode or get_script_bytecode
 local gsh = getscripthash or get_script_hash
 local gsub = string.gsub
-local len = utf8.len
-local ord = utf8.codepoint
+local len = string.len
+local ord = string.byte
 
 -- functions
 
