@@ -25,11 +25,11 @@ local function gsub_sb(a)
 end
 
 local function sb(a)
-	return gsub(a, '.', sb)
+	return gsub(a, '.', gsub_sb)
 end
 
 local function ss(a)
-	return 'Value: \'' .. tostring(a) .. '\'; Type: ' .. type(a) .. '; Type (accurate): ' .. typeof(a) .. '\n'
+	return 'Value: \'' .. tostring(a) .. '\'; Type: ' .. type(a) .. '; Type (accurate): ' .. typeof(a) .. ';'
 end
 
 local function yds(a)
@@ -39,11 +39,11 @@ local function yds(a)
 	local k, l = pcall(gsh, a)
 	if not k then k, l = pcall(grsh, a) end
 	local gsis, ae, als, arc, ars, as = pcall(gsi, a)
-	local si = gsis and ('\n--\tEnabled: ' .. ae ..
-		'\n--\tLinked source: ' .. als ..
-		'\n--\tRun context: ' ..
-		'\n--\tRuntime source: ' .. ars ..
-		'\n--\tSource: ' .. as) or ''
+	local si = gsis and ('\n--\tEnabled: ' .. ss(ae) .. '\n' ..
+		'\n--\tLinked source: ' .. ss(als) .. '\n' ..
+		'\n--\tRun context: ' ss(arc) .. '\n' ..
+		'\n--\tRuntime source: ' .. ss(ars) .. '\n' ..
+		'\n--\tSource: ' .. ss(as)) or ''
 	local m, n = pcall(gsbc, a)
 	return '-- Decrypted bytecode: ' .. sb(k and l or '') .. '\n\n' ..
 		'-- Decrypted hash: ' .. (m and n or '') .. '\n\n' ..
