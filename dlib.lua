@@ -41,7 +41,7 @@ local function yds(a)
 	local gsis, ae, als, arc, ars, as = pcall(gsi, a)
 	local si = gsis and ('\n--\tEnabled: ' .. ss(ae) .. '\n' ..
 		'\n--\tLinked source: ' .. ss(als) .. '\n' ..
-		'\n--\tRun context: ' ss(arc) .. '\n' ..
+		'\n--\tRun context: ' .. ss(arc) .. '\n' ..
 		'\n--\tRuntime source: ' .. ss(ars) .. '\n' ..
 		'\n--\tSource: ' .. ss(as)) or ''
 	local m, n = pcall(gsbc, a)
