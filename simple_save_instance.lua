@@ -191,7 +191,7 @@ local function stringify(e: any)
 
 		return 'Faces.new(' .. table_concat(t, ', ') .. ')'
 	elseif accurate_type == 'Font' then
-		return 'Font.new(' .. stringify(e.Family) .. ', ' .. stringify(e.Weight) .. ', ' .. e.Style .. ')'
+		return 'Font.new(' .. stringify(e.Family) .. ', ' .. stringify(e.Weight) .. ', ' .. stringify(e.Style) .. ')'
 	elseif accurate_type == 'Instance' then
 		if e == workspace then return 'workspace' end
 		if e == terrain then return 'workspace.Terrain' end
