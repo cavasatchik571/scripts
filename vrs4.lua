@@ -8,8 +8,8 @@ local _4 = Color3.new(0, 0.4984, 0)
 local env = (getgenv and getgenv()) or _ENV or shared or _G
 if not env then return end
 local enabled = env.vrs4
-local instance_new = Instance.new
-local properties = {Button1 = 'OK', Text = enabled and 'The script has been already activated.' or 'Activated the script.', Title = 'The Rooms'}
+local inst_new = Instance.new
+local properties = {Button1 = 'OK', Text = enabled and 'The script has been already activated' or 'Activated the script', Title = 'The Rooms'}
 local starter_gui = game:GetService('StarterGui')
 local table_clear = table.clear
 starter_gui:SetCore('SendNotification', properties)
@@ -19,7 +19,7 @@ env.vrs4 = true
 
 local btn_size = UDim2.fromScale(1, 2)
 local cas = game:GetService('ContextActionService')
-local ccf = instance_new('ColorCorrectionEffect')
+local ccf = inst_new('ColorCorrectionEffect')
 local chat = game:GetService('Chat')
 local color3_new = Color3.new
 local connections_0 = {}
@@ -28,7 +28,6 @@ local debris = game:GetService('Debris')
 local get = function(a, b) return a[b] end
 local green = Enum.ChatColor.Green
 local grey = color3_new(0.5, 0.5, 0.5)
-local instance_new = Instance.new
 local lighting = game:GetService('Lighting')
 local math_max = math.max
 local never = Enum.AdornCullingMode.Never
@@ -98,7 +97,7 @@ local function btn_func()
 end
 
 local function create_highlight(pvi, ps)
-	local highlight = instance_new('BoxHandleAdornment')
+	local highlight = inst_new('BoxHandleAdornment')
 	highlight.AdornCullingMode = never
 	highlight.Adornee = pvi
 	highlight.AlwaysOnTop = true
@@ -106,7 +105,7 @@ local function create_highlight(pvi, ps)
 	highlight.Color3 = _4
 	highlight.Name = 'Highlight4'
 	highlight.Size = ps
-	highlight.Transparency = 0.1444
+	highlight.Transparency = 0.144
 	highlight.ZIndex = 4
 	highlight:SetAttribute('4', _4)
 	highlight.Parent = pvi
@@ -166,7 +165,6 @@ end
 local function r_disable()
 	local list = {lighting, workspace.Terrain, workspace.CurrentCamera}
 	ccf.Parent = nil
-
 	for _, connection in next, connections_0 do connection:Disconnect() end
 	table_clear(connections_0)
 	for _, connection in next, connections_1 do connection:Disconnect() end
@@ -204,7 +202,7 @@ end
 local function sprint_button()
 	local bar = (your_gui:WaitForChild('stamina', 1) or game):WaitForChild('back', 1)
 	if not bar or bar:FindFirstChildOfClass('TextButton') then return end
-	local btn = instance_new('TextButton')
+	local btn = inst_new('TextButton')
 	btn.Archivable = false
 	btn.Size = btn_size
 	btn.Transparency = 1
@@ -246,7 +244,7 @@ workspace.ChildRemoved:Connect(function(child)
 	if not h or (h:GetState().Value == 15 and child:GetAttribute('4') ~= _4) then return end
 	local hint = workspace:FindFirstChildOfClass('Hint')
 	if hint then hint:Destroy() end
-	local msg = instance_new('Hint')
+	local msg = inst_new('Hint')
 	msg.Archivable = false
 	msg.Text = child.Name .. ' has left the game.'
 	msg:SetAttribute('4', _4)
@@ -275,11 +273,14 @@ while true do
 	render_stepped:Wait()
 	lighting.Brightness, lighting.ClockTime, lighting.OutdoorAmbient = 5, 14, grey
 	local is_active = connections_1[lighting]
-
 	if is_unsafe() then
-		if not is_active then r_enable() end
+		if not is_active then
+			r_enable()
+		end
 	else
-		if is_active then r_disable() end
+		if is_active then
+			r_disable()
+		end
 	end
 
 	local char = you.Character
@@ -289,7 +290,6 @@ while true do
 	local children = workspace:GetChildren()
 	local pos = char:GetPivot().Position
 	local len = #children
-
 	for idx = len, math_max(1, len - 25), -1 do
 		local door = children[idx]:FindFirstChild('door')
 		if not door then continue end
