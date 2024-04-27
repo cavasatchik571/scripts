@@ -1,5 +1,5 @@
 -- eds4.lua
--- by vov4ik
+-- by @Vov4ik4124
 
 local _4 = Color3.new(0, 0.4984, 0)
 
@@ -27,7 +27,6 @@ local idl = {}
 local ignore_symbol = newproxy(false)
 local inst_new = Instance.new
 local lbls = {}
-local patterns: {[RemoteEvent]: any} = {}
 local plrs = game:GetService('Players')
 local points = {}
 local properties = {}
@@ -53,6 +52,7 @@ local starter_gui_set_core = starter_gui.SetCore
 local white = Color3.fromRGB(224, 224, 224)
 local you = plrs.LocalPlayer
 local your_gui = pcall(tostring, core_gui) and core_gui or you:WaitForChild('PlayerGui')
+local patterns: {[RemoteEvent]: any} = setmetatable({}, {__newindex = function(t, k, v) if k ~= nil then rawset(t, k, v) end})
 
 local raw_lbl4 = inst_new('TextLabel')
 raw_lbl4.BackgroundColor3 = _4
