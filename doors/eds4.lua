@@ -1,5 +1,5 @@
 -- eds4.lua
--- by @Vov4ik4124
+-- by vov4ik
 
 local _4 = Color3.new(0, 0.4984, 0)
 
@@ -38,7 +38,7 @@ local string_find = string.find
 local table_clear = table.clear
 local task_wait = task.wait
 local udim2_from_scale = UDim2.fromScale
-local vec3_bha4 = Vector3.new(0.44, 1.444, 0.44)
+local vec3_bha4 = Vector3.new(0.44, 1.4444, 0.44)
 local vec3_zero = Vector3.zero
 
 local frame = inst_new('Frame')
@@ -52,7 +52,7 @@ local starter_gui_set_core = starter_gui.SetCore
 local white = Color3.fromRGB(224, 224, 224)
 local you = plrs.LocalPlayer
 local your_gui = pcall(tostring, core_gui) and core_gui or you:WaitForChild('PlayerGui')
-local patterns: {[RemoteEvent]: any} = setmetatable({}, {__newindex = function(t, k, v) if k ~= nil then rawset(t, k, v) end})
+local patterns: {[RemoteEvent]: any} = setmetatable({}, {__newindex = function(t, k, v) if k ~= nil then rawset(t, k, v) end end})
 
 local raw_lbl4 = inst_new('TextLabel')
 raw_lbl4.BackgroundColor3 = _4
