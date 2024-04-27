@@ -1,5 +1,5 @@
 -- eds4.lua
--- by vov4
+-- by vov4ik
 
 local _4 = Color3.new(0, 0.4984, 0)
 
@@ -115,12 +115,12 @@ light_inst:SetAttribute('4', _4)
 local function child_added_rs(child)
 	local name = child.Name
 	if name ~= 'EntityInfo' and name ~= 'RemotesFolder' then return end
-	patterns[child:WaitForChild('A90')] = {false}
-	patterns[child:WaitForChild('ClutchHeartbeat')] = {ignore_symbol, true}
-	patterns[child:WaitForChild('Dread')] = ignore_symbol
-	patterns[child:WaitForChild('MotorReplication')] = {ignore_symbol, ignore_symbol, ignore_symbol, ignore_symbol}
-	patterns[child:WaitForChild('Screech')] = {true}
-	patterns[child:WaitForChild('ShadeResult')] = ignore_symbol
+	patterns[child:WaitForChild('A90', 4)] = {false}
+	patterns[child:WaitForChild('ClutchHeartbeat', 4)] = {ignore_symbol, true}
+	patterns[child:WaitForChild('Dread', 4)] = ignore_symbol
+	patterns[child:WaitForChild('MotorReplication', 4)] = {ignore_symbol, ignore_symbol, ignore_symbol, ignore_symbol}
+	patterns[child:WaitForChild('Screech', 4)] = {true}
+	patterns[child:WaitForChild('ShadeResult', 4)] = ignore_symbol
 end
 
 local function child_added_w(child)
