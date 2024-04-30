@@ -38,7 +38,7 @@ local string_find = string.find
 local table_clear = table.clear
 local task_wait = task.wait
 local udim2_from_scale = UDim2.fromScale
-local vec3_bha4 = Vector3.new(0.44, 1.44, 0.44)
+local vec3_bha4 = Vector3.new(0.4, 1.44, 0.4)
 local vec3_zero = Vector3.zero
 
 local frame = inst_new('Frame')
