@@ -38,7 +38,7 @@ local string_find = string.find
 local table_clear = table.clear
 local task_wait = task.wait
 local udim2_from_scale = UDim2.fromScale
-local vec3_bha4 = Vector3.new(0.44, 1.4444, 0.44)
+local vec3_bha4 = Vector3.new(0.4, 1.44, 0.4)
 local vec3_zero = Vector3.zero
 
 local frame = inst_new('Frame')
@@ -53,7 +53,6 @@ local white = Color3.fromRGB(224, 224, 224)
 local you = plrs.LocalPlayer
 local your_gui = pcall(tostring, core_gui) and core_gui or you:WaitForChild('PlayerGui')
 local patterns: {[RemoteEvent]: any} = setmetatable({}, {__newindex = function(t, k, v) if k ~= nil then rawset(t, k, v) end end})
-
 local raw_lbl4 = inst_new('TextLabel')
 raw_lbl4.BackgroundColor3 = _4
 raw_lbl4.BackgroundTransparency = 1
@@ -109,8 +108,9 @@ light_inst.Enabled = true
 light_inst.Name = '4'
 light_inst.Range = 44
 light_inst.Shadows = false
-light_inst.Parent = light_part
 light_inst:SetAttribute('4', _4)
+light_inst.Parent = light_part
+light_part.Parent = workspace
 
 local function child_added_rs(child)
 	local name = child.Name
@@ -126,9 +126,10 @@ end
 local function child_added_w(child)
 	if child == nil or typeof(child) ~= 'Instance' or child.ClassName ~= 'Model' then return end
 	task_wait(0.004)
-	if not child:IsA('Model') or plrs:FindFirstChild(child.Name) then return end
-	local scr = child:WaitForChild('AssetControl', 1.444)
-	if scr == nil or scr.Name ~= 'AssetControl' or not scr:IsA('Script') or not scr.Enabled then return end
+	if not child:IsA('Model') or plrs:FindFirstChild(child.Name) or child:FindFirstChildWhichIsA('LuaSourceContainer', true) == nil then
+		return
+	end
+
 	local lbl4 = clone(raw_lbl4)
 	lbl4.Archivable = false
 	lbl4.Text = child.Name
@@ -313,36 +314,25 @@ old_namecall = hmm(game, '__namecall', nc(function(self, ...)
 	return remote_call(old_namecall, self, ...)
 end))
 
-send_notification('Button1', 'OK', 'Duration', 4, 'Icon', 'rbxassetid://7440784829', 'Text', 'The exploit has been activated', 'Title', '4')
+send_notification('Button1', 'OK', 'Duration', 4, 'Icon', 'rbxassetid://7440784829', 'Text', 'The exploit has been activated.', 'Title', '4')
 
 while true do
 	task_wait(0.144)
 	local cam = workspace.CurrentCamera
 	if cam == nil then continue end
 	local cam_pos = cam.CFrame.Position
-	local succ = false
-	for model, lbl4 in next, lbls do
-		local visible = (cam_pos - model:GetPivot().Position).Magnitude <= 4800
-		lbl4.Visible = visible
-
-		if visible then
-			succ = true
-		end
-	end
-
-	light_part.Parent = succ and workspace or nil
-	if succ then light_part.Position = cam_pos end
+	for model, lbl4 in next, lbls do lbl4.Visible = (cam_pos - model:GetPivot().Position).Magnitude <= 4800 end
+	light_part.Position = cam_pos
 	for prompt, enabled in next, auto_prompts do
 		if not enabled or prompt.HoldDuration > 0.04 then continue end
 		local parent = prompt.Parent
 		if parent == nil then continue end
 		local point = get_pos(parent)
-		if (point - cam_pos).Magnitude > prompt.MaxActivationDistance or not select(2, cam:WorldToViewportPoint(point)) then continue end
+		if (cam_pos - point).Magnitude > prompt.MaxActivationDistance or not select(2, cam:WorldToViewportPoint(point)) then continue end
 		idl[2], points[1] = ((parent:IsA('Attachment') and parent.Parent or parent).Parent or game).Parent, point
 		local succ = true
 		local list = cam:GetPartsObscuringTarget(points, idl)
 		local len = #list
-
 		for idx = 1, len do
 			local element = list[idx]
 			if element.Transparency > 0 or not element.CanCollide then continue end
