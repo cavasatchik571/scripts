@@ -200,7 +200,6 @@ while pathfind_ui.Parent do
 	local char = plr.Character
 	if not char then render_stepped:Wait() continue end
 	local h = char.Humanoid
-	local h_move_to_finished = h.MoveToFinished
 	local hrp = char.HumanoidRootPart
 	local succ = pcall(path_compute_async, path, hrp.Position + offset, destination.Position)
 	if not succ or path.Status == 5 then render_stepped:Wait() continue end
@@ -225,8 +224,9 @@ while pathfind_ui.Parent do
 
 	for idx = 1, waypoints_len do
 		if hrp:IsGrounded() then break end
-		h:MoveTo(waypoints[idx].Position)
-		h_move_to_finished:Wait()
+		local pos = waypoints[idx].Position
+		h:MoveTo(pos)
+		while (hrp.Position - pos).Magnitude > 4 do render_stepped:Wait() end
 	end
 end
 
