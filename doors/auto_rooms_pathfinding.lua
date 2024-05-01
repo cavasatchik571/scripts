@@ -224,7 +224,7 @@ while pathfind_ui.Parent do
 
 	for idx = 1, waypoints_len do
 		if hrp:IsGrounded() then break end
-		local pos = waypoints[idx].Position
+		local pos = waypoints[idx].Position + offset
 		h:MoveTo(pos)
 		while (hrp.Position - pos).Magnitude > 4 do render_stepped:Wait() end
 	end
