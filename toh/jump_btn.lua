@@ -1,4 +1,15 @@
-game.Players.LocalPlayer.PlayerGui.MobileShiftLock.BottomLeftControl.MouseLockLabel.Position = UDim2.fromScale(-1, -1)
-game.Players.LocalPlayer.PlayerGui.MobileShiftLock.BottomLeftControl.MouseLockLabel.Size = UDim2.fromOffset(100, 100)
-game.Players.LocalPlayer.PlayerGui.TouchGui.TouchControlFrame.JumpButton.Position = UDim2.fromScale(0.8, 0.5)
-game.Players.LocalPlayer.PlayerGui.TouchGui.TouchControlFrame.JumpButton.Size = UDim2.fromOffset(150, 150)
+-- source code
+
+local udim2_from_offset = UDim2.fromOffset
+local udim2_from_scale = UDim2.fromScale
+local ui = game:GetService('Players').LocalPlayer:WaitForChild('PlayerGui')
+
+-- logic
+
+local jump_btn = ui:WaitForChild('TouchGui'):WaitForChild('TouchControlFrame'):WaitForChild('JumpButton')
+jump_btn.Position = udim2_from_scale(0.875, 0.575)
+jump_btn.Size = udim2_from_offset(150, 150)
+
+local lbl = ui:WaitForChild('MobileShiftLock'):WaitForChild('BottomLeftControl'):WaitForChild('MouseLockLabel')
+lbl.Position = udim2_from_scale(-1, -1)
+lbl.Size = udim2_from_offset(100, 100)
