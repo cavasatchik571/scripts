@@ -1,7 +1,7 @@
---// monster_detector.lua
+--// rooms_monsters.lua
 --// by @Vov4ik4124
 
-local _4 = Color3.new(0, 0.4984, 0)
+local _4 = Color3.new(0, .4984, 0)
 local core_gui = game:GetService('CoreGui')
 local run_service = game:GetService('RunService')
 local starter_gui = game:GetService('StarterGui')
@@ -168,7 +168,7 @@ while _G.srmx do
 			monster_lbl.TextColor3 = color
 			monster_lbl.UIStroke.Color = color
 			monster_lbl.Visible = visible
-			
+
 			if hunting then
 				spawned_lbl.Visible = hunting
 			end
