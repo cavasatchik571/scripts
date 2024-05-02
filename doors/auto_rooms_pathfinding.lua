@@ -1,7 +1,7 @@
 -- auto_rooms.lua
 -- original by @lolcat
 
-local _4 = Color3.new(0, 0.2514, 0)
+local _4 = Color3.new(0, .4984, 0)
 
 -- source code
 
@@ -26,14 +26,14 @@ local function notify(text, title, id, volume)
 end
 
 if game.PlaceId ~= 6839171747 then
-	notify('The game detected appears to not be rooms. Please execute this while in rooms.', 'Invalid place', 'rbxassetid://550209561', 4)
+	notify('The game detected appears to not be rooms. Please execute this while in rooms.', 'Invalid place.', 'rbxassetid://550209561', 4)
 	return
 end
 
 local game_data = replicated_storage:WaitForChild('GameData', 1.4)
 
 if not game_data or game_data.Floor.Value ~= 'Rooms' then
-	notify('The game detected appears to not be rooms. Please execute this while in rooms.', 'Invalid place', 'rbxassetid://550209561', 4)
+	notify('The game detected appears to not be rooms. Please execute this while in rooms.', 'Invalid place.', 'rbxassetid://550209561', 4)
 	return
 end
 
@@ -177,7 +177,7 @@ local connection_1 = render_stepped:Connect(function()
 				fire_proximity_prompt(hide_prompt)
 			end
 		end
-		
+
 		if y >= -4 or not hrp:IsGrounded() then return end
 		cam_lock:FireServer()
 	else
