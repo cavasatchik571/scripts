@@ -5,7 +5,7 @@ local gui = plr:WaitForChild('PlayerGui')
 local character
 local env = getgenv()
 
-queue_on_teleport('loadstring(game:HttpGet(\'https://pastebin.com/raw/9zn7i73e\', true))()')
+queue_on_teleport('loadstring(game:HttpGet(\'https://raw.githubusercontent.com/cavasatchik571/scripts/main/rf2/auto_rf2.lua\', true))()')
 env.Enabled = not env.Enabled or true
 
 if not env.Enabled then
