@@ -1,7 +1,7 @@
 --// ftf_commands.lua
 --// by unknown
 
-local _4 = Color3.new(0, .2514, 0)
+local _4 = Color3.new(0, .4984, 0)
 
 -- check
 
