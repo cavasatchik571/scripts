@@ -1,14 +1,9 @@
--- Fly script (no BodyMover instances)
--- by * unknown *
+-- source code
 
 local env = (getgenv and getgenv()) or shared or _ENV or _G
 local new_fly = not env.fly and true or nil
 env.fly = new_fly
-
 if not new_fly then return end
-
--- variables
-
 local cf_new = CFrame.new
 local cf_yxz = CFrame.fromEulerAnglesYXZ
 local core_gui = game:GetService('CoreGui')
@@ -115,12 +110,20 @@ local function alter_velocity()
 	hrp.AssemblyLinearVelocity = direction + vec3_new(0, math_abs(workspace.Gravity) / 100, 0)
 end
 
-rs.Heartbeat:Connect(alter_velocity)
-rs.RenderStepped:Connect(alter_velocity)
-rs.Stepped:Connect(alter_velocity)
+-- logic
 
-while true do
+local connections = {
+	rs.Heartbeat:Connect(alter_velocity),
+	rs.RenderStepped:Connect(alter_velocity),
+	rs.Stepped:Connect(alter_velocity)
+}
+
+while env.fly do
 	alter_velocity()
 	task_wait()
 	alter_velocity()
 end
+
+for idx = 1, #connections do connections[idx]:Disconnect() end
+screen_gui:Destroy()
+table.clear(connections)
