@@ -1,8 +1,3 @@
---// auto_pls_donate.lua
---// by unknown
-
-local _4 = Color3.new(0, 0.2514, 0)
-
 -- check
 
 local place_id = 8737602449
