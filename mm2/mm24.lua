@@ -1,7 +1,7 @@
 -- mm24.lua
 -- by @Vov4ik4124
 
-local _4 = Color3.new(0, 0.4984, 0)
+local _4 = Color3.new(0, .4984, 0)
 
 -- source code
 
@@ -104,7 +104,7 @@ mm24_highlight.AdornCullingMode = Enum.AdornCullingMode.Never
 mm24_highlight.AlwaysOnTop = true
 mm24_highlight.Color3 = _4
 mm24_highlight.Name = 'Highlight'
-mm24_highlight.Transparency = 0.644
+mm24_highlight.Transparency = 0.6444
 mm24_highlight.Visible = true
 mm24_highlight.ZIndex = 4
 
