@@ -1,7 +1,7 @@
 -- eds4.lua
 -- by @Vov4ik4124
 
-local _4 = Color3.new(0, 0.4984, 0)
+local _4 = Color3.new(0, .4984, 0)
 
 -- source code
 
@@ -38,7 +38,7 @@ local string_find = string.find
 local table_clear = table.clear
 local task_wait = task.wait
 local udim2_from_scale = UDim2.fromScale
-local vec3_bha4 = Vector3.new(0.4, 1.44, 0.4)
+local vec3_bha4 = Vector3.new(0.44, 1.44, 0.44)
 local vec3_zero = Vector3.zero
 
 local frame = inst_new('Frame')
@@ -52,7 +52,7 @@ local starter_gui_set_core = starter_gui.SetCore
 local white = Color3.fromRGB(224, 224, 224)
 local you = plrs.LocalPlayer
 local your_gui = pcall(tostring, core_gui) and core_gui or you:WaitForChild('PlayerGui')
-local patterns: {[RemoteEvent]: any} = setmetatable({}, {__newindex = function(t, k, v) if k ~= nil then rawset(t, k, v) end end})
+local patterns: {[RemoteEvent]: {any}} = setmetatable({}, {__newindex = function(t, k, v) if k ~= nil then rawset(t, k, v) end end})
 local raw_lbl4 = inst_new('TextLabel')
 raw_lbl4.BackgroundColor3 = _4
 raw_lbl4.BackgroundTransparency = 1
@@ -74,7 +74,7 @@ raw_bha4.AdornCullingMode = Enum.AdornCullingMode.Never
 raw_bha4.AlwaysOnTop = true
 raw_bha4.Color3 = _4
 raw_bha4.Name = 'bha4'
-raw_bha4.Transparency = 0.74
+raw_bha4.Transparency = 0.744
 raw_bha4.ZIndex = 4
 raw_bha4:SetAttribute('4', _4)
 
@@ -346,7 +346,7 @@ while true do
 	end
 
 	local deg = get_deg(cam_pos)
-	for inst, pattern in patterns do
+	for inst, pattern in next, patterns do
 		if inst.Name ~= 'MotorReplication' then continue end
 		pattern[1], pattern[2], pattern[3] = ignore_symbol, deg, ignore_symbol
 	end
