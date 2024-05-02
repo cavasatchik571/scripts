@@ -1,11 +1,11 @@
--- variables
+-- source code
 
 local core_gui = game:GetService('CoreGui')
 local instance_new = Instance.new
 local starter_gui = game:GetService('StarterGui')
 local your_gui = pcall(tostring, core_gui) and core_gui or game:GetService('Players').LocalPlayer:WaitForChild('PlayerGui')
 
--- code
+-- logic
 
 local gui = your_gui:FindFirstChild('ConsoleToggle')
 if gui then return gui:Destroy() end
@@ -22,6 +22,5 @@ btn.Size = UDim2.fromOffset(80, 40)
 btn.Text = 'Toggle console'
 btn.TextScaled = true
 btn.Parent = gui
-gui.Parent = your_gui
-
 btn.Activated:Connect(function() starter_gui:SetCore('DevConsoleVisible', not starter_gui:GetCore('DevConsoleVisible')) end)
+gui.Parent = your_gui
