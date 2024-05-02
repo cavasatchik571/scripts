@@ -1,7 +1,7 @@
 -- vrs4.lua
 -- by @Vov4ik4124
 
-local _4 = Color3.new(0, 0.4984, 0)
+local _4 = Color3.new(0, .4984, 0)
 
 -- source code
 
@@ -105,7 +105,7 @@ local function create_highlight(pvi, ps)
 	highlight.Color3 = _4
 	highlight.Name = 'Highlight4'
 	highlight.Size = ps
-	highlight.Transparency = 0.144
+	highlight.Transparency = 0.1444
 	highlight.ZIndex = 4
 	highlight:SetAttribute('4', _4)
 	highlight.Parent = pvi
