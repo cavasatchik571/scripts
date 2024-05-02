@@ -1,7 +1,7 @@
 -- auto_rooms.lua
 -- by unknown
 
-local _4 = Color3.new(0, 0.2514, 0)
+local _4 = Color3.new(0, .4984, 0)
 
 -- source code
 
@@ -51,7 +51,7 @@ local function get_locker()
 			dist = new_dist
 		end
 	end
-	
+
 	table_clear(descendants)
 	return closest
 end
@@ -91,7 +91,7 @@ your_highlight.Archivable = false
 your_highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
 your_highlight.Enabled = true
 your_highlight.FillColor = _4
-your_highlight.FillTransparency = 0.64
+your_highlight.FillTransparency = 0.6
 your_highlight.Name = '4'
 your_highlight.OutlineColor = _4
 your_highlight.OutlineTransparency = 1
@@ -100,7 +100,7 @@ your_highlight:SetAttribute('4', _4)
 
 while env.auto_rooms do
 	render_stepped:Wait()
-	
+
 	if is_monster_near() then
 		local locker = get_locker()
 		if not locker or your_hrp:IsGrounded() then continue end
