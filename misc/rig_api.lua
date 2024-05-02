@@ -1,9 +1,13 @@
+-- source code
+
 local asset_service = game:GetService('AssetService')
+local clear = table.clear
 local get_bundle_details_async = asset_service.GetBundleDetailsAsync
 local plrs = game:GetService('Players')
 local plrs_ghdoid = plrs.GetHumanoidDescriptionFromOutfitId
 local rig_type = Enum.HumanoidRigType
-local table_clear = table.clear
+
+-- logic
 
 _G.char = function(hd, name, rig, parent)
  if not hd then return end
@@ -30,7 +34,7 @@ _G.hd_from_bundle = function(id)
   break
  end
 
- table_clear(items)
+ clear(items)
  if outfit_id <= 0 then return end
  local succ, hd = pcall(plrs_ghdoid, plrs, outfit_id)
  return succ and hd or nil
@@ -54,7 +58,7 @@ _G.set_rt = function(a, b, ...)
  if type(b) == 'string' then
   local args = {b, ...}
   for idx = 1, #args, 2 do a[args[idx]] = args[idx + 1] end
-  table_clear(args)
+  clear(args)
  elseif type(b) == 'table' then for k, v in next, b do a[k] = v end end
 
  return a
