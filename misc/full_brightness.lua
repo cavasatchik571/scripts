@@ -1,7 +1,12 @@
-local L = game.Lighting
-local R = game:GetService('RunService')
+-- source code
 
-while R.Heartbeat:Wait() do
-	L.ClockTime = 14.5
-	L.Brightness = 5
+local lighting = game:GetService('Lighting')
+local task_wait = task.wait
+
+-- logic
+
+while true do
+	lighting.ClockTime = 14.5
+	lighting.Brightness = 5
+	task_wait()
 end
