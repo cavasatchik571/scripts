@@ -1,4 +1,4 @@
--- variables
+-- source code
 
 local chr = string.char
 local df = function() end
@@ -9,8 +9,6 @@ local gsh = getscripthash or get_script_hash
 local gsub = string.gsub
 local len = string.len
 local ord = string.byte
-
--- functions
 
 local function grsh(a)
 	return a:GetHash()
@@ -51,7 +49,7 @@ local function yds(a)
 		'Library (dlib), \'yds\' function.\n\n]]--\n'
 end
 
--- code
+-- logic
 
 env.dlib = {
 	chr = chr,
