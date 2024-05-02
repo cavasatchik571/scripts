@@ -1,7 +1,7 @@
 --// monster_detector.lua
 --// by @Vov4ik4124
 
-local _4 = Color3.fromRGB(0, 64, 0)
+local _4 = Color3.new(0, 0.4984, 0)
 local core_gui = game:GetService('CoreGui')
 local run_service = game:GetService('RunService')
 local starter_gui = game:GetService('StarterGui')
