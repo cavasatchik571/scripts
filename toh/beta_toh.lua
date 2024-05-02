@@ -1,9 +1,3 @@
--- auto_toh.lua
--- by unknown
---!strict
-
-local _4 = Color3.new(0, 0.2514, 0)
-
 -- source code
 
 local properties = {Button1 = 'OK', Duration = 5, Text = '', Title = 'Tower of Hell'}
@@ -40,7 +34,7 @@ local string_find = string.find
 local string_upper = string.upper
 local table_sort = table.sort
 local vec3_new = Vector3.new
-local vec3_offset = vec3_new(0, 2.4, 0)
+local vec3_offset = vec3_new(0, 2.5, 0)
 local vec3_zero = Vector3.zero
 local you = game:GetService('Players').LocalPlayer
 
@@ -146,7 +140,7 @@ while env.toh_enabled do
 	local finish = sections:FindFirstChild('finish')
 	if not finish then continue end
 	local finish_glow = finish:FindFirstChild('FinishGlow')
-	if not finish_glow or finish_glow:GetAttribute('4') then continue end
+	if not finish_glow or finish_glow:GetAttribute('IsDone') then continue end
 	local children = sections:GetChildren()
 	local waypoints = {}
 	local y = char:GetPivot().Y
@@ -175,5 +169,5 @@ while env.toh_enabled do
 	set_killpart_triggers(sections, true)
 	table_clear(waypoints)
 	if not char.Parent or not env.toh_enabled then continue end
-	finish_glow:SetAttribute('4', _4)
+	finish_glow:SetAttribute('IsDone', true)
 end
