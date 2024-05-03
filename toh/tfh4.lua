@@ -20,9 +20,11 @@ local sleep = task.wait
 local sg = game:GetService('StarterGui')
 local sg_sc = sg.SetCore
 local sg_scp = {}
+local stroke = inst_new('UIStroke')
 local udim2_from_scale = UDim2.fromScale
 local ui = inst_new('ScreenGui')
 local ui_btn = inst_new('TextButton')
+local vim = game:GetService('VirtualInputManager')
 local you = game:GetService('Players').LocalPlayer
 
 local function notify(btn, dur, img, text, title)
@@ -36,6 +38,14 @@ local function notify(btn, dur, img, text, title)
 end
 
 -- logic
+
+stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+stroke.Color = colors_black
+stroke.Enabled = true
+stroke.LineJoinMode = Enum.LineJoinMode.Round
+stroke.Name = 'Stroke'
+stroke.Thickness = 4
+stroke.Parent = ui_btn
 
 ui.Archivable = false
 ui.AutoLocalize = false
@@ -109,10 +119,10 @@ while env.tfh4 do
 	h:UnequipTools()
 	grappling_hook.Parent = char
 	sleep(0.004)
-	grappling_hook:Activate()
+	vim:SendTouchEvent(4000, 0, 0, 0)
 	h.Jump = true
 	sleep(0.0144)
-	grappling_hook:Deactivate()
+	vim:SendTouchEvent(4000, 2, 0, 0)
 	sleep(0.024)
 	h:UnequipTools()
 	fusion_coil.Parent = char
