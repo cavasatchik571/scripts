@@ -50,7 +50,7 @@ stroke.Parent = ui_btn
 ui.Archivable = false
 ui.AutoLocalize = false
 ui.ClipToDeviceSafeArea = false
-ui.DisplayOrder = 4000
+ui.DisplayOrder = 40000
 ui.Name = 'tfh4_gui'
 ui.ResetOnSpawn = false
 ui.ScreenInsets = Enum.ScreenInsets.None
@@ -79,7 +79,7 @@ ui_btn.TextScaled = true
 ui_btn.TextStrokeColor3 = _4
 ui_btn.TextStrokeTransparency = 0
 ui_btn.Visible = true
-ui_btn.ZIndex = 4000
+ui_btn.ZIndex = 40000
 ui_btn:SetAttribute('4', _4)
 ui_btn.Parent = ui
 ui_btn.MouseButton1Down:Connect(function()
