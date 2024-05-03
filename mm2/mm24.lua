@@ -386,14 +386,14 @@ interact_btn.Interactable = true
 interact_btn.MaxVisibleGraphemes = 1
 interact_btn.Name = 'Interact'
 interact_btn.Position = udim2_from_scale(0.75, 0.725)
-interact_btn.Size = udim2_from_scale(0.14, 0.14)
+interact_btn.Size = udim2_from_scale(0.144, 0.144)
 interact_btn.SizeConstraint = Enum.SizeConstraint.RelativeYY
 interact_btn.Text = '4'
 interact_btn.TextColor3 = colors_white
 interact_btn.TextStrokeColor3 = _4
 interact_btn.Visible = false
 interact_btn.Parent = ui
-interact_btn.MouseButton1Down:Connect(scripted_shoot)
+interact_btn.MouseButton1Up:Connect(scripted_shoot)
 notify('OK', 4, 'rbxassetid://7440784829', 'Script activated', 'MM24')
 
 while env.mm24 do
