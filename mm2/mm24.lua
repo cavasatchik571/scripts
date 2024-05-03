@@ -104,7 +104,7 @@ mm24_highlight.AdornCullingMode = Enum.AdornCullingMode.Never
 mm24_highlight.AlwaysOnTop = true
 mm24_highlight.Color3 = _4
 mm24_highlight.Name = 'Highlight'
-mm24_highlight.Transparency = 0.6444
+mm24_highlight.Transparency = 0.644
 mm24_highlight.Visible = true
 mm24_highlight.ZIndex = 4
 
@@ -456,7 +456,7 @@ while env.mm24 do
 	interact_btn.Visible = false
 	lighting.FogColor, lighting.FogEnd, lighting.FogStart, lighting.GlobalShadows = colors_black, 9e9, 9e9, false
 	rendering.QualityLevel = lowest_quality
-	terrain.WaterReflectance, terrain.WaterTransparency, terrain.WaterWaveSiz, terrain.WaterWaveSpeed = 0, 0, 0, 0
+	terrain.WaterReflectance, terrain.WaterTransparency, terrain.WaterWaveSize, terrain.WaterWaveSpeed = 0, 0, 0, 0
 	local your_char = you.Character
 	if your_char == nil then continue end
 	local your_h = your_char:FindFirstChildOfClass('Humanoid')
