@@ -1,5 +1,5 @@
 -- xbox_analyzer.lua
--- by Vov4ik4124
+-- by @Vov4ik
 
 local _4 = Color3.new(0, .4984, 0)
 
@@ -44,7 +44,7 @@ lbl.Name = '4'
 lbl.Position = UDim2.fromScale(0.5, 0.5)
 lbl.Size = UDim2.fromOffset(64, 64)
 lbl.Text = '4'
-lbl.TextColor3 = Color3.from(255, 255, 255)
+lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
 lbl.TextScaled = true
 lbl.TextStrokeColor3 = _4
 lbl.TextStrokeTransparency = 0.4
