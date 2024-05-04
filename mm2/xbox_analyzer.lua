@@ -55,7 +55,7 @@ lbl:SetAttribute('4', _4)
 lbl.Parent = ui
 
 old_i = hookmetamethod(game, '__index', newcclosure(function(self, key)
-	if checkcaller() then return old_i(self, key) end
+	if checkcaller() or key == 'ClassName' then return old_i(self, key) end
 	if self.ClassName == 'ScreenGui' then
 		if key == 'AbsoluteSize' then
 			return size
