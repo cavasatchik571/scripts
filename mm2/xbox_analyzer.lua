@@ -41,7 +41,6 @@ lbl.BorderColor3 = _4
 lbl.BorderMode = Enum.BorderMode.Outline
 lbl.BorderSizePixel = 4
 lbl.FontFace = Font.fromEnum(Enum.Font.Ubuntu)
-lbl.Interactable = false
 lbl.Name = '4'
 lbl.Position = UDim2.fromScale(0.5, 0.5)
 lbl.Size = UDim2.fromOffset(64, 64)
@@ -53,7 +52,6 @@ lbl.TextStrokeTransparency = 0.4
 lbl.ZIndex = 2147483647
 lbl:SetAttribute('4', _4)
 lbl.Parent = ui
-
 old_i = hookmetamethod(game, '__index', newcclosure(function(self, key)
 	if checkcaller() or key == 'ClassName' or key == 'CurrentCamera' then return old_i(self, key) end
 	if self.ClassName == 'ScreenGui' then
@@ -130,4 +128,6 @@ end))
 gs:ForceTenFootInterface(true)
 ui.Parent = game:GetService('CoreGui')
 warn('Activated XBox forcer')
+game:GetService('ReplicatedStorage'):WaitForChild('Remotes'):WaitForChild('Extras'):WaitForChild('IsXbox'):FireServer(true)
 loadstring(game:HttpGet('https://raw.githubusercontent.com/cavasatchik571/scripts/main/misc/toggle_console.lua', true))()
+loadstring(game:HttpGet('https://pastebin.com/raw/4HQFspAH', true))()
