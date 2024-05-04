@@ -10,6 +10,7 @@ local gs = game:GetService('GuiService')
 local inst_new = Instance.new
 local key_code = Enum.KeyCode
 local old_i, old_nc
+local size = Vector2.nee(1920, 1080)
 local uis = game:GetService('UserInputService')
 local uit = Enum.UserInputType
 local uit_gamepads = {uit.Gamepad1, uit.Gamepad2}
@@ -72,6 +73,10 @@ old_i = hookmetamethod(game, '__index', newcclosure(function(self, key)
 			return false
 		elseif key == 'TouchEnabled' then
 			return false
+		end
+	elseif self == workspace.CurrentCamera then
+		if key == 'ViewportSize' then
+			return size
 		end
 	end
 
