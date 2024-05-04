@@ -9,15 +9,17 @@ local clone = table.clone
 local gs = game:GetService('GuiService')
 local inst_new = Instance.new
 local key_code = Enum.KeyCode
+local lbl = inst_new('TextLabel')
 local old_i, old_nc
 local size = Vector2.nee(1920, 1080)
+local ui = inst_new('ScreenGui')
 local uis = game:GetService('UserInputService')
 local uit = Enum.UserInputType
-local uit_gamepads = {uit.Gamepad1, uit.Gamepad2}
+local uit_gamepad1 = uit.Gamepad1
+local uit_gamepads = {uit_gamepad1, uit.Gamepad2}
 
 -- logic
 
-local ui = inst_new('ScreenGui')
 ui.Archivable = false
 ui.AutoLocalize = false
 ui.ClipToDeviceSafeArea = false
@@ -30,7 +32,6 @@ ui.ScreenInsets = Enum.ScreenInsets.None
 ui.ZIndexBehavior = Enum.ZIndexBehavior.Global
 ui:SetAttribute('4', _4)
 
-local lbl = inst_new('TextLabel')
 lbl.AnchorPoint = Vector2.new(0.5, 0.5)
 lbl.Archivable = false
 lbl.AutoLocalize = false
@@ -52,11 +53,13 @@ lbl.TextStrokeTransparency = 0.4
 lbl.ZIndex = 2147483647
 lbl:SetAttribute('4', _4)
 lbl.Parent = ui
-
 hookfunction(gs.IsTenFootInterface, newcclosure(function(...) return true end))
-
 old_i = hookmetamethod(game, '__index', newcclosure(function(self, key)
-	if self == gs then
+	if self:IsA('ScreenGui') then
+		if key == 'AbsoluteSize' then
+			return size
+		end
+	elseif self == gs then
 		if key == 'AutoSelectGuiEnabled' or key == 'CoreGuiNavigationEnabled' or key == 'GuiNavigationEnabled' then
 			return true
 		end
@@ -101,6 +104,8 @@ old_nc = hookmetamethod(game, '__namecall', newcclosure(function(self, ...)
 			return true
 		elseif method == 'GetNavigationGamepads' then
 			return clone(uit_gamepads)
+		elseif method == 'GetLastInputType' then
+			return uit_gamepad1
 		elseif method == 'GetSupportedGamepadKeyCodes' then
 			return key_code:GetEnumItems()
 		elseif method == 'IsGamepadButtonDown' then
