@@ -11,7 +11,7 @@ local inst_new = Instance.new
 local key_code = Enum.KeyCode
 local lbl = inst_new('TextLabel')
 local old_i, old_nc
-local size = Vector2.nee(1920, 1080)
+local size = Vector2.new(1920, 1080)
 local ui = inst_new('ScreenGui')
 local uis = game:GetService('UserInputService')
 local uit = Enum.UserInputType
