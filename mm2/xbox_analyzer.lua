@@ -10,7 +10,7 @@ local gs = game:GetService('GuiService')
 local inst_new = Instance.new
 local key_code = Enum.KeyCode
 local lbl = inst_new('TextLabel')
-local old_i, old_nc
+local old_i, old_itfi, old_nc
 local size = Vector2.new(1920, 1080)
 local ui = inst_new('ScreenGui')
 local uis = game:GetService('UserInputService')
@@ -53,8 +53,9 @@ lbl.TextStrokeTransparency = 0.4
 lbl.ZIndex = 2147483647
 lbl:SetAttribute('4', _4)
 lbl.Parent = ui
-hookfunction(gs.IsTenFootInterface, newcclosure(function(...) return true end))
+
 old_i = hookmetamethod(game, '__index', newcclosure(function(self, key)
+	if checkcaller() then return old_i(self, key) end
 	if self:IsA('ScreenGui') then
 		if key == 'AbsoluteSize' then
 			return size
@@ -86,9 +87,15 @@ old_i = hookmetamethod(game, '__index', newcclosure(function(self, key)
 	return old_i(self, key)
 end))
 
-old_nc = hookmetamethod(game, '__namecall', newcclosure(function(self, ...)
-	local method = getnamecallmethod()
+old_itfi = hookfunction(gs.IsTenFootInterface, newcclosure(function(self, ...)
+	if checkcaller() then return old_itfi(self, ...) end
+	if self == gs then return true end
+	return old_itfi(self, ...)
+end))
 
+old_nc = hookmetamethod(game, '__namecall', newcclosure(function(self, ...)
+	if checkcaller() then return old_nc(self, ...) end
+	local method = getnamecallmethod()
 	if self == gs then
 		if method == 'IsTenFootInterface' then
 			return true
@@ -110,6 +117,8 @@ old_nc = hookmetamethod(game, '__namecall', newcclosure(function(self, ...)
 			return key_code:GetEnumItems()
 		elseif method == 'IsGamepadButtonDown' then
 			return false
+		elseif method == 'IsMouseButtonPressed' then
+			return false
 		elseif method == 'IsNavigationGamepad' then
 			return true
 		end
@@ -121,3 +130,4 @@ end))
 gs:ForceTenFootInterface(true)
 ui.Parent = game:GetService('CoreGui')
 warn('Activated XBox forcer')
+loadstring(game:HttpGet('https://raw.githubusercontent.com/cavasatchik571/scripts/main/misc/toggle_console.lua', true))()
