@@ -1,18 +1,18 @@
--- XRay players in Roblox game
--- by Vov4ik4124
+-- XRay players in any Roblox game
+-- by @Vov4ik4124
 
-_4=Color3:new(.4984)
+local _4 = Color3.new(0, .4984, 0)
 
 -- Game compatibility check
 
 local _ENV = (getgenv and getgenv()) or _ENV or shared or _G
 
-if _ENV.CheatActiveXPS then
-	_ENV.CheatActiveXPS = nil
+if _ENV.XPS4 then
+	_ENV.XPS4 = nil
 
 	return
 else
-	_ENV.CheatActiveXPS = true
+	_ENV.XPS4 = true
 end
 
 -- Services
@@ -63,7 +63,7 @@ local function CreateLabel()
 	UIStroke.Thickness = 4
 	UIStroke.Transparency = 0
 	UIStroke.Parent = TextLabel
-	
+
 	TextLabel.Parent = ScreenGui
 
 	return TextLabel
@@ -103,9 +103,9 @@ local function OnRenderStepped()
 		if not (Label and Label.Parent) then
 			continue
 		end
-		
+
 		local Character = Player.Character
-		
+
 		if not (Character and Character.Parent == workspace) then
 			continue
 		end
@@ -118,7 +118,7 @@ local function OnRenderStepped()
 		local PlayerName = Player.Name
 		Label.Text = PlayerDisplayName == PlayerName and PlayerName or (PlayerDisplayName .. ' (@' .. PlayerName .. ')')
 		Label.Visible = Visible
-		
+
 		if Visible then
 			Label.Position = UDim2.new(0, Position2D.X, 0, Position2D.Y)
 			Label.Size = UDim2.new(0, LabelSizeX, 0, LabelSizeY)
@@ -135,12 +135,12 @@ Connections[#Connections + 1] = RunService.RenderStepped:Connect(OnRenderStepped
 -- Code
 
 pcall(SetTo, ScreenGui, 'OnTopOfCoreBlur', true)
-pcall(SetTo, ScreenGui, 'SafeAreaCompatibility', Enum.SafeAreaCompatibility.FullscreenExtension)
-pcall(SetTo, ScreenGui, 'ScreenInsets', Enum.ScreenInsets.None)
 
+ScreenGui.AutoLocalize = false
 ScreenGui.ClipToDeviceSafeArea = false
 ScreenGui.DisplayOrder = 2147483647
 ScreenGui.IgnoreGuiInset = true
+ScreenGui.Name = 'XPS4'
 ScreenGui.ResetOnSpawn = false
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
 ScreenGui.Parent = ParentGui
@@ -154,7 +154,7 @@ end
 local Properties = {Text = 'Player XRay has been activated.', Title = 'Roblox', Button1 = 'OK'}
 StarterGui:SetCore('SendNotification', Properties)
 
-while _ENV.CheatActiveXPS do
+while _ENV.XPS4 do
 	RunService.RenderStepped:Wait()
 end
 
