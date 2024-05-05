@@ -72,7 +72,7 @@ ui_btn.Interactable = true
 ui_btn.MaxVisibleGraphemes = 1
 ui_btn.Name = 'Button'
 ui_btn.Position = udim2_from_scale(0.75, 0.725)
-ui_btn.Size = udim2_from_scale(0.14, 0.14)
+ui_btn.Size = udim2_from_scale(0.144, 0.144)
 ui_btn.SizeConstraint = Enum.SizeConstraint.RelativeYY
 ui_btn.Text = '4'
 ui_btn.TextColor3 = colors_white
@@ -108,7 +108,7 @@ while env.tfh4 do
 
 	if fusion_coil == nil then
 		active = false
-		notify('OK', 4, 'rbxassetid://7440784829', 'You need a fusion coil for this.', 'TFH4')
+		notify('OK', 4, 'rbxassetid://7440784829', 'You need a gravity/fusion coil for this.', 'TFH4')
 		continue
 	end
 
