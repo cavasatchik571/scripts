@@ -16,7 +16,7 @@ local ui = inst_new('ScreenGui')
 local uis = game:GetService('UserInputService')
 local uit = Enum.UserInputType
 local uit_gamepad1 = uit.Gamepad1
-local uit_gamepads = {uit_gamepad1, uit.Gamepad2}
+local uit_gamepads = {uit_gamepad1, uit.Gamepad2, uit.Gamepad3, uit.Gamepad4}
 
 -- logic
 
@@ -52,7 +52,7 @@ lbl.TextStrokeTransparency = 0.4
 lbl.ZIndex = 2147483647
 lbl:SetAttribute('4', _4)
 lbl.Parent = ui
-old_i = hookmetamethod(game, '__index', newcclosure(function(self, key)
+old_i = hookmetamethod(game, '__index', newcclosure(function(self, key): any
 	if checkcaller() or key == 'ClassName' or key == 'CurrentCamera' then return old_i(self, key) end
 	if self.ClassName == 'ScreenGui' then
 		if key == 'AbsoluteSize' then
@@ -85,13 +85,13 @@ old_i = hookmetamethod(game, '__index', newcclosure(function(self, key)
 	return old_i(self, key)
 end))
 
-old_itfi = hookfunction(gs.IsTenFootInterface, newcclosure(function(self, ...)
+old_itfi = hookfunction(gs.IsTenFootInterface, newcclosure(function(self, ...): any
 	if checkcaller() then return old_itfi(self, ...) end
 	if self == gs then return true end
 	return old_itfi(self, ...)
 end))
 
-old_nc = hookmetamethod(game, '__namecall', newcclosure(function(self, ...)
+old_nc = hookmetamethod(game, '__namecall', newcclosure(function(self, ...): any
 	if checkcaller() then return old_nc(self, ...) end
 	local method = getnamecallmethod()
 	if self == gs then
