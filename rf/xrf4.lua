@@ -31,27 +31,14 @@ bha4.ZIndex = 4
 bha4:SetAttribute('4', _4)
 
 local paths = {
-	'^Workspace%.Battery%d*$',
-	'^Workspace%.Block%d*$',
-	'^Workspace%.CakeMix$',
-	'^Workspace%.Food%a*$',
-	'^Workspace%.Fuse%d*$',
-	'^Workspace%.GasCanister$',
-	'^Workspace%.LightBulb$',
-	'^Workspace%.Monsters%.Bird$',
-	'^Workspace%.Monsters%.Blue$',
-	'^Workspace%.Monsters%.Cyan$',
-	'^Workspace%.Monsters%.Green$',
-	'^Workspace%.Monsters%.Orange$',
-	'^Workspace%.Monsters%.Purple%.VisibleCharModel$',
-	'^Workspace%.Purple_ArmIdle$',
-	'^Workspace%.Ticket$',
-	'^Workspace%.ignore%.Looky$'
+	'^Workspace%.Battery%d*$', '^Workspace%.Block%d*$', '^Workspace%.CakeMix$', '^Workspace%.Food%a*$',
+	'^Workspace%.Fuse%d*$', '^Workspace%.GasCanister$', '^Workspace%.LightBulb$', '^Workspace%.Monsters%.Bird$',
+	'^Workspace%.Monsters%.Blue$', '^Workspace%.Monsters%.Cyan$', '^Workspace%.Monsters%.Green$', '^Workspace%.Monsters%.Orange$',
+	'^Workspace%.Monsters%.Purple%.VisibleCharModel$', '^Workspace%.Purple_ArmIdle$', '^Workspace%.Ticket$', '^Workspace%.ignore%.Looky$'
 }
 
-local paths_len = #paths
 local function compare_path(name)
-	for idx = 1, paths_len do if find(name, paths[idx]) == 1 then return true end end
+	for idx = 1, 16 do if find(name, paths[idx]) == 1 then return true end end
 	return false
 end
 
@@ -59,7 +46,9 @@ local function descendant_added(descendant)
 	if not descendant:IsA('PVInstance') or highlights[descendant] ~= nil or not compare_path(descendant:GetFullName()) then return end
 	local cloned = bha4:Clone()
 	cloned.Adornee = descendant
-	cloned.Size = bha4_size:Max((descendant:IsA('BasePart') and descendant.Size) or (descendant:IsA('Model') and select(2, descendant:GetBoundingBox())) or bha4_size)
+	cloned.Size = bha4_size:Max((descendant:IsA('BasePart') and descendant.Size) or
+		(descendant:IsA('Model') and select(2, descendant:GetBoundingBox())) or bha4_size)
+
 	cloned.Parent = descendant
 	highlights[descendant] = cloned
 end
@@ -91,7 +80,8 @@ while env.xrf4 do
 	sleep()
 
 	for adornee, highlight in next, highlights do
-		highlight.Size = bha4_size:Max((adornee:IsA('BasePart') and adornee.Size) or (adornee:IsA('Model') and select(2, adornee:GetBoundingBox())) or bha4_size)
+		highlight.Size = bha4_size:Max((adornee:IsA('BasePart') and adornee.Size) or
+			(adornee:IsA('Model') and select(2, adornee:GetBoundingBox())) or bha4_size)
 	end
 end
 
