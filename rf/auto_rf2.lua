@@ -1,3 +1,4 @@
+task.wait(2.44)
 local lobbyPlace = 7991339063
 local gamePlace = 13622981808
 local plr = game:GetService('Players').LocalPlayer
@@ -5,7 +6,7 @@ local gui = plr:WaitForChild('PlayerGui')
 local character
 local env = getgenv()
 
-queue_on_teleport('loadstring(game:HttpGet(\'https://raw.githubusercontent.com/cavasatchik571/scripts/main/rf2/auto_rf2.lua\', true))()')
+queueonteleport('loadstring(game:HttpGet(\'https://raw.githubusercontent.com/cavasatchik571/scripts/main/rf2/auto_rf2.lua\', true))()')
 env.Enabled = not env.Enabled or true
 
 if not env.Enabled then
