@@ -148,7 +148,7 @@ while true do
 	task.wait(0.04)
 end
 
-while env.Enabled do
+while true do
 	if gui.PermanentGUI.DeathFrame.Visible and
 		gui.PermanentGUI.DeathFrame.ReturnToLobby.Visible and
 		gui.PermanentGUI.DeathFrame.ReturnToLobby.Button.Visible and 
