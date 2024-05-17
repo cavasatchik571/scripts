@@ -1,18 +1,10 @@
-task.wait(2.44)
+queueonteleport(`loadstring(game:HttpGet('https://raw.githubusercontent.com/cavasatchik571/scripts/main/rf/auto_rf2.lua', true))()`)
+
 local lobbyPlace = 7991339063
 local gamePlace = 13622981808
 local plr = game:GetService('Players').LocalPlayer
 local gui = plr:WaitForChild('PlayerGui')
 local character
-local env = getgenv()
-
-queueonteleport('loadstring(game:HttpGet(\'https://raw.githubusercontent.com/cavasatchik571/scripts/main/rf2/auto_rf2.lua\', true))()')
-env.Enabled = not env.Enabled or true
-
-if not env.Enabled then
-	return
-end
-
 while not (character and character.Parent) do
 	character = plr.Character
 	task.wait(0.04)
@@ -24,7 +16,7 @@ if game.PlaceId == lobbyPlace then
 	local prevWalkSpeed = h.WalkSpeed
 	h.WalkSpeed *= 1.1
 	
-	while env.Enabled and task.wait(0.04) do
+	while true and task.wait(0.04) do
 		h:MoveTo(workspace.mapint.matchmaking.ring_01.neon.Position)
 	end
 	
@@ -36,7 +28,7 @@ end
 gui:WaitForChild('PermanentGUI'):WaitForChild('DeathFrame'):WaitForChild('ReturnToLobby')
 plr:WaitForChild('Backpack')
 
-while env.Enabled do
+while true do
 	if gui.PermanentGUI.DeathFrame.Visible and
 		gui.PermanentGUI.DeathFrame.ReturnToLobby.Visible and
 		gui.PermanentGUI.DeathFrame.ReturnToLobby.Button.Visible and 
