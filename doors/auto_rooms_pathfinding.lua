@@ -26,14 +26,14 @@ local function notify(text, title, id, volume)
 end
 
 if game.PlaceId ~= 6839171747 then
-	notify('The game detected appears to not be rooms. Please execute this while in rooms', 'Invalid place.', 'rbxassetid://550209561', 4)
+	notify('The game detected appears to not be rooms. Please execute this while in rooms.', 'Invalid place.', 'rbxassetid://550209561', 4)
 	return
 end
 
 local game_data = replicated_storage:WaitForChild('GameData', 1.4)
 
 if not game_data or game_data.Floor.Value ~= 'Rooms' then
-	notify('The game detected appears to not be rooms. Please execute this while in rooms', 'Invalid place.', 'rbxassetid://550209561', 4)
+	notify('The game detected appears to not be rooms. Please execute this while in rooms.', 'Invalid place.', 'rbxassetid://550209561', 4)
 	return
 end
 
@@ -44,18 +44,18 @@ local ui = pcall(tostring, core_gui) and core_gui or plr:WaitForChild('PlayerGui
 local vec3_new = Vector3.new
 
 if latest_room.Value == 1000 then
-	notify('You\'ve already reached A-1000 room', 'Rooms', 'rbxassetid://550209561', 4)
+	notify('You\'ve already reached A-1000 room.', 'Rooms', 'rbxassetid://550209561', 4)
 	return
 end
 
 if ui:FindFirstChild('PathfindUI') then
-	notify('The script has been already activated', 'Rooms', 'rbxassetid://550209561', 4)
+	notify('The script has been already activated.', 'Rooms', 'rbxassetid://550209561', 4)
 	return
 end
 
 -- logic
 
-notify('The script has been activated', 'Rooms', '', 0)
+notify('The script has been activated.', 'Rooms', '', 0)
 
 local boxes = {}
 local cam_lock = replicated_storage:WaitForChild('RemotesFolder'):WaitForChild('CamLock')
@@ -163,7 +163,7 @@ local connection_1 = render_stepped:Connect(function()
 	local path = get_path()
 	collision.CanCollide = false
 	collision.CustomPhysicalProperties = physical_properties
-	--h.WalkSpeed = 44
+	-- h.WalkSpeed = 44
 	hrp.CanCollide = false
 
 	if monster then
@@ -193,20 +193,19 @@ if a90 then a90:Destroy() end
 local connection_2 = latest_room:GetPropertyChangedSignal('Value'):Connect(latest_room_changed)
 latest_room_changed()
 while pathfind_ui.Parent do
-	render_stepped:Wait()
 	for idx = 1, #boxes do boxes[idx].Parent = nil end
 	local destination = get_path()
-	if not destination then continue end
+	if not destination then render_stepped:Wait() continue end
 	local char = plr.Character
-	if not char then continue end
+	if not char then render_stepped:Wait() continue end
 	local h = char.Humanoid
 	local hrp = char.HumanoidRootPart
 	local signal = h.MoveToFinished
 	local succ = pcall(path_compute_async, path, hrp.Position + offset, destination.Position)
-	if not succ or path.Status == 5 then continue end
+	if not succ or path.Status == 5 then render_stepped:Wait() continue end
 	local waypoints = path:GetWaypoints()
 	local waypoints_len = #waypoints
-	if waypoints_len <= 0 then continue end
+	if waypoints_len <= 0 then render_stepped:Wait() continue end
 	for idx = 1, waypoints_len do
 		local box = boxes[idx] or instance_new('BoxHandleAdornment')
 		box.AdornCullingMode = never
@@ -246,6 +245,7 @@ if connection_h then connection_h:Disconnect() end
 connection_0:Disconnect()
 connection_1:Disconnect()
 connection_2:Disconnect()
+h:Move(zero_vec3)
 h:MoveTo(zero_vec3)
 plr.DevComputerMovementMode = keyboard_mouse
 plr.DevTouchMovementMode = dynamic_thumbstick
