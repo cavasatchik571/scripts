@@ -75,7 +75,6 @@ local path_compute_async = path.ComputeAsync
 local pathfind_ui = instance_new('ScreenGui')
 local physical_properties = PhysicalProperties.new(9e9, 9e9, 9e9, 1, 1)
 local render_stepped = game:GetService('RunService').RenderStepped
-local rng = Random.new()
 local scriptable_0 = dev_computer_movement_mode.Scriptable
 local scriptable_1 = dev_touch_movement_mode.Scriptable
 local stick_size = vec3_new(0.5, 1.444, 0.5)
@@ -169,10 +168,8 @@ local connection_1 = render_stepped:Connect(function()
 
 	if monster then
 		local y = monster.Main.Position.Y
-
 		if path then
 			local parent = path.Parent
-
 			if parent.Name == 'Rooms_Locker' and y > -4 and (hrp.Position - path.Position).Magnitude < 5 and not hrp:IsGrounded() then
 				local hide_prompt = parent:FindFirstChild('HidePrompt')
 				if not fire_proximity_prompt or not hide_prompt then return end
@@ -229,14 +226,16 @@ while pathfind_ui.Parent do
 		if hrp:IsGrounded() then break end
 		local active = true
 		local pos = waypoints[idx].Position
-		h:Move(rng:NextUnitVector())
+		h:Move((pos - hrp.Position - offset).Unit)
 		render_stepped:Wait()
 		h:Move(zero_vec3)
-		connection_h = signal:Once(function() active = false end)
+		connection_h = signal:Once(function()
+			active = false
+		end)
 
 		while active and not hrp:IsGrounded() do
-			render_stepped:Wait()
 			h:MoveTo(pos)
+			render_stepped:Wait()
 		end
 
 		if connection_h then connection_h:Disconnect() end
@@ -247,6 +246,7 @@ if connection_h then connection_h:Disconnect() end
 connection_0:Disconnect()
 connection_1:Disconnect()
 connection_2:Disconnect()
+h:MoveTo(zero_vec3)
 plr.DevComputerMovementMode = keyboard_mouse
 plr.DevTouchMovementMode = dynamic_thumbstick
 for idx = 1, #boxes do boxes[idx]:Destroy() end
