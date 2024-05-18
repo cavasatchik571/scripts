@@ -85,6 +85,7 @@ local terrain = workspace.Terrain
 local virtual_user = game:GetService('VirtualUser')
 local virtual_user_button1_up = virtual_user.Button1Down
 local zero_vec2 = Vector2.zero
+local zero_vec3 = Vector3.zero
 pathfind_ui.Archivable = false
 pathfind_ui.ClipToDeviceSafeArea = false
 pathfind_ui.DisplayOrder = 2514
@@ -189,6 +190,7 @@ local connection_1 = render_stepped:Connect(function()
 	end
 end)
 
+local connection_h
 local a90 = plr.PlayerGui.MainUI.Initiator.Main_Game.RemoteListener.Modules:FindFirstChild('A90')
 if a90 then a90:Destroy() end
 local connection_2 = latest_room:GetPropertyChangedSignal('Value'):Connect(latest_room_changed)
@@ -208,7 +210,6 @@ while pathfind_ui.Parent do
 	local waypoints = path:GetWaypoints()
 	local waypoints_len = #waypoints
 	if waypoints_len <= 0 then continue end
-
 	for idx = 1, waypoints_len do
 		local box = boxes[idx] or instance_new('BoxHandleAdornment')
 		box.AdornCullingMode = never
@@ -226,14 +227,23 @@ while pathfind_ui.Parent do
 
 	for idx = 1, waypoints_len do
 		if hrp:IsGrounded() then break end
+		local active = true
 		local pos = waypoints[idx].Position
-		h:Move((pos - hrp.Position - offset).Unit)
+		h:Move(rng:NextUnitVector())
 		render_stepped:Wait()
-		h:MoveTo(pos)
-		signal:Wait()
+		h:Move(zero_vec3)
+		connection_h = signal:Once(function() active = false end)
+
+		while active and not hrp:IsGrounded() do
+			render_stepped:Wait()
+			h:MoveTo(pos)
+		end
+
+		if connection_h then connection_h:Disconnect() end
 	end
 end
 
+if connection_h then connection_h:Disconnect() end
 connection_0:Disconnect()
 connection_1:Disconnect()
 connection_2:Disconnect()
