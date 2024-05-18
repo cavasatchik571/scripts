@@ -26,14 +26,14 @@ local function notify(text, title, id, volume)
 end
 
 if game.PlaceId ~= 6839171747 then
-	notify('The game detected appears to not be rooms. Please execute this while in rooms.', 'Invalid place.', 'rbxassetid://550209561', 4)
+	notify('The game detected appears to not be rooms. Please execute this while in rooms', 'Invalid place.', 'rbxassetid://550209561', 4)
 	return
 end
 
-local game_data = replicated_storage:WaitForChild('GameData', 1.4)
+local game_data = replicated_storage:WaitForChild('GameData', 1.44)
 
 if not game_data or game_data.Floor.Value ~= 'Rooms' then
-	notify('The game detected appears to not be rooms. Please execute this while in rooms.', 'Invalid place.', 'rbxassetid://550209561', 4)
+	notify('The game detected appears to not be rooms. Please execute this while in rooms', 'Invalid place.', 'rbxassetid://550209561', 4)
 	return
 end
 
@@ -44,18 +44,18 @@ local ui = pcall(tostring, core_gui) and core_gui or plr:WaitForChild('PlayerGui
 local vec3_new = Vector3.new
 
 if latest_room.Value == 1000 then
-	notify('You\'ve already reached A-1000 room.', 'Rooms', 'rbxassetid://550209561', 4)
+	notify('You\'ve already reached A-1000 room', 'Rooms', 'rbxassetid://550209561', 4)
 	return
 end
 
 if ui:FindFirstChild('PathfindUI') then
-	notify('The script has been already activated.', 'Rooms', 'rbxassetid://550209561', 4)
+	notify('The script has been already activated', 'Rooms', 'rbxassetid://550209561', 4)
 	return
 end
 
 -- logic
 
-notify('The script has been activated.', 'Rooms', '', 0)
+notify('The script has been activated', 'Rooms', '', 0)
 
 local boxes = {}
 local cam_lock = replicated_storage:WaitForChild('RemotesFolder'):WaitForChild('CamLock')
@@ -215,7 +215,7 @@ while pathfind_ui.Parent do
 		box.CFrame = cf_new(waypoints[idx].Position)
 		box.Color3 = _4
 		box.Size = stick_size
-		box.Transparency = 0.64
+		box.Transparency = 0.644
 		box.ZIndex = 4
 		box.Parent = pathfind_ui
 		boxes[idx] = box
