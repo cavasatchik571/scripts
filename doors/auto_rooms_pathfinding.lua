@@ -26,14 +26,14 @@ local function notify(text, title, id, volume)
 end
 
 if game.PlaceId ~= 6839171747 then
-	notify('The game detected appears to not be rooms. Please execute this while in rooms.', 'Invalid place.', 'rbxassetid://550209561', 4)
+	notify('The game detected appears to not be rooms. Please execute this while in rooms', 'Invalid place.', 'rbxassetid://550209561', 4)
 	return
 end
 
 local game_data = replicated_storage:WaitForChild('GameData', 1.4)
 
 if not game_data or game_data.Floor.Value ~= 'Rooms' then
-	notify('The game detected appears to not be rooms. Please execute this while in rooms.', 'Invalid place.', 'rbxassetid://550209561', 4)
+	notify('The game detected appears to not be rooms. Please execute this while in rooms', 'Invalid place.', 'rbxassetid://550209561', 4)
 	return
 end
 
@@ -44,21 +44,21 @@ local ui = pcall(tostring, core_gui) and core_gui or plr:WaitForChild('PlayerGui
 local vec3_new = Vector3.new
 
 if latest_room.Value == 1000 then
-	notify('You\'ve already reached A-1000 room.', 'Rooms', 'rbxassetid://550209561', 4)
+	notify('You\'ve already reached A-1000 room', 'Rooms', 'rbxassetid://550209561', 4)
 	return
 end
 
 if ui:FindFirstChild('PathfindUI') then
-	notify('The script has been already activated.', 'Rooms', 'rbxassetid://550209561', 4)
+	notify('The script has been already activated', 'Rooms', 'rbxassetid://550209561', 4)
 	return
 end
 
 -- logic
 
-notify('The script has been activated.', 'Rooms', '', 0)
+notify('The script has been activated', 'Rooms', '', 0)
 
 local boxes = {}
-local cam_lock = replicated_storage:WaitForChild('EntityInfo'):WaitForChild('CamLock')
+local cam_lock = replicated_storage:WaitForChild('RemotesFolder'):WaitForChild('CamLock')
 local cf_new = CFrame.new
 local current_rooms = workspace:WaitForChild('CurrentRooms')
 local dev_computer_movement_mode = Enum.DevComputerMovementMode
@@ -75,9 +75,10 @@ local path_compute_async = path.ComputeAsync
 local pathfind_ui = instance_new('ScreenGui')
 local physical_properties = PhysicalProperties.new(9e9, 9e9, 9e9, 1, 1)
 local render_stepped = game:GetService('RunService').RenderStepped
+local rng = Random.new()
 local scriptable_0 = dev_computer_movement_mode.Scriptable
 local scriptable_1 = dev_touch_movement_mode.Scriptable
-local stick_size = vec3_new(0.5, 1.44, 0.5)
+local stick_size = vec3_new(0.5, 1.444, 0.5)
 local table_clear = table.clear
 local task_defer = task.defer
 local terrain = workspace.Terrain
@@ -192,20 +193,21 @@ local a90 = plr.PlayerGui.MainUI.Initiator.Main_Game.RemoteListener.Modules:Find
 if a90 then a90:Destroy() end
 local connection_2 = latest_room:GetPropertyChangedSignal('Value'):Connect(latest_room_changed)
 latest_room_changed()
-
 while pathfind_ui.Parent do
+	render_stepped:Wait()
 	for idx = 1, #boxes do boxes[idx].Parent = nil end
 	local destination = get_path()
-	if not destination then  render_stepped:Wait() continue end
+	if not destination then continue end
 	local char = plr.Character
-	if not char then render_stepped:Wait() continue end
+	if not char then continue end
 	local h = char.Humanoid
 	local hrp = char.HumanoidRootPart
+	local signal = h.MoveToFinished
 	local succ = pcall(path_compute_async, path, hrp.Position + offset, destination.Position)
-	if not succ or path.Status == 5 then render_stepped:Wait() continue end
+	if not succ or path.Status == 5 then continue end
 	local waypoints = path:GetWaypoints()
 	local waypoints_len = #waypoints
-	if waypoints_len <= 0 then render_stepped:Wait() continue end
+	if waypoints_len <= 0 then continue end
 
 	for idx = 1, waypoints_len do
 		local box = boxes[idx] or instance_new('BoxHandleAdornment')
@@ -224,9 +226,11 @@ while pathfind_ui.Parent do
 
 	for idx = 1, waypoints_len do
 		if hrp:IsGrounded() then break end
-		local diff = waypoints[idx].Position - hrp.Position - offset
-		h:Move(diff.Unit)
-		while diff.Magnitude > 4.444 do render_stepped:Wait() end
+		local pos = waypoints[idx].Position
+		h:Move((pos - hrp.Position - offset).Unit)
+		render_stepped:Wait()
+		h:MoveTo(pos)
+		signal:Wait()
 	end
 end
 
@@ -235,9 +239,5 @@ connection_1:Disconnect()
 connection_2:Disconnect()
 plr.DevComputerMovementMode = keyboard_mouse
 plr.DevTouchMovementMode = dynamic_thumbstick
-
-for idx = 1, #boxes do
-	boxes[idx]:Destroy()
-end
-
+for idx = 1, #boxes do boxes[idx]:Destroy() end
 table_clear(boxes)
