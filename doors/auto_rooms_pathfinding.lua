@@ -1,5 +1,5 @@
 -- auto_rooms.lua
--- original by @lolcat
+-- by @Vov4ik4124
 
 local _4 = Color3.new(0, .4984, 0)
 
@@ -26,14 +26,14 @@ local function notify(text, title, id, volume)
 end
 
 if game.PlaceId ~= 6839171747 then
-	notify('The game detected appears to not be rooms. Please execute this while in rooms', 'Invalid place.', 'rbxassetid://550209561', 4)
+	notify('The game detected appears to not be rooms. Please execute this while in rooms', 'Invalid place', 'rbxassetid://550209561', 4)
 	return
 end
 
 local game_data = replicated_storage:WaitForChild('GameData', 1.44)
 
 if not game_data or game_data.Floor.Value ~= 'Rooms' then
-	notify('The game detected appears to not be rooms. Please execute this while in rooms', 'Invalid place.', 'rbxassetid://550209561', 4)
+	notify('The game detected appears to not be rooms. Please execute this while in rooms', 'Invalid place', 'rbxassetid://550209561', 4)
 	return
 end
 
@@ -83,12 +83,12 @@ local task_defer = task.defer
 local terrain = workspace.Terrain
 local virtual_user = game:GetService('VirtualUser')
 local virtual_user_button1_up = virtual_user.Button1Down
-local zero_vec2 = Vector2.zero
-local zero_vec3 = Vector3.zero
+local vec2_zero = Vector2.zero
+local vec3_zero = Vector3.zero
 pathfind_ui = instance_new('ScreenGui')
 pathfind_ui.Archivable = false
 pathfind_ui.ClipToDeviceSafeArea = false
-pathfind_ui.DisplayOrder = 2514
+pathfind_ui.DisplayOrder = 16384
 pathfind_ui.Name = 'PathfindUI'
 pathfind_ui.ResetOnSpawn = false
 pathfind_ui.ScreenInsets = Enum.ScreenInsets.None
@@ -149,9 +149,9 @@ end
 
 local connection_0 = plr.Idled:Connect(function()
 	if pathfind_ui.Parent == nil then return end
-	pcall(virtual_user_button1_up, virtual_user, zero_vec2)
+	pcall(virtual_user_button1_up, virtual_user, vec2_zero)
 	render_stepped:Wait()
-	task_defer(pcall, virtual_user_button1_up, virtual_user, zero_vec2)
+	task_defer(pcall, virtual_user_button1_up, virtual_user, vec2_zero)
 end)
 
 local connection_1 = render_stepped:Connect(function()
@@ -235,7 +235,7 @@ while true do
 		local pos = waypoints[idx].Position
 		h:Move((pos - hrp.Position - offset).Unit)
 		render_stepped:Wait()
-		h:Move(zero_vec3)
+		h:Move(vec3_zero)
 		connection_h = signal:Once(function()
 			active = false
 		end)
@@ -255,8 +255,8 @@ if connection_h ~= nil then connection_h:Disconnect() end
 connection_0:Disconnect()
 connection_1:Disconnect()
 connection_2:Disconnect()
-h:Move(zero_vec3)
-h:MoveTo(zero_vec3)
+h:Move(vec3_zero)
+h:MoveTo(vec3_zero)
 plr.DevComputerMovementMode = keyboard_mouse
 plr.DevTouchMovementMode = dynamic_thumbstick
 for idx = 1, #boxes do boxes[idx]:Destroy() end
