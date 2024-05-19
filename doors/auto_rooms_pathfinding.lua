@@ -48,14 +48,15 @@ if latest_room.Value == 1000 then
 	return
 end
 
-if ui:FindFirstChild('PathfindUI') then
-	notify('The script has been already activated', 'Rooms', 'rbxassetid://550209561', 4)
+local pathfind_ui = ui:FindFirstChild('PathfindUI')
+
+if pathfind_ui then
+	pathfind_ui:Destroy()
+	notify('The script has been deactivated', 'Rooms', '', 0)
 	return
 end
 
 -- logic
-
-notify('The script has been activated', 'Rooms', '', 0)
 
 local boxes = {}
 local cam_lock = replicated_storage:WaitForChild('RemotesFolder'):WaitForChild('CamLock')
@@ -72,7 +73,6 @@ local never = Enum.AdornCullingMode.Never
 local offset = vec3_new(0, -2.5, 0)
 local path = game:GetService('PathfindingService'):CreatePath({AgentCanJump = false, AgentRadius = 0.6, WaypointSpacing = 6})
 local path_compute_async = path.ComputeAsync
-local pathfind_ui = instance_new('ScreenGui')
 local physical_properties = PhysicalProperties.new(9e9, 9e9, 9e9, 1, 1)
 local render_stepped = game:GetService('RunService').RenderStepped
 local scriptable_0 = dev_computer_movement_mode.Scriptable
@@ -85,6 +85,7 @@ local virtual_user = game:GetService('VirtualUser')
 local virtual_user_button1_up = virtual_user.Button1Down
 local zero_vec2 = Vector2.zero
 local zero_vec3 = Vector3.zero
+pathfind_ui = instance_new('ScreenGui')
 pathfind_ui.Archivable = false
 pathfind_ui.ClipToDeviceSafeArea = false
 pathfind_ui.DisplayOrder = 2514
@@ -135,6 +136,7 @@ local function get_path()
 end
 
 local function latest_room_changed()
+	if pathfind_ui.Parent == nil then return end
 	local value = latest_room.Value
 	local is_end = value == 1000
 	plr.DevComputerMovementMode = is_end and keyboard_mouse or scriptable_0
@@ -146,24 +148,26 @@ local function latest_room_changed()
 end
 
 local connection_0 = plr.Idled:Connect(function()
-	if not pathfind_ui.Parent then return end
+	if pathfind_ui.Parent == nil then return end
 	pcall(virtual_user_button1_up, virtual_user, zero_vec2)
 	render_stepped:Wait()
 	task_defer(pcall, virtual_user_button1_up, virtual_user, zero_vec2)
 end)
 
 local connection_1 = render_stepped:Connect(function()
-	if not pathfind_ui.Parent then return end
+	if pathfind_ui.Parent == nil then return end
 	local char = plr.Character
 	if not char then return end
-	local collision = char.Collision
-	local h = char.Humanoid
-	local hrp = char.HumanoidRootPart
+	local collision = char:FindFirstChild('Collision')
+	if collision == nil then return end
+	local h = char:FindFirstChildOfClass('Humanoid')
+	if h == nil then return end
+	local hrp = h.RootPart
+	if hrp == nil then return end
 	local monster = workspace:FindFirstChild('A60') or workspace:FindFirstChild('A120')
 	local path = get_path()
 	collision.CanCollide = false
 	collision.CustomPhysicalProperties = physical_properties
-	-- h.WalkSpeed = 44
 	hrp.CanCollide = false
 
 	if monster then
@@ -192,14 +196,18 @@ local a90 = plr.PlayerGui.MainUI.Initiator.Main_Game.RemoteListener.Modules:Find
 if a90 then a90:Destroy() end
 local connection_2 = latest_room:GetPropertyChangedSignal('Value'):Connect(latest_room_changed)
 latest_room_changed()
-while pathfind_ui.Parent do
+notify('The script has been activated', 'Rooms', '', 0)
+while true do
+	if pathfind_ui.Parent == nil then break end
 	for idx = 1, #boxes do boxes[idx].Parent = nil end
 	local destination = get_path()
-	if not destination then render_stepped:Wait() continue end
+	if destination == nil then render_stepped:Wait() continue end
 	local char = plr.Character
-	if not char then render_stepped:Wait() continue end
-	local h = char.Humanoid
-	local hrp = char.HumanoidRootPart
+	if char == nil then render_stepped:Wait() continue end
+	local h = char:FindFirstChildOfClass('Humanoid')
+	if h == nil then render_stepped:Wait() continue end
+	local hrp = h.RootPart
+	if hrp == nil then continue end
 	local signal = h.MoveToFinished
 	local succ = pcall(path_compute_async, path, hrp.Position + offset, destination.Position)
 	if not succ or path.Status == 5 then render_stepped:Wait() continue end
@@ -222,7 +230,7 @@ while pathfind_ui.Parent do
 	end
 
 	for idx = 1, waypoints_len do
-		if hrp:IsGrounded() then break end
+		if hrp:IsGrounded() or pathfind_ui.Parent == nil then break end
 		local active = true
 		local pos = waypoints[idx].Position
 		h:Move((pos - hrp.Position - offset).Unit)
@@ -232,16 +240,18 @@ while pathfind_ui.Parent do
 			active = false
 		end)
 
-		while active and not hrp:IsGrounded() do
+		while active and not hrp:IsGrounded() and pathfind_ui.Parent ~= nil do
 			h:MoveTo(pos)
 			render_stepped:Wait()
 		end
 
-		if connection_h then connection_h:Disconnect() end
+		if connection_h ~= nil then
+			connection_h:Disconnect()
+		end
 	end
 end
 
-if connection_h then connection_h:Disconnect() end
+if connection_h ~= nil then connection_h:Disconnect() end
 connection_0:Disconnect()
 connection_1:Disconnect()
 connection_2:Disconnect()
