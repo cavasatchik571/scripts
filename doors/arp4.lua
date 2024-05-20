@@ -55,7 +55,6 @@ end
 -- logic
 
 local boxes = {}
-local cam_lock = replicated_storage:WaitForChild('RemotesFolder'):WaitForChild('CamLock')
 local cf_new = CFrame.new
 local clear = table.clear
 local current_rooms = workspace:WaitForChild('CurrentRooms')
@@ -73,7 +72,7 @@ local physical_properties = PhysicalProperties.new(9e9, 9e9, 9e9, 1, 1)
 local scriptable_0 = dev_computer_movement_mode.Scriptable
 local scriptable_1 = dev_touch_movement_mode.Scriptable
 local sleep = task.wait
-local stick_size = vec3_new(0.54, 1.444, 0.54)
+local stick_size = vec3_new(0.5, 1.444, 0.5)
 local terrain = workspace.Terrain
 local virtual_user = game:GetService('VirtualUser')
 local virtual_user_button1_down = virtual_user.Button1Down
@@ -83,7 +82,7 @@ local vec3_zero = Vector3.zero
 pathfind_ui = instance_new('ScreenGui')
 pathfind_ui.Archivable = false
 pathfind_ui.ClipToDeviceSafeArea = false
-pathfind_ui.DisplayOrder = 16384
+pathfind_ui.DisplayOrder = 4096
 pathfind_ui.Name = 'PathfindUI'
 pathfind_ui.ResetOnSpawn = false
 pathfind_ui.ScreenInsets = Enum.ScreenInsets.None
@@ -92,6 +91,7 @@ pathfind_ui.Parent = ui
 local text_lbl = instance_new('TextLabel')
 text_lbl.Archivable = false
 text_lbl.BackgroundTransparency = 1
+text_lbl.BorderColor3 = _4
 text_lbl.Size = UDim2.new(0, 350, 0, 100)
 text_lbl.TextColor3 = Color3.new(1, 1, 1)
 text_lbl.TextSize = 40
@@ -124,8 +124,25 @@ end
 
 local function get_path()
 	local monster = workspace:FindFirstChild('A60') or workspace:FindFirstChild('A120')
-	return monster ~= nil and monster.Main.Position.Y > -4 and get_locker() or
+	return monster ~= nil and monster.Main.Position.Y >= -4 and get_locker() or
 		((current_rooms:FindFirstChild(tostring(latest_room.Value)) or game):FindFirstChild('Door') or game):FindFirstChild('Door')
+end
+
+local function is_safe()
+	local children = workspace:GetChildren()
+
+	for idx = 1, #children do
+		local child = child[idx]
+		local name = child.Name
+		if name ~= 'A60' and name ~= 'A120' then continue end
+		local main = child:FindFirstChild('Main')
+		if main == nil or main.Position.Y <= -4 then continue end
+		clear(children)
+		return false
+	end
+
+	clear(children)
+	return true
 end
 
 local function latest_room_changed()
@@ -157,29 +174,21 @@ local connection_1 = game:GetService('RunService').Heartbeat:Connect(function()
 	if h == nil then return end
 	local hrp = h.RootPart
 	if hrp == nil then return end
-	local monster = workspace:FindFirstChild('A60') or workspace:FindFirstChild('A120')
-	local path = get_path()
 	collision.CanCollide = false
 	collision.CustomPhysicalProperties = physical_properties
 	hrp.CanCollide = false
+	local destination = get_path()
+	if destination == nil then return end
+	local monster = workspace:FindFirstChild('A60') or workspace:FindFirstChild('A120')
 	if monster then
-		local y = monster.Main.Position.Y
-		if path then
-			local parent = path.Parent
-			if parent.Name == 'Rooms_Locker' and y > -4 and (hrp.Position - path.Position).Magnitude < 5 and not hrp:IsGrounded() then
-				local hide_prompt = parent:FindFirstChild('HidePrompt')
-				if fire_proximity_prompt == nil or hide_prompt == nil then return end
-				fire_proximity_prompt(hide_prompt)
-			end
-		end
-
-		if y >= -4 or not hrp:IsGrounded() then return end
-		cam_lock:FireServer()
+		local parent = destination.Parent
+		if parent.Name ~= 'Rooms_Locker' or (destination.Position - hrp.Position).Magnitude >= 5 or hrp:IsGrounded() or is_safe() then return end
+		local hide_prompt = parent:FindFirstChild('HidePrompt')
+		if fire_proximity_prompt == nil or hide_prompt == nil then return end
+		fire_proximity_prompt(hide_prompt)
 	else
-		if hrp:IsGrounded() then return end
-		cam_lock:FireServer()
-		if hrp.Position.Y > -100 or path == nil then return end
-		char:PivotTo(path.CFrame * door_offset)
+		if hrp:IsGrounded() or hrp.Position.Y >= -54 then return end
+		char:PivotTo(destination.CFrame * door_offset)
 	end
 end)
 
@@ -222,11 +231,11 @@ while pathfind_ui.Parent ~= nil do
 	end
 
 	for idx = 1, waypoints_len do
-		if hrp:IsGrounded() or pathfind_ui.Parent == nil then break end
+		if (hrp:IsGrounded() and not is_safe()) or pathfind_ui.Parent == nil then break end
 		local active = true
 		local pos = waypoints[idx].Position
 		connection_h = signal:Connect(function() active = false end)
-		while active and not hrp:IsGrounded() and pathfind_ui.Parent ~= nil do
+		while active and pathfind_ui.Parent ~= nil and not (hrp:IsGrounded() and not is_safe()) do
 			h:Move((pos - hrp.Position - offset).Unit)
 			h:MoveTo(pos)
 			sleep()
@@ -244,6 +253,7 @@ if connection_h ~= nil then connection_h:Disconnect() end
 connection_0:Disconnect()
 connection_1:Disconnect()
 connection_2:Disconnect()
+path:Destroy()
 plr.DevComputerMovementMode = keyboard_mouse
 plr.DevTouchMovementMode = dynamic_thumbstick
 for idx = 1, #boxes do boxes[idx]:Destroy() end
