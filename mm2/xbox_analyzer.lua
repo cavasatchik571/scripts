@@ -32,7 +32,7 @@ local function hook(inst, name, func)
 		end
 
 		return unpack(args, 2, #args)
-	end)
+	end))
 
 	return old_func
 end
