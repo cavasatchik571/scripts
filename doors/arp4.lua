@@ -1,4 +1,4 @@
--- auto_rooms.lua
+-- arp4.lua
 -- by @Vov4ik4124
 
 local _4 = Color3.new(0, .4984, 0)
@@ -12,11 +12,11 @@ local starter_gui = game:GetService('StarterGui')
 local sound_service = game:GetService('SoundService')
 
 local function notify(text, title, id, volume)
-	if not text or not title then return end
+	if text == nil or title == nil then return end
 	properties.Text = text
 	properties.Title = title
 	starter_gui:SetCore('SendNotification', properties)
-	if not id or id == '' or volume <= 0 then return end
+	if id == nil or id == '' or volume <= 0 then return end
 	local err_sound = instance_new('Sound')
 	err_sound.Archivable = false
 	err_sound.SoundId = id
@@ -31,8 +31,7 @@ if game.PlaceId ~= 6839171747 then
 end
 
 local game_data = replicated_storage:WaitForChild('GameData', 1.44)
-
-if not game_data or game_data.Floor.Value ~= 'Rooms' then
+if game_data == nil or game_data.Floor.Value ~= 'Rooms' then
 	notify('The game detected appears to not be rooms. Please execute this while in rooms', 'Invalid place', 'rbxassetid://550209561', 4)
 	return
 end
@@ -49,8 +48,7 @@ if latest_room.Value == 1000 then
 end
 
 local pathfind_ui = ui:FindFirstChild('PathfindUI')
-
-if pathfind_ui then
+if pathfind_ui ~= nil then
 	pathfind_ui:Destroy()
 	notify('The script has been deactivated', 'Rooms', '', 0)
 	return
@@ -61,6 +59,7 @@ end
 local boxes = {}
 local cam_lock = replicated_storage:WaitForChild('RemotesFolder'):WaitForChild('CamLock')
 local cf_new = CFrame.new
+local clear = table.clear
 local current_rooms = workspace:WaitForChild('CurrentRooms')
 local dev_computer_movement_mode = Enum.DevComputerMovementMode
 local dev_touch_movement_mode = Enum.DevTouchMovementMode
@@ -68,21 +67,19 @@ local door_offset = cf_new(0, 0, 1.5)
 local dynamic_thumbstick = dev_touch_movement_mode.DynamicThumbstick
 local fire_proximity_prompt = fireproximityprompt or fireProximityPrompt or FireProximityPrompt or fire_proximity_prompt
 local keyboard_mouse = dev_computer_movement_mode.KeyboardMouse
-local math_clamp = math.clamp
 local never = Enum.AdornCullingMode.Never
 local offset = vec3_new(0, -2.5, 0)
 local path = game:GetService('PathfindingService'):CreatePath({AgentCanJump = false, AgentRadius = 0.6, WaypointSpacing = 6})
 local path_compute_async = path.ComputeAsync
 local physical_properties = PhysicalProperties.new(9e9, 9e9, 9e9, 1, 1)
-local render_stepped = game:GetService('RunService').RenderStepped
 local scriptable_0 = dev_computer_movement_mode.Scriptable
 local scriptable_1 = dev_touch_movement_mode.Scriptable
-local stick_size = vec3_new(0.5, 1.444, 0.5)
-local table_clear = table.clear
-local task_defer = task.defer
+local sleep = task.wait
+local stick_size = vec3_new(0.54, 1.44, 0.54)
 local terrain = workspace.Terrain
 local virtual_user = game:GetService('VirtualUser')
-local virtual_user_button1_up = virtual_user.Button1Down
+local virtual_user_button1_down = virtual_user.Button1Down
+local virtual_user_button1_up = virtual_user.Button1Up
 local vec2_zero = Vector2.zero
 local vec3_zero = Vector3.zero
 pathfind_ui = instance_new('ScreenGui')
@@ -114,11 +111,11 @@ local function get_locker()
 		local descendant = descendants[idx]
 		if descendant.Name ~= 'Rooms_Locker' then continue end
 		local door = descendant:FindFirstChild('Door')
-		if not door then continue end
+		if door == nil then continue end
 		local door_pos = door.Position
 		if door_pos.Y <= -3 then continue end
 		local hidden_player = descendant:FindFirstChild('HiddenPlayer')
-		if not hidden_player or hidden_player.Value then continue end
+		if hidden_player == nil or hidden_player.Value then continue end
 		local new_dist = (door_pos - pos).Magnitude
 		if new_dist < dist then
 			closest = door
@@ -131,7 +128,7 @@ end
 
 local function get_path()
 	local monster = workspace:FindFirstChild('A60') or workspace:FindFirstChild('A120')
-	return monster and monster.Main.Position.Y > -4 and get_locker() or
+	return monster ~= nil and monster.Main.Position.Y > -4 and get_locker() or
 		((current_rooms:FindFirstChild(tostring(latest_room.Value)) or game):FindFirstChild('Door') or game):FindFirstChild('Door')
 end
 
@@ -141,7 +138,7 @@ local function latest_room_changed()
 	local is_end = value == 1000
 	plr.DevComputerMovementMode = is_end and keyboard_mouse or scriptable_0
 	plr.DevTouchMovementMode = is_end and dynamic_thumbstick or scriptable_1
-	text_lbl.Text = 'Room: ' .. math_clamp(value, 1, 1000)
+	text_lbl.Text = 'Room: ' .. value
 	if not is_end then return end
 	notify('Thank you for using my script!', 'Rooms', 'rbxassetid://4590662766', 3)
 	pathfind_ui:Destroy()
@@ -149,15 +146,15 @@ end
 
 local connection_0 = plr.Idled:Connect(function()
 	if pathfind_ui.Parent == nil then return end
+	pcall(virtual_user_button1_down, virtual_user, vec2_zero)
+	sleep()
 	pcall(virtual_user_button1_up, virtual_user, vec2_zero)
-	render_stepped:Wait()
-	task_defer(pcall, virtual_user_button1_up, virtual_user, vec2_zero)
 end)
 
-local connection_1 = render_stepped:Connect(function()
+local connection_1 = game:GetService('RunService').Heartbeat:Connect(function()
 	if pathfind_ui.Parent == nil then return end
 	local char = plr.Character
-	if not char then return end
+	if char == nil then return end
 	local collision = char:FindFirstChild('Collision')
 	if collision == nil then return end
 	local h = char:FindFirstChildOfClass('Humanoid')
@@ -169,14 +166,13 @@ local connection_1 = render_stepped:Connect(function()
 	collision.CanCollide = false
 	collision.CustomPhysicalProperties = physical_properties
 	hrp.CanCollide = false
-
 	if monster then
 		local y = monster.Main.Position.Y
 		if path then
 			local parent = path.Parent
 			if parent.Name == 'Rooms_Locker' and y > -4 and (hrp.Position - path.Position).Magnitude < 5 and not hrp:IsGrounded() then
 				local hide_prompt = parent:FindFirstChild('HidePrompt')
-				if not fire_proximity_prompt or not hide_prompt then return end
+				if fire_proximity_prompt == nil or hide_prompt == nil then return end
 				fire_proximity_prompt(hide_prompt)
 			end
 		end
@@ -186,34 +182,34 @@ local connection_1 = render_stepped:Connect(function()
 	else
 		if hrp:IsGrounded() then return end
 		cam_lock:FireServer()
-		if hrp.Position.Y > -100 or not path then return end
+		if hrp.Position.Y > -100 or path == nil then return end
 		char:PivotTo(path.CFrame * door_offset)
 	end
 end)
 
+local modules = plr.PlayerGui.MainUI.Initiator.Main_Game.RemoteListener.Modules
 local connection_h
-local a90 = plr.PlayerGui.MainUI.Initiator.Main_Game.RemoteListener.Modules:FindFirstChild('A90')
-if a90 then a90:Destroy() end
+local a90 = modules:FindFirstChild('A90')
+if a90 ~= nil then a90.Parent = nil end
 local connection_2 = latest_room:GetPropertyChangedSignal('Value'):Connect(latest_room_changed)
 latest_room_changed()
 notify('The script has been activated', 'Rooms', '', 0)
-while true do
-	if pathfind_ui.Parent == nil then break end
+while pathfind_ui.Parent ~= nil do
 	for idx = 1, #boxes do boxes[idx].Parent = nil end
 	local destination = get_path()
-	if destination == nil then render_stepped:Wait() continue end
+	if destination == nil then sleep() continue end
 	local char = plr.Character
-	if char == nil then render_stepped:Wait() continue end
+	if char == nil then sleep() continue end
 	local h = char:FindFirstChildOfClass('Humanoid')
-	if h == nil then render_stepped:Wait() continue end
+	if h == nil then sleep() continue end
 	local hrp = h.RootPart
-	if hrp == nil then continue end
+	if hrp == nil then sleep() continue end
 	local signal = h.MoveToFinished
 	local succ = pcall(path_compute_async, path, hrp.Position + offset, destination.Position)
-	if not succ or path.Status == 5 then render_stepped:Wait() continue end
+	if not succ or path.Status == 5 then sleep() continue end
 	local waypoints = path:GetWaypoints()
 	local waypoints_len = #waypoints
-	if waypoints_len <= 0 then render_stepped:Wait() continue end
+	if waypoints_len <= 0 then sleep() continue end
 	for idx = 1, waypoints_len do
 		local box = boxes[idx] or instance_new('BoxHandleAdornment')
 		box.AdornCullingMode = never
@@ -233,31 +229,35 @@ while true do
 		if hrp:IsGrounded() or pathfind_ui.Parent == nil then break end
 		local active = true
 		local pos = waypoints[idx].Position
-		h:Move((pos - hrp.Position - offset).Unit)
-		render_stepped:Wait()
-		h:Move(vec3_zero)
-		connection_h = signal:Once(function()
-			active = false
-		end)
-
+		connection_h = signal:Connect(function() active = false end)
 		while active and not hrp:IsGrounded() and pathfind_ui.Parent ~= nil do
+			h:Move((pos - hrp.Position - offset).Unit)
 			h:MoveTo(pos)
-			render_stepped:Wait()
+			sleep()
 		end
 
-		if connection_h ~= nil then
-			connection_h:Disconnect()
-		end
+		h:Move(vec3_zero)
+		h:MoveTo(root_part.Position)
 	end
 end
 
+if a90 ~= nil then a90.Parent = modules end
 if connection_h ~= nil then connection_h:Disconnect() end
 connection_0:Disconnect()
 connection_1:Disconnect()
 connection_2:Disconnect()
-h:Move(vec3_zero)
-h:MoveTo(vec3_zero)
 plr.DevComputerMovementMode = keyboard_mouse
 plr.DevTouchMovementMode = dynamic_thumbstick
 for idx = 1, #boxes do boxes[idx]:Destroy() end
 table_clear(boxes)
+local char = plr.Character
+if char == nil then return end
+local collision = char:FindFirstChild('Collision')
+if collision == nil then return end
+local h = char:FindFirstChildOfClass('Humanoid')
+if h == nil then return end
+local hrp = h.RootPart
+if hrp == nil then return end
+collision.CanCollide = true
+collision.CustomPhysicalProperties = nil
+hrp.CanCollide = true
