@@ -72,7 +72,7 @@ local physical_properties = PhysicalProperties.new(9e9, 9e9, 9e9, 1, 1)
 local scriptable_0 = dev_computer_movement_mode.Scriptable
 local scriptable_1 = dev_touch_movement_mode.Scriptable
 local sleep = task.wait
-local stick_size = vec3_new(0.5, 1.444, 0.5)
+local stick_size = vec3_new(0.5, 1.44, 0.5)
 local terrain = workspace.Terrain
 local virtual_user = game:GetService('VirtualUser')
 local virtual_user_button1_down = virtual_user.Button1Down
@@ -102,7 +102,7 @@ text_lbl.Parent = pathfind_ui
 local function get_locker()
 	local closest
 	local descendants = current_rooms:GetDescendants()
-	local dist = 10000
+	local dist = 4096
 	local pos = plr.Character.HumanoidRootPart.Position
 	for idx = 1, #descendants do
 		local descendant = descendants[idx]
@@ -110,7 +110,7 @@ local function get_locker()
 		local door = descendant:FindFirstChild('Door')
 		if door == nil then continue end
 		local door_pos = door.Position
-		if door_pos.Y <= -3 then continue end
+		if door_pos.Y <= -4 then continue end
 		local hidden_player = descendant:FindFirstChild('HiddenPlayer')
 		if hidden_player == nil or hidden_player.Value then continue end
 		local new_dist = (door_pos - pos).Magnitude
@@ -132,7 +132,7 @@ local function is_safe()
 	local children = workspace:GetChildren()
 
 	for idx = 1, #children do
-		local child = child[idx]
+		local child = children[idx]
 		local name = child.Name
 		if name ~= 'A60' and name ~= 'A120' then continue end
 		local main = child:FindFirstChild('Main')
@@ -224,7 +224,7 @@ while pathfind_ui.Parent ~= nil do
 		box.CFrame = cf_new(waypoints[idx].Position)
 		box.Color3 = _4
 		box.Size = stick_size
-		box.Transparency = 0.644
+		box.Transparency = 0.64
 		box.ZIndex = 4
 		box.Parent = pathfind_ui
 		boxes[idx] = box
