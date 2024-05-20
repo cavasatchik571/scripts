@@ -73,7 +73,7 @@ local physical_properties = PhysicalProperties.new(9e9, 9e9, 9e9, 1, 1)
 local scriptable_0 = dev_computer_movement_mode.Scriptable
 local scriptable_1 = dev_touch_movement_mode.Scriptable
 local sleep = task.wait
-local stick_size = vec3_new(0.5, 1.44, 0.5)
+local stick_size = vec3_new(0.54, 1.44, 0.54)
 local terrain = workspace.Terrain
 local virtual_user = game:GetService('VirtualUser')
 local virtual_user_button1_down = virtual_user.Button1Down
@@ -223,7 +223,7 @@ while pathfind_ui.Parent ~= nil do
 		box.CFrame = cf_new(waypoints[idx].Position)
 		box.Color3 = _4
 		box.Size = stick_size
-		box.Transparency = 0.64
+		box.Transparency = 0.644
 		box.ZIndex = 4
 		box.Parent = pathfind_ui
 		boxes[idx] = box
@@ -236,7 +236,7 @@ while pathfind_ui.Parent ~= nil do
 		local pos = waypoint.Position
 		while h.Health > 0 and h:GetState().Value ~= 15 and pathfind_ui.Parent ~= nil and not (hrp:IsGrounded() and not is_safe()) do
 			local diff = pos - hrp.Position + offset
-			if diff.Magnitude <= 1.4 then continue end
+			if diff.Magnitude <= 1.4 then break end
 			h:Move(diff.Unit)
 			sleep()
 		end
