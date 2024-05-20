@@ -235,7 +235,7 @@ while pathfind_ui.Parent ~= nil do
 		if waypoint == nil then continue end
 		local pos = waypoint.Position
 		while h.Health > 0 and h:GetState().Value ~= 15 and pathfind_ui.Parent ~= nil and not (hrp:IsGrounded() and not is_safe()) do
-			local diff = pos - hrp.Position + offset
+			local diff = pos - hrp.Position - offset
 			if diff.Magnitude <= 1.4 then break end
 			h:Move(diff.Unit)
 			sleep()
