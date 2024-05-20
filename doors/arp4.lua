@@ -10,6 +10,7 @@ local properties = {Text = '', Title = ''}
 local replicated_storage = game:GetService('ReplicatedStorage')
 local starter_gui = game:GetService('StarterGui')
 local sound_service = game:GetService('SoundService')
+
 local function notify(text, title, id, volume)
 	if text == nil or title == nil then return end
 	properties.Text = text
@@ -193,7 +194,6 @@ local connection_1 = game:GetService('RunService').Heartbeat:Connect(function()
 end)
 
 local modules = plr.PlayerGui.MainUI.Initiator.Main_Game.RemoteListener.Modules
-local connection_h
 local a90 = modules:FindFirstChild('A90')
 if a90 ~= nil then a90.Parent = nil end
 local connection_2 = latest_room:GetPropertyChangedSignal('Value'):Connect(latest_room_changed)
@@ -209,7 +209,6 @@ while pathfind_ui.Parent ~= nil do
 	if h == nil then sleep() continue end
 	local hrp = h.RootPart
 	if hrp == nil then sleep() continue end
-	local signal = h.MoveToFinished
 	local succ = pcall(path_compute_async, path, hrp.Position + offset, destination.Position)
 	if not succ or path.Status == 5 then sleep() continue end
 	local waypoints = path:GetWaypoints()
@@ -232,24 +231,26 @@ while pathfind_ui.Parent ~= nil do
 
 	for idx = 1, waypoints_len do
 		if (hrp:IsGrounded() and not is_safe()) or pathfind_ui.Parent == nil then break end
-		local active = true
-		local pos = waypoints[idx].Position
-		connection_h = signal:Connect(function() active = false end)
-		while active and pathfind_ui.Parent ~= nil and not (hrp:IsGrounded() and not is_safe()) do
-			h:Move((pos - hrp.Position - offset).Unit)
-			h:MoveTo(pos)
+		local waypoint = waypoints[idx]
+		if waypoint == nil then continue end
+		local pos = waypoint.Position
+		while h.Health > 0 and h:GetState().Value ~= 15 and pathfind_ui.Parent ~= nil and not (hrp:IsGrounded() and not is_safe()) do
+			local diff = pos - hrp.Position + offset
+			if diff.Magnitude <= 1.4 then continue end
+			h:Move(diff.Unit)
 			sleep()
 		end
 
 		h:Move(vec3_zero)
-		h:MoveTo(hrp.Position)
 	end
 
 	clear(waypoints)
 end
 
-if a90 ~= nil then a90.Parent = modules end
-if connection_h ~= nil then connection_h:Disconnect() end
+if a90 ~= nil then
+	a90.Parent = modules
+end
+
 connection_0:Disconnect()
 connection_1:Disconnect()
 connection_2:Disconnect()
@@ -269,5 +270,4 @@ if hrp == nil then return end
 collision.CanCollide = true
 collision.CustomPhysicalProperties = nil
 h:Move(vec3_zero)
-h:MoveTo(hrp.Position)
 hrp.CanCollide = true
