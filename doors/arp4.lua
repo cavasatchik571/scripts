@@ -10,7 +10,6 @@ local properties = {Text = '', Title = ''}
 local replicated_storage = game:GetService('ReplicatedStorage')
 local starter_gui = game:GetService('StarterGui')
 local sound_service = game:GetService('SoundService')
-
 local function notify(text, title, id, volume)
 	if text == nil or title == nil then return end
 	properties.Text = text
@@ -41,7 +40,6 @@ local latest_room = game_data:WaitForChild('LatestRoom')
 local plr = game:GetService('Players').LocalPlayer
 local ui = pcall(tostring, core_gui) and core_gui or plr:WaitForChild('PlayerGui')
 local vec3_new = Vector3.new
-
 if latest_room.Value == 1000 then
 	notify('You\'ve already reached A-1000 room', 'Rooms', 'rbxassetid://550209561', 4)
 	return
@@ -75,7 +73,7 @@ local physical_properties = PhysicalProperties.new(9e9, 9e9, 9e9, 1, 1)
 local scriptable_0 = dev_computer_movement_mode.Scriptable
 local scriptable_1 = dev_touch_movement_mode.Scriptable
 local sleep = task.wait
-local stick_size = vec3_new(0.54, 1.44, 0.54)
+local stick_size = vec3_new(0.5, 1.44, 0.5)
 local terrain = workspace.Terrain
 local virtual_user = game:GetService('VirtualUser')
 local virtual_user_button1_down = virtual_user.Button1Down
@@ -219,7 +217,7 @@ while pathfind_ui.Parent ~= nil do
 		box.CFrame = cf_new(waypoints[idx].Position)
 		box.Color3 = _4
 		box.Size = stick_size
-		box.Transparency = 0.644
+		box.Transparency = 0.64
 		box.ZIndex = 4
 		box.Parent = pathfind_ui
 		boxes[idx] = box
@@ -237,7 +235,7 @@ while pathfind_ui.Parent ~= nil do
 		end
 
 		h:Move(vec3_zero)
-		h:MoveTo(root_part.Position)
+		h:MoveTo(hrp.Position)
 	end
 end
 
@@ -260,4 +258,6 @@ local hrp = h.RootPart
 if hrp == nil then return end
 collision.CanCollide = true
 collision.CustomPhysicalProperties = nil
+h:Move(vec3_zero)
+h:MoveTo(hrp.Position)
 hrp.CanCollide = true
