@@ -73,7 +73,7 @@ local physical_properties = PhysicalProperties.new(9e9, 9e9, 9e9, 1, 1)
 local scriptable_0 = dev_computer_movement_mode.Scriptable
 local scriptable_1 = dev_touch_movement_mode.Scriptable
 local sleep = task.wait
-local stick_size = vec3_new(0.5, 1.44, 0.5)
+local stick_size = vec3_new(0.54, 1.444, 0.54)
 local terrain = workspace.Terrain
 local virtual_user = game:GetService('VirtualUser')
 local virtual_user_button1_down = virtual_user.Button1Down
@@ -104,7 +104,6 @@ local function get_locker()
 	local descendants = current_rooms:GetDescendants()
 	local dist = 10000
 	local pos = plr.Character.HumanoidRootPart.Position
-
 	for idx = 1, #descendants do
 		local descendant = descendants[idx]
 		if descendant.Name ~= 'Rooms_Locker' then continue end
@@ -115,12 +114,11 @@ local function get_locker()
 		local hidden_player = descendant:FindFirstChild('HiddenPlayer')
 		if hidden_player == nil or hidden_player.Value then continue end
 		local new_dist = (door_pos - pos).Magnitude
-		if new_dist < dist then
-			closest = door
-			dist = new_dist
-		end
+		if new_dist >= dist then continue end
+		closest, dist = door, new_dist
 	end
 
+	clear(descendants)
 	return closest
 end
 
@@ -217,7 +215,7 @@ while pathfind_ui.Parent ~= nil do
 		box.CFrame = cf_new(waypoints[idx].Position)
 		box.Color3 = _4
 		box.Size = stick_size
-		box.Transparency = 0.64
+		box.Transparency = 0.644
 		box.ZIndex = 4
 		box.Parent = pathfind_ui
 		boxes[idx] = box
@@ -237,6 +235,8 @@ while pathfind_ui.Parent ~= nil do
 		h:Move(vec3_zero)
 		h:MoveTo(hrp.Position)
 	end
+
+	clear(waypoints)
 end
 
 if a90 ~= nil then a90.Parent = modules end
@@ -247,7 +247,7 @@ connection_2:Disconnect()
 plr.DevComputerMovementMode = keyboard_mouse
 plr.DevTouchMovementMode = dynamic_thumbstick
 for idx = 1, #boxes do boxes[idx]:Destroy() end
-table_clear(boxes)
+clear(boxes)
 local char = plr.Character
 if char == nil then return end
 local collision = char:FindFirstChild('Collision')
