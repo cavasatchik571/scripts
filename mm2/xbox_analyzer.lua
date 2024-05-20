@@ -101,7 +101,7 @@ old_i = hookmetamethod(game, '__index', newcclosure(function(self, key): any
 	elseif self == vr then
 		if key == 'VRDeviceAvailable' then
 			return true
-		if key == 'VREnabled' then
+		elseif key == 'VREnabled' then
 			return true
 		end
 	elseif self == workspace.CurrentCamera then
