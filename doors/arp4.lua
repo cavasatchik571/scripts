@@ -223,7 +223,7 @@ while pathfind_ui.Parent ~= nil do
 		local a = waypoints[idx].Position
 		local b = waypoints[idx + 1].Position
 		box.CFrame = cf_new((a + b) / 2, a)
-		box.Size = vec3_new(0.24, 0.24, (a - b).Magnitude)
+		box.Size = vec3_new(0.244, 0.244, (a - b).Magnitude)
 	end
 
 	for idx = 2, waypoints_len do
