@@ -72,7 +72,6 @@ local physical_properties = PhysicalProperties.new(100, 2, 1, 1, 1)
 local scriptable_0 = dev_computer_movement_mode.Scriptable
 local scriptable_1 = dev_touch_movement_mode.Scriptable
 local sleep = task.wait
-local stick_size = vec3_new(0.44, 1.64, 0.44)
 local terrain = workspace.Terrain
 local virtual_user = game:GetService('VirtualUser')
 local virtual_user_button1_down = virtual_user.Button1Down
@@ -168,86 +167,88 @@ local connection_0 = plr.Idled:Connect(function()
 	pcall(virtual_user_button1_up, virtual_user, vec2_zero)
 end)
 
-local connection_1 = game:GetService('RunService').Heartbeat:Connect(function()
-	if pathfind_ui.Parent == nil then return end
+local modules = plr.PlayerGui.MainUI.Initiator.Main_Game.RemoteListener.Modules
+local a90 = modules:FindFirstChild('A90')
+if a90 ~= nil then a90.Parent = nil end
+local connection_1 = latest_room:GetPropertyChangedSignal('Value'):Connect(latest_room_changed)
+latest_room_changed()
+notify('The script has been activated', 'Rooms', '', 0)
+while pathfind_ui.Parent ~= nil do
+	for idx = 1, #boxes do boxes[idx].Parent = nil end
 	local char = plr.Character
-	if char == nil then return end
+	if char == nil then sleep() continue end
 	local collision = char:FindFirstChild('Collision')
-	if collision == nil then return end
+	if collision == nil then sleep() continue end
 	local collision_crouch = collision:FindFirstChild('CollisionCrouch')
-	if collision_crouch == nil then return end
+	if collision_crouch == nil then sleep() continue end
 	local h = char:FindFirstChildOfClass('Humanoid')
-	if h == nil then return end
+	if h == nil then sleep() continue end
 	local hrp = h.RootPart
-	if hrp == nil then return end
+	if hrp == nil then sleep() continue end
 	collision.CanCollide = false
 	collision.CustomPhysicalProperties = physical_properties
 	collision_crouch.CanCollide = false
 	collision_crouch.CustomPhysicalProperties = physical_properties
 	hrp.CanCollide = false
 	local destination = get_path()
-	if typeof(destination) ~= 'Instance' or not destination:IsA('BasePart') then return end
-	if hrp.Position.Y < -54 and not hrp:IsGrounded() then char:PivotTo(destination.CFrame * door_offset) end
-	if is_safe() then return end
-	local parent = destination.Parent
-	if parent == nil or parent.Name ~= 'Rooms_Locker' or (destination.Position - hrp.Position).Magnitude >= 5 or hrp:IsGrounded() then return end
-	local hide_prompt = parent:FindFirstChild('HidePrompt')
-	if fire_proximity_prompt == nil or hide_prompt == nil then return end
-	fire_proximity_prompt(hide_prompt)
-end)
+	if typeof(destination) ~= 'Instance' or not destination:IsA('BasePart') then sleep() continue end
+	local grounded = hrp:IsGrounded()
+	if hrp.Position.Y < -54 and not grounded then char:PivotTo(destination.CFrame * door_offset) end
+	if grounded and is_safe() == false then
+		h:Move(vec3_zero)
+		sleep()
+		continue
+	end
 
-local modules = plr.PlayerGui.MainUI.Initiator.Main_Game.RemoteListener.Modules
-local a90 = modules:FindFirstChild('A90')
-if a90 ~= nil then a90.Parent = nil end
-local connection_2 = latest_room:GetPropertyChangedSignal('Value'):Connect(latest_room_changed)
-latest_room_changed()
-notify('The script has been activated', 'Rooms', '', 0)
-while pathfind_ui.Parent ~= nil do
-	for idx = 1, #boxes do boxes[idx].Parent = nil end
-	local destination = get_path()
-	if destination == nil then sleep() continue end
-	local char = plr.Character
-	if char == nil then sleep() continue end
-	local h = char:FindFirstChildOfClass('Humanoid')
-	if h == nil then sleep() continue end
-	local hrp = h.RootPart
-	if hrp == nil or (hrp:IsGrounded() and is_safe() == false) then sleep() continue end
 	local succ = pcall(path_compute_async, path, hrp.Position + offset, destination.Position)
-	if succ == false or path.Status == 5 then sleep() continue end
+	if succ == false or path.Status.Value == 5 then sleep() continue end
 	local waypoints = path:GetWaypoints()
 	local waypoints_len = #waypoints
 	if waypoints_len <= 0 then sleep() continue end
-	local prev_num = latest_room.Value
-	for idx = 1, waypoints_len do
-		local box = boxes[idx] or instance_new('BoxHandleAdornment')
-		box.AdornCullingMode = never
-		box.Adornee = terrain
-		box.AlwaysOnTop = true
-		box.Archivable = false
-		box.CFrame = cf_new(waypoints[idx].Position)
-		box.Color3 = _4
-		box.Size = stick_size
-		box.Transparency = 0.644
-		box.ZIndex = 4
-		box.Parent = pathfind_ui
-		boxes[idx] = box
+	for idx = 1, waypoints_len - 1 do
+		local box = boxes[idx]
+		if box == nil then
+			box = instance_new('BoxHandleAdornment')
+			box.AdornCullingMode = never
+			box.Adornee = terrain
+			box.AlwaysOnTop = true
+			box.Archivable = false
+			box.Color3 = _4
+			box.Transparency = 0.644
+			box.ZIndex = 4
+			box.Parent = pathfind_ui
+			boxes[idx] = box
+		end
+
+		local a = waypoints[idx].Position
+		local b = waypoints[idx + 1].Position
+		box.CFrame = cf_new((a + b) / 2, a)
+		box.Size = vec3_new(0.24, 0.24, (a - b).Magnitude)
 	end
 
-	for idx = 1, waypoints_len do
-		if (hrp:IsGrounded() and is_safe() == false) or latest_room.Value ~= prev_num or pathfind_ui.Parent == nil then break end
-		local waypoint = waypoints[idx]
-		if waypoint == nil then continue end
-		local pos = waypoint.Position
+	for idx = 2, waypoints_len do
+		if (hrp:IsGrounded() and is_safe() == false) or pathfind_ui.Parent == nil then break end
+		local pos = waypoints[idx].Position
 		while h.Health > 0 and h:GetState().Value ~= 15 and
-			latest_room.Value == prev_num and pathfind_ui.Parent ~= nil and
-			not (hrp:IsGrounded() and is_safe() == false) do
-			local diff = pos - hrp.Position - offset
+			pathfind_ui.Parent ~= nil and not (hrp:IsGrounded() and is_safe() == false) do
+			local your_pos = hrp.Position
+			local diff = pos - your_pos - offset
 			if diff.Magnitude <= 1.4 then break end
+			if not hrp:IsGrounded() then
+				local parent = destination.Parent
+				if parent ~= nil and parent.Name == 'Rooms_Locker' and (destination.Position - hrp.Position).Magnitude < 5 then
+					local hide_prompt = parent:FindFirstChild('HidePrompt')
+					if hide_prompt ~= nil then
+						fire_proximity_prompt(hide_prompt)
+					end
+				end
+			end
+
 			h:Move(diff.Unit)
 			sleep()
 		end
 
-		h:Move(vec3_zero)
+		break
 	end
 
 	clear(waypoints)
@@ -256,7 +257,6 @@ end
 if a90 ~= nil then a90.Parent = modules end
 connection_0:Disconnect()
 connection_1:Disconnect()
-connection_2:Disconnect()
 path:Destroy()
 plr.DevComputerMovementMode = keyboard_mouse
 plr.DevTouchMovementMode = dynamic_thumbstick
