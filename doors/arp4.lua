@@ -72,7 +72,7 @@ local physical_properties = PhysicalProperties.new(100, 2, 1, 1, 1)
 local scriptable_0 = dev_computer_movement_mode.Scriptable
 local scriptable_1 = dev_touch_movement_mode.Scriptable
 local sleep = task.wait
-local stick_size = vec3_new(0.4, 1.6, 0.4)
+local stick_size = vec3_new(0.44, 1.64, 0.44)
 local terrain = workspace.Terrain
 local virtual_user = game:GetService('VirtualUser')
 local virtual_user_button1_down = virtual_user.Button1Down
@@ -174,12 +174,16 @@ local connection_1 = game:GetService('RunService').Heartbeat:Connect(function()
 	if char == nil then return end
 	local collision = char:FindFirstChild('Collision')
 	if collision == nil then return end
+	local collision_crouch = collision:FindFirstChild('CollisionCrouch')
+	if collision_crouch == nil then return end
 	local h = char:FindFirstChildOfClass('Humanoid')
 	if h == nil then return end
 	local hrp = h.RootPart
 	if hrp == nil then return end
 	collision.CanCollide = false
 	collision.CustomPhysicalProperties = physical_properties
+	collision_crouch.CanCollide = false
+	collision_crouch.CustomPhysicalProperties = physical_properties
 	hrp.CanCollide = false
 	local destination = get_path()
 	if typeof(destination) ~= 'Instance' or not destination:IsA('BasePart') then return end
@@ -213,6 +217,7 @@ while pathfind_ui.Parent ~= nil do
 	local waypoints = path:GetWaypoints()
 	local waypoints_len = #waypoints
 	if waypoints_len <= 0 then sleep() continue end
+	local prev_num = latest_room.Value
 	for idx = 1, waypoints_len do
 		local box = boxes[idx] or instance_new('BoxHandleAdornment')
 		box.AdornCullingMode = never
@@ -222,18 +227,20 @@ while pathfind_ui.Parent ~= nil do
 		box.CFrame = cf_new(waypoints[idx].Position)
 		box.Color3 = _4
 		box.Size = stick_size
-		box.Transparency = 0.64
+		box.Transparency = 0.644
 		box.ZIndex = 4
 		box.Parent = pathfind_ui
 		boxes[idx] = box
 	end
 
 	for idx = 1, waypoints_len do
-		if (hrp:IsGrounded() and is_safe() == false) or pathfind_ui.Parent == nil then break end
+		if (hrp:IsGrounded() and is_safe() == false) or latest_room.Value ~= prev_num or pathfind_ui.Parent == nil then break end
 		local waypoint = waypoints[idx]
 		if waypoint == nil then continue end
 		local pos = waypoint.Position
-		while h.Health > 0 and h:GetState().Value ~= 15 and pathfind_ui.Parent ~= nil and not (hrp:IsGrounded() and is_safe() == false) do
+		while h.Health > 0 and h:GetState().Value ~= 15 and
+			latest_room.Value == prev_num and pathfind_ui.Parent ~= nil and
+			not (hrp:IsGrounded() and is_safe() == false) do
 			local diff = pos - hrp.Position - offset
 			if diff.Magnitude <= 1.4 then break end
 			h:Move(diff.Unit)
@@ -244,10 +251,6 @@ while pathfind_ui.Parent ~= nil do
 	end
 
 	clear(waypoints)
-	if hrp:IsGrounded() and is_safe() == false then continue end
-	local door = get_door(1) or game
-	if typeof(door) ~= 'Instance' or not door:IsA('BasePart') then continue end
-	h:Move(door and (door.Position - hrp.Position - offset) or vec3_zero)
 end
 
 if a90 ~= nil then a90.Parent = modules end
@@ -260,14 +263,21 @@ plr.DevTouchMovementMode = dynamic_thumbstick
 for idx = 1, #boxes do boxes[idx]:Destroy() end
 clear(boxes)
 local char = plr.Character
-if char == nil then return end
-local collision = char:FindFirstChild('Collision')
-if collision == nil then return end
-local h = char:FindFirstChildOfClass('Humanoid')
-if h == nil then return end
-local hrp = h.RootPart
-if hrp == nil then return end
-collision.CanCollide = true
-collision.CustomPhysicalProperties = nil
-h:Move(vec3_zero)
-hrp.CanCollide = true
+if char ~= nil then
+	local collision = char:FindFirstChild('Collision')
+	if collision ~= nil then
+		local collision_crouch = collision:FindFirstChild('CollisionCrouch')
+		collision.CanCollide = true
+		collision.CustomPhysicalProperties = nil
+
+		if collision_crouch ~= nil then
+			collision_crouch.CanCollide = true
+			collision_crouch.CustomPhysicalProperties = nil
+		end
+	end
+
+	local h = char:FindFirstChildOfClass('Humanoid')
+	if h ~= nil then h:Move(vec3_zero) end
+	local hrp = h.RootPart
+	if hrp ~= nil then hrp.CanCollide = true end
+end
