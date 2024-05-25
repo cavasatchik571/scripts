@@ -69,7 +69,7 @@ local never = Enum.AdornCullingMode.Never
 local offset = vec3_new(0, -2.5, 0)
 local path = game:GetService('PathfindingService'):CreatePath({AgentCanJump = false, AgentRadius = 0.6, WaypointSpacing = 6})
 local path_compute_async = path.ComputeAsync
-local physical_properties = PhysicalProperties.new(9e9, 9e9, 9e9, 1, 1)
+local physical_properties = PhysicalProperties.new(100, 100, 100, 1, 1)
 local scriptable_0 = dev_computer_movement_mode.Scriptable
 local scriptable_1 = dev_touch_movement_mode.Scriptable
 local sleep = task.wait
@@ -100,8 +100,18 @@ text_lbl.TextStrokeColor3 = _4
 text_lbl.TextStrokeTransparency = 0
 text_lbl.Parent = pathfind_ui
 
+local function get_door(shift)
+	local room = current_rooms:FindFirstChild(tostring(latest_room.Value + shift))
+	if room == nil then return nil end
+	local dm = room:FindFirstChild('Door')
+	if dm == nil then return nil end
+	local door = dm:FindFirstChild('Door')
+	if door == nil then return nil end
+	return door
+end
+
 local function get_locker()
-	local closest
+	local closest = nil
 	local descendants = current_rooms:GetDescendants()
 	local dist = 4096
 	local pos = plr.Character.HumanoidRootPart.Position
@@ -121,12 +131,6 @@ local function get_locker()
 
 	clear(descendants)
 	return closest
-end
-
-local function get_path()
-	local monster = workspace:FindFirstChild('A60') or workspace:FindFirstChild('A120')
-	return monster ~= nil and monster.Main.Position.Y >= -4 and get_locker() or
-		((current_rooms:FindFirstChild(tostring(latest_room.Value)) or game):FindFirstChild('Door') or game):FindFirstChild('Door')
 end
 
 local function is_safe()
@@ -158,6 +162,7 @@ local function latest_room_changed()
 	pathfind_ui:Destroy()
 end
 
+local get_path = function() return is_safe() and get_door(0) or get_locker() end
 local connection_0 = plr.Idled:Connect(function()
 	if pathfind_ui.Parent == nil then return end
 	pcall(virtual_user_button1_down, virtual_user, vec2_zero)
@@ -178,19 +183,14 @@ local connection_1 = game:GetService('RunService').Heartbeat:Connect(function()
 	collision.CanCollide = false
 	collision.CustomPhysicalProperties = physical_properties
 	hrp.CanCollide = false
+	if hrp.Position.Y < -54 and not hrp:IsGrounded() then char:PivotTo(destination.CFrame * door_offset) end
 	local destination = get_path()
-	if destination == nil then return end
-	local monster = workspace:FindFirstChild('A60') or workspace:FindFirstChild('A120')
-	if monster then
-		local parent = destination.Parent
-		if parent.Name ~= 'Rooms_Locker' or (destination.Position - hrp.Position).Magnitude >= 5 or hrp:IsGrounded() or is_safe() then return end
-		local hide_prompt = parent:FindFirstChild('HidePrompt')
-		if fire_proximity_prompt == nil or hide_prompt == nil then return end
-		fire_proximity_prompt(hide_prompt)
-	else
-		if hrp:IsGrounded() or hrp.Position.Y >= -54 then return end
-		char:PivotTo(destination.CFrame * door_offset)
-	end
+	if destination == nil or is_safe() then return end
+	local parent = destination.Parent
+	if parent == nil or parent.Name ~= 'Rooms_Locker' or (destination.Position - hrp.Position).Magnitude >= 5 or hrp:IsGrounded() or is_safe() then return end
+	local hide_prompt = parent:FindFirstChild('HidePrompt')
+	if fire_proximity_prompt == nil or hide_prompt == nil then return end
+	fire_proximity_prompt(hide_prompt)
 end)
 
 local modules = plr.PlayerGui.MainUI.Initiator.Main_Game.RemoteListener.Modules
@@ -245,12 +245,12 @@ while pathfind_ui.Parent ~= nil do
 	end
 
 	clear(waypoints)
+	if (hrp:IsGrounded() and not is_safe()) or pathfind_ui.Parent == nil then continue end
+	local door = get_door(1)
+	h:Move(door and (door.Position - hrp.Position - offset) or vec3_zero)
 end
 
-if a90 ~= nil then
-	a90.Parent = modules
-end
-
+if a90 ~= nil then a90.Parent = modules end
 connection_0:Disconnect()
 connection_1:Disconnect()
 connection_2:Disconnect()
