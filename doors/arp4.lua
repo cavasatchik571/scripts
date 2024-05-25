@@ -72,7 +72,7 @@ local physical_properties = PhysicalProperties.new(100, 100, 100, 1, 1)
 local scriptable_0 = dev_computer_movement_mode.Scriptable
 local scriptable_1 = dev_touch_movement_mode.Scriptable
 local sleep = task.wait
-local stick_size = vec3_new(0.54, 1.44, 0.54)
+local stick_size = vec3_new(0.54, 1.444, 0.54)
 local terrain = workspace.Terrain
 local virtual_user = game:GetService('VirtualUser')
 local virtual_user_button1_down = virtual_user.Button1Down
@@ -155,7 +155,7 @@ local function latest_room_changed()
 	plr.DevComputerMovementMode = is_end and keyboard_mouse or scriptable_0
 	plr.DevTouchMovementMode = is_end and dynamic_thumbstick or scriptable_1
 	text_lbl.Text = 'Room: ' .. value
-	if not is_end then return end
+	if is_end == false then return end
 	notify('Thank you for using my script!', 'Rooms', 'rbxassetid://4590662766', 3)
 	pathfind_ui:Destroy()
 end
@@ -207,9 +207,9 @@ while pathfind_ui.Parent ~= nil do
 	local h = char:FindFirstChildOfClass('Humanoid')
 	if h == nil then sleep() continue end
 	local hrp = h.RootPart
-	if hrp == nil then sleep() continue end
+	if hrp == nil or (hrp:IsGrounded() and is_safe() == false) then sleep() continue end
 	local succ = pcall(path_compute_async, path, hrp.Position + offset, destination.Position)
-	if not succ or path.Status == 5 then sleep() continue end
+	if succ == false or path.Status == 5 then sleep() continue end
 	local waypoints = path:GetWaypoints()
 	local waypoints_len = #waypoints
 	if waypoints_len <= 0 then sleep() continue end
@@ -229,13 +229,13 @@ while pathfind_ui.Parent ~= nil do
 	end
 
 	for idx = 1, waypoints_len do
-		if (hrp:IsGrounded() and not is_safe()) or pathfind_ui.Parent == nil then break end
+		if (hrp:IsGrounded() and is_safe() == false) or pathfind_ui.Parent == nil then break end
 		local waypoint = waypoints[idx]
 		if waypoint == nil then continue end
 		local pos = waypoint.Position
-		while h.Health > 0 and h:GetState().Value ~= 15 and pathfind_ui.Parent ~= nil and not (hrp:IsGrounded() and not is_safe()) do
+		while h.Health > 0 and h:GetState().Value ~= 15 and pathfind_ui.Parent ~= nil and not (hrp:IsGrounded() and is_safe() == false) do
 			local diff = pos - hrp.Position - offset
-			if diff.Magnitude <= 1.4 then break end
+			if diff.Magnitude <= 1.24 then break end
 			h:Move(diff.Unit)
 			sleep()
 		end
@@ -244,7 +244,7 @@ while pathfind_ui.Parent ~= nil do
 	end
 
 	clear(waypoints)
-	if (hrp:IsGrounded() and not is_safe()) or pathfind_ui.Parent == nil then continue end
+	if hrp:IsGrounded() and is_safe() == false then continue end
 	local door = get_door(1) or game
 	if typeof(door) ~= 'Instance' or not door:IsA('BasePart') then continue end
 	h:Move(door and (door.Position - hrp.Position - offset) or vec3_zero)
