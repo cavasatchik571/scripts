@@ -10,7 +10,6 @@ local properties = {Text = '', Title = ''}
 local replicated_storage = game:GetService('ReplicatedStorage')
 local starter_gui = game:GetService('StarterGui')
 local sound_service = game:GetService('SoundService')
-
 local function notify(text, title, id, volume)
 	if text == nil or title == nil then return end
 	properties.Text = text
@@ -59,11 +58,11 @@ local boxes = {}
 local cf_new = CFrame.new
 local clear = table.clear
 local current_rooms = workspace:WaitForChild('CurrentRooms')
+local defer = task.defer
 local dev_computer_movement_mode = Enum.DevComputerMovementMode
 local dev_touch_movement_mode = Enum.DevTouchMovementMode
 local door_offset = cf_new(0, 0, 1.5)
 local dynamic_thumbstick = dev_touch_movement_mode.DynamicThumbstick
-local fire_proximity_prompt = fireproximityprompt or fireProximityPrompt or FireProximityPrompt or fire_proximity_prompt
 local keyboard_mouse = dev_computer_movement_mode.KeyboardMouse
 local never = Enum.AdornCullingMode.Never
 local offset = vec3_new(0, -2.5, 0)
@@ -80,6 +79,11 @@ local virtual_user_button1_down = virtual_user.Button1Down
 local virtual_user_button1_up = virtual_user.Button1Up
 local vec2_zero = Vector2.zero
 local vec3_zero = Vector3.zero
+local fire_proximity_prompt = fireproximityprompt or fireProximityPrompt or FireProximityPrompt or fire_proximity_prompt or function(prompt)
+	prompt:InputHoldBegin()
+	defer(prompt.InputHoldEnd, prompt)
+end
+
 pathfind_ui = instance_new('ScreenGui')
 pathfind_ui.Archivable = false
 pathfind_ui.ClipToDeviceSafeArea = false
@@ -101,13 +105,7 @@ text_lbl.TextStrokeTransparency = 0
 text_lbl.Parent = pathfind_ui
 
 local function get_door(shift)
-	local room = current_rooms:FindFirstChild(tostring(latest_room.Value + shift))
-	if room == nil then return nil end
-	local dm = room:FindFirstChild('Door')
-	if dm == nil then return nil end
-	local door = dm:FindFirstChild('Door')
-	if door == nil then return nil end
-	return door
+	return ((current_rooms:FindFirstChild(latest_room.Value + (shift or 0)) or game):FindFirstChild('Door') or game):FindFirstChild('Door')
 end
 
 local function get_locker()
@@ -183,11 +181,12 @@ local connection_1 = game:GetService('RunService').Heartbeat:Connect(function()
 	collision.CanCollide = false
 	collision.CustomPhysicalProperties = physical_properties
 	hrp.CanCollide = false
-	if hrp.Position.Y < -54 and not hrp:IsGrounded() then char:PivotTo(destination.CFrame * door_offset) end
 	local destination = get_path()
-	if destination == nil or is_safe() then return end
+	if typeof(destination) ~= 'Instance' or not destination:IsA('BasePart') then return end
+	if hrp.Position.Y < -54 and not hrp:IsGrounded() then char:PivotTo(destination.CFrame * door_offset) end
+	if is_safe() then return end
 	local parent = destination.Parent
-	if parent == nil or parent.Name ~= 'Rooms_Locker' or (destination.Position - hrp.Position).Magnitude >= 5 or hrp:IsGrounded() or is_safe() then return end
+	if parent == nil or parent.Name ~= 'Rooms_Locker' or (destination.Position - hrp.Position).Magnitude >= 5 or hrp:IsGrounded() then return end
 	local hide_prompt = parent:FindFirstChild('HidePrompt')
 	if fire_proximity_prompt == nil or hide_prompt == nil then return end
 	fire_proximity_prompt(hide_prompt)
@@ -246,7 +245,8 @@ while pathfind_ui.Parent ~= nil do
 
 	clear(waypoints)
 	if (hrp:IsGrounded() and not is_safe()) or pathfind_ui.Parent == nil then continue end
-	local door = get_door(1)
+	local door = get_door(1) or game
+	if typeof(door) ~= 'Instance' or not door:IsA('BasePart') then continue end
 	h:Move(door and (door.Position - hrp.Position - offset) or vec3_zero)
 end
 
