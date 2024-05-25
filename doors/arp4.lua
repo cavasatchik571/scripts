@@ -68,11 +68,11 @@ local never = Enum.AdornCullingMode.Never
 local offset = vec3_new(0, -2.5, 0)
 local path = game:GetService('PathfindingService'):CreatePath({AgentCanJump = false, AgentRadius = 0.6, WaypointSpacing = 6})
 local path_compute_async = path.ComputeAsync
-local physical_properties = PhysicalProperties.new(100, 100, 100, 1, 1)
+local physical_properties = PhysicalProperties.new(100, 2, 1, 1, 1)
 local scriptable_0 = dev_computer_movement_mode.Scriptable
 local scriptable_1 = dev_touch_movement_mode.Scriptable
 local sleep = task.wait
-local stick_size = vec3_new(0.54, 1.444, 0.54)
+local stick_size = vec3_new(0.4, 1.6, 0.4)
 local terrain = workspace.Terrain
 local virtual_user = game:GetService('VirtualUser')
 local virtual_user_button1_down = virtual_user.Button1Down
@@ -222,7 +222,7 @@ while pathfind_ui.Parent ~= nil do
 		box.CFrame = cf_new(waypoints[idx].Position)
 		box.Color3 = _4
 		box.Size = stick_size
-		box.Transparency = 0.644
+		box.Transparency = 0.64
 		box.ZIndex = 4
 		box.Parent = pathfind_ui
 		boxes[idx] = box
@@ -235,7 +235,7 @@ while pathfind_ui.Parent ~= nil do
 		local pos = waypoint.Position
 		while h.Health > 0 and h:GetState().Value ~= 15 and pathfind_ui.Parent ~= nil and not (hrp:IsGrounded() and is_safe() == false) do
 			local diff = pos - hrp.Position - offset
-			if diff.Magnitude <= 1.24 then break end
+			if diff.Magnitude <= 1.4 then break end
 			h:Move(diff.Unit)
 			sleep()
 		end
