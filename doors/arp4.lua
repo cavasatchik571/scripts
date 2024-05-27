@@ -64,6 +64,7 @@ local dev_touch_movement_mode = Enum.DevTouchMovementMode
 local door_offset = cf_new(0, 0, 1.5)
 local dynamic_thumbstick = dev_touch_movement_mode.DynamicThumbstick
 local keyboard_mouse = dev_computer_movement_mode.KeyboardMouse
+local max = math.max
 local never = Enum.AdornCullingMode.Never
 local offset = vec3_new(0, -2.5, 0)
 local path = game:GetService('PathfindingService'):CreatePath({AgentCanJump = false, AgentRadius = 0.6, WaypointSpacing = 6})
@@ -209,7 +210,7 @@ while pathfind_ui.Parent ~= nil do
 	local waypoints = path:GetWaypoints()
 	local waypoints_len = #waypoints
 	if waypoints_len <= 0 then sleep() continue end
-	for idx = 1, #boxes do
+	for idx = 1, max(#boxes, waypoints_len) do
 		local box = boxes[idx]
 		if idx > waypoints_len then
 			box.Parent = nil
@@ -277,13 +278,12 @@ if char ~= nil then
 	local collision = char:FindFirstChild('Collision')
 	if collision ~= nil then
 		local collision_crouch = collision:FindFirstChild('CollisionCrouch')
-		collision.CanCollide = true
-		collision.CustomPhysicalProperties = nil
-
 		if collision_crouch ~= nil then
 			collision_crouch.CanCollide = true
 			collision_crouch.CustomPhysicalProperties = nil
 		end
+		collision.CanCollide = true
+		collision.CustomPhysicalProperties = nil
 	end
 
 	local h = char:FindFirstChildOfClass('Humanoid')
