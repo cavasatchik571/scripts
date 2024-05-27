@@ -190,10 +190,8 @@ while pathfind_ui.Parent ~= nil do
 	if h == nil then fail_fallback() continue end
 	local hrp = h.RootPart
 	if hrp == nil then fail_fallback() continue end
-	collision.CanCollide = false
-	collision.CustomPhysicalProperties = physical_properties
-	collision_crouch.CanCollide = false
-	collision_crouch.CustomPhysicalProperties = physical_properties
+	collision.CanCollide, collision.CustomPhysicalProperties = false, physical_properties
+	collision_crouch.CanCollide, collision_crouch.CustomPhysicalProperties = false, physical_properties
 	hrp.CanCollide = false
 	local destination = get_path()
 	if typeof(destination) ~= 'Instance' or not destination:IsA('BasePart') then fail_fallback() continue end
@@ -212,7 +210,7 @@ while pathfind_ui.Parent ~= nil do
 	if waypoints_len <= 0 then sleep() continue end
 	for idx = 1, max(#boxes, waypoints_len) do
 		local box = boxes[idx]
-		if idx > waypoints_len then
+		if idx > waypoints_len and box ~= nil then
 			box.Parent = nil
 		else
 			if box == nil then
@@ -223,16 +221,22 @@ while pathfind_ui.Parent ~= nil do
 				box.Archivable = false
 				box.Color3 = _4
 				box.Name = 'bha4'
-				box.Transparency = 0.644
+				box.Transparency = 0.64
 				box.ZIndex = 4
 				box:SetAttribute('4', _4)
 				boxes[idx] = box
 			end
 
+			local np = waypoints[idx + 1]
+			if np == nil then
+				box.Parent = nil
+				continue
+			end
+
 			local a = waypoints[idx].Position
-			local b = waypoints[idx + 1].Position
+			local b = np.Position
 			box.CFrame = cf_new((a + b) / 2, a)
-			box.Size = vec3_new(0.2444, 0.2444, (a - b).Magnitude)
+			box.Size = vec3_new(0.24, 0.24, (a - b).Magnitude)
 			box.Parent = pathfind_ui
 		end
 	end
@@ -269,8 +273,7 @@ if a90 ~= nil then a90.Parent = modules end
 connection_0:Disconnect()
 connection_1:Disconnect()
 path:Destroy()
-plr.DevComputerMovementMode = keyboard_mouse
-plr.DevTouchMovementMode = dynamic_thumbstick
+plr.DevComputerMovementMode, plr.DevTouchMovementMode = keyboard_mouse, dynamic_thumbstick
 for idx = 1, #boxes do boxes[idx]:Destroy() end
 clear(boxes)
 local char = plr.Character
@@ -278,10 +281,7 @@ if char ~= nil then
 	local collision = char:FindFirstChild('Collision')
 	if collision ~= nil then
 		local collision_crouch = collision:FindFirstChild('CollisionCrouch')
-		if collision_crouch ~= nil then
-			collision_crouch.CanCollide = true
-			collision_crouch.CustomPhysicalProperties = nil
-		end
+		if collision_crouch ~= nil then collision_crouch.CanCollide, collision_crouch.CustomPhysicalProperties = true, nil end
 		collision.CanCollide = true
 		collision.CustomPhysicalProperties = nil
 	end
