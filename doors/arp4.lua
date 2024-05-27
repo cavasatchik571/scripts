@@ -103,6 +103,11 @@ text_lbl.TextStrokeColor3 = _4
 text_lbl.TextStrokeTransparency = 0
 text_lbl.Parent = pathfind_ui
 
+local function fail_fallback()
+	for idx = 1, #boxes do boxes[idx].Parent = nil end
+	sleep()
+end
+
 local function get_door(shift)
 	return ((current_rooms:FindFirstChild(latest_room.Value + (shift or 0)) or game):FindFirstChild('Door') or game):FindFirstChild('Door')
 end
@@ -174,34 +179,33 @@ local connection_1 = latest_room:GetPropertyChangedSignal('Value'):Connect(lates
 latest_room_changed()
 notify('The script has been activated', 'Rooms', '', 0)
 while pathfind_ui.Parent ~= nil do
-	for idx = 1, #boxes do boxes[idx].Parent = nil end
 	local char = plr.Character
-	if char == nil then sleep() continue end
+	if char == nil then fail_fallback() continue end
 	local collision = char:FindFirstChild('Collision')
-	if collision == nil then sleep() continue end
+	if collision == nil then fail_fallback() continue end
 	local collision_crouch = collision:FindFirstChild('CollisionCrouch')
-	if collision_crouch == nil then sleep() continue end
+	if collision_crouch == nil then fail_fallback() continue end
 	local h = char:FindFirstChildOfClass('Humanoid')
-	if h == nil then sleep() continue end
+	if h == nil then fail_fallback() continue end
 	local hrp = h.RootPart
-	if hrp == nil then sleep() continue end
+	if hrp == nil then fail_fallback() continue end
 	collision.CanCollide = false
 	collision.CustomPhysicalProperties = physical_properties
 	collision_crouch.CanCollide = false
 	collision_crouch.CustomPhysicalProperties = physical_properties
 	hrp.CanCollide = false
 	local destination = get_path()
-	if typeof(destination) ~= 'Instance' or not destination:IsA('BasePart') then sleep() continue end
+	if typeof(destination) ~= 'Instance' or not destination:IsA('BasePart') then fail_fallback() continue end
 	local grounded = hrp:IsGrounded()
 	if hrp.Position.Y < -54 and not grounded then char:PivotTo(destination.CFrame * door_offset) end
 	if grounded and is_safe() == false then
 		h:Move(vec3_zero)
-		sleep()
+		fail_fallback()
 		continue
 	end
 
 	local succ = pcall(path_compute_async, path, hrp.Position + offset, destination.Position)
-	if succ == false or path.Status.Value == 5 then sleep() continue end
+	if succ == false or path.Status.Value == 5 then fail_fallback() continue end
 	local waypoints = path:GetWaypoints()
 	local waypoints_len = #waypoints
 	if waypoints_len <= 0 then sleep() continue end
@@ -233,7 +237,7 @@ while pathfind_ui.Parent ~= nil do
 			pathfind_ui.Parent ~= nil and not (hrp:IsGrounded() and is_safe() == false) do
 			local your_pos = hrp.Position
 			local diff = pos - your_pos - offset
-			if diff.Magnitude <= 1.24 then break end
+			if diff.Magnitude <= 1.144 then break end
 			if not hrp:IsGrounded() then
 				local parent = destination.Parent
 				if parent ~= nil and parent.Name == 'Rooms_Locker' and (destination.Position - hrp.Position).Magnitude < 5 then
@@ -269,11 +273,7 @@ if char ~= nil then
 		local collision_crouch = collision:FindFirstChild('CollisionCrouch')
 		collision.CanCollide = true
 		collision.CustomPhysicalProperties = nil
-
-		if collision_crouch ~= nil then
-			collision_crouch.CanCollide = true
-			collision_crouch.CustomPhysicalProperties = nil
-		end
+		if collision_crouch ~= nil then collision_crouch.CanCollide, collision_crouch.CustomPhysicalProperties = true, nil end
 	end
 
 	local h = char:FindFirstChildOfClass('Humanoid')
