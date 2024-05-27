@@ -183,16 +183,13 @@ while pathfind_ui.Parent ~= nil do
 	local char = plr.Character
 	if char == nil then fail_fallback() continue end
 	local collision = char:FindFirstChild('Collision')
-	if collision == nil then fail_fallback() continue end
+	if collision ~= nil then collision.CanCollide, collision.CustomPhysicalProperties = false, physical_properties end
 	local collision_crouch = collision:FindFirstChild('CollisionCrouch')
-	if collision_crouch == nil then fail_fallback() continue end
+	if collision_crouch ~= nil then collision_crouch.CanCollide, collision_crouch.CustomPhysicalProperties = false, physical_properties end
 	local h = char:FindFirstChildOfClass('Humanoid')
 	if h == nil then fail_fallback() continue end
 	local hrp = h.RootPart
-	if hrp == nil then fail_fallback() continue end
-	collision.CanCollide, collision.CustomPhysicalProperties = false, physical_properties
-	collision_crouch.CanCollide, collision_crouch.CustomPhysicalProperties = false, physical_properties
-	hrp.CanCollide = false
+	if hrp ~= nil then hrp.CanCollide = false end
 	local destination = get_path()
 	if typeof(destination) ~= 'Instance' or not destination:IsA('BasePart') then fail_fallback() continue end
 	local grounded = hrp:IsGrounded()
@@ -281,7 +278,10 @@ if char ~= nil then
 	local collision = char:FindFirstChild('Collision')
 	if collision ~= nil then
 		local collision_crouch = collision:FindFirstChild('CollisionCrouch')
-		if collision_crouch ~= nil then collision_crouch.CanCollide, collision_crouch.CustomPhysicalProperties = true, nil end
+		if collision_crouch ~= nil then
+			collision_crouch.CanCollide = true
+			collision_crouch.CustomPhysicalProperties = nil
+		end
 		collision.CanCollide = true
 		collision.CustomPhysicalProperties = nil
 	end
