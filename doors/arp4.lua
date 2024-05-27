@@ -216,7 +216,6 @@ while pathfind_ui.Parent ~= nil do
 			box.Color3 = _4
 			box.Transparency = 0.644
 			box.ZIndex = 4
-			box.Parent = pathfind_ui
 			boxes[idx] = box
 		end
 
@@ -224,6 +223,7 @@ while pathfind_ui.Parent ~= nil do
 		local b = waypoints[idx + 1].Position
 		box.CFrame = cf_new((a + b) / 2, a)
 		box.Size = vec3_new(0.244, 0.244, (a - b).Magnitude)
+		box.Parent = pathfind_ui
 	end
 
 	for idx = 2, waypoints_len do
@@ -233,7 +233,7 @@ while pathfind_ui.Parent ~= nil do
 			pathfind_ui.Parent ~= nil and not (hrp:IsGrounded() and is_safe() == false) do
 			local your_pos = hrp.Position
 			local diff = pos - your_pos - offset
-			if diff.Magnitude <= 1.4 then break end
+			if diff.Magnitude <= 1.24 then break end
 			if not hrp:IsGrounded() then
 				local parent = destination.Parent
 				if parent ~= nil and parent.Name == 'Rooms_Locker' and (destination.Position - hrp.Position).Magnitude < 5 then
