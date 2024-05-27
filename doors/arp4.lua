@@ -209,25 +209,31 @@ while pathfind_ui.Parent ~= nil do
 	local waypoints = path:GetWaypoints()
 	local waypoints_len = #waypoints
 	if waypoints_len <= 0 then sleep() continue end
-	for idx = 1, waypoints_len - 1 do
+	for idx = 1, #boxes do
 		local box = boxes[idx]
-		if box == nil then
-			box = instance_new('BoxHandleAdornment')
-			box.AdornCullingMode = never
-			box.Adornee = terrain
-			box.AlwaysOnTop = true
-			box.Archivable = false
-			box.Color3 = _4
-			box.Transparency = 0.644
-			box.ZIndex = 4
-			boxes[idx] = box
-		end
+		if idx > waypoints_len then
+			box.Parent = nil
+		else
+			if box == nil then
+				box = instance_new('BoxHandleAdornment')
+				box.AdornCullingMode = never
+				box.Adornee = terrain
+				box.AlwaysOnTop = true
+				box.Archivable = false
+				box.Color3 = _4
+				box.Name = 'bha4'
+				box.Transparency = 0.644
+				box.ZIndex = 4
+				box:SetAttribute('4', _4)
+				boxes[idx] = box
+			end
 
-		local a = waypoints[idx].Position
-		local b = waypoints[idx + 1].Position
-		box.CFrame = cf_new((a + b) / 2, a)
-		box.Size = vec3_new(0.244, 0.244, (a - b).Magnitude)
-		box.Parent = pathfind_ui
+			local a = waypoints[idx].Position
+			local b = waypoints[idx + 1].Position
+			box.CFrame = cf_new((a + b) / 2, a)
+			box.Size = vec3_new(0.2444, 0.2444, (a - b).Magnitude)
+			box.Parent = pathfind_ui
+		end
 	end
 
 	for idx = 2, waypoints_len do
@@ -237,7 +243,7 @@ while pathfind_ui.Parent ~= nil do
 			pathfind_ui.Parent ~= nil and not (hrp:IsGrounded() and is_safe() == false) do
 			local your_pos = hrp.Position
 			local diff = pos - your_pos - offset
-			if diff.Magnitude <= 1.144 then break end
+			if diff.Magnitude <= 1.24 then break end
 			if not hrp:IsGrounded() then
 				local parent = destination.Parent
 				if parent ~= nil and parent.Name == 'Rooms_Locker' and (destination.Position - hrp.Position).Magnitude < 5 then
@@ -273,7 +279,11 @@ if char ~= nil then
 		local collision_crouch = collision:FindFirstChild('CollisionCrouch')
 		collision.CanCollide = true
 		collision.CustomPhysicalProperties = nil
-		if collision_crouch ~= nil then collision_crouch.CanCollide, collision_crouch.CustomPhysicalProperties = true, nil end
+
+		if collision_crouch ~= nil then
+			collision_crouch.CanCollide = true
+			collision_crouch.CustomPhysicalProperties = nil
+		end
 	end
 
 	local h = char:FindFirstChildOfClass('Humanoid')
