@@ -5,6 +5,7 @@ local _4 = Color3.new(0, 0.2514, 0)
 
 -- source code
 
+local inst_new = Instance.new
 local clear = table.clear
 local create = coroutine.create
 local dead = Enum.HumanoidStateType.Dead
@@ -12,7 +13,6 @@ local defer = task.defer
 local dummy_h = inst_new('Humanoid')
 local ff = inst_new('ForceField')
 local hp = 2147483647
-local inst_new = Instance.new
 local offset = 0
 local resume = coroutine.resume
 local sleep = task.wait
