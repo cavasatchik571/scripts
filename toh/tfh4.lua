@@ -136,7 +136,7 @@ while env.tfh4 do
 	sleep()
 	h:UnequipTools()
 	fusion_coil.Parent = char
-	sleep(0.76644)
+	sleep(0.76684)
 end
 
 ui:Destroy()
