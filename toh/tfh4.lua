@@ -16,6 +16,7 @@ local color3_from_rgb = Color3.fromRGB
 local colors_black = color3_from_rgb(0, 0, 0)
 local colors_white = color3_from_rgb(255, 255, 255)
 local core_gui = game:GetService('CoreGui')
+local floor = math.floor
 local inst_new = Instance.new
 local sleep = task.wait
 local sg = game:GetService('StarterGui')
@@ -51,7 +52,7 @@ stroke.Parent = ui_btn
 ui.Archivable = false
 ui.AutoLocalize = false
 ui.ClipToDeviceSafeArea = false
-ui.DisplayOrder = 40000
+ui.DisplayOrder = 4000
 ui.Name = 'tfh4_gui'
 ui.ResetOnSpawn = false
 ui.ScreenInsets = Enum.ScreenInsets.None
@@ -80,31 +81,32 @@ ui_btn.TextScaled = true
 ui_btn.TextStrokeColor3 = _4
 ui_btn.TextStrokeTransparency = 0
 ui_btn.Visible = true
-ui_btn.ZIndex = 40000
+ui_btn.ZIndex = 4000
 ui_btn:SetAttribute('4', _4)
 ui_btn.Parent = ui
 ui_btn.MouseButton1Down:Connect(function()
 	if env.tfh4 == nil then return end
 	active = not active
-	notify('OK', 4, 'rbxassetid://7440784829', 'Flying is o' .. (active and 'n.' or 'ff.'), 'TFH4')
+	--notify('OK', 4, 'rbxassetid://7440784829', 'Flying is o' .. (active and 'n.' or 'ff.'), 'TFH4')
 end)
 
 ui.Parent = pcall(tostring, core_gui) and core_gui or you:WaitForChild('PlayerGui')
 notify('OK', 4, 'rbxassetid://7440784829', 'Script activated', 'TFH4')
 
 while env.tfh4 do
-	sleep(0.01)
-	if not active then continue end
+	if not active then sleep(0.04) continue end
 	local bp = you:FindFirstChildOfClass('Backpack')
-	if bp == nil then continue end
+	if bp == nil then sleep(0.04) continue end
 	local char = you.Character
-	if char == nil then continue end
+	if char == nil then sleep(0.04) continue end
 	local h = char:FindFirstChildOfClass('Humanoid')
-	if h == nil or h.Health <= 0 or h.RootPart == nil then continue end
+	if h == nil or h.Health <= 0 or h.RootPart == nil then sleep(0.04) continue end
 	local state = h:GetState().Value
-	if state == 13 or state == 15 then continue end
-	local fusion_coil = bp:FindFirstChild('fusion') or char:FindFirstChild('fusion') or
-		bp:FindFirstChild('gravity') or char:FindFirstChild('gravity')
+	if state == 13 or state == 15 then sleep(0.04) continue end
+	local fusion_coil = bp:FindFirstChild('fusion') or
+		char:FindFirstChild('fusion') or
+		bp:FindFirstChild('gravity') or
+		char:FindFirstChild('gravity')
 
 	if fusion_coil == nil then
 		active = false
@@ -119,20 +121,22 @@ while env.tfh4 do
 		continue
 	end
 
-	local cam_x = cam.ViewportSize.X // 2
+	local ss = cam.ViewportSize
+	local px = floor(ss.X * 0.64)
+	local py = floor(ss.Y * 0.144)
 	h:UnequipTools()
 	grappling_hook.Parent = char
 	sleep()
-	vim:SendMouseButtonEvent(cam_x, 74, 0, true, nil, 0)
+	vim:SendMouseButtonEvent(px, py, 0, true, nil, 0)
 	sleep()
-	vim:SendMouseButtonEvent(cam_x, 74, 0, false, nil, 0)
+	vim:SendMouseButtonEvent(px, py, 0, false, nil, 0)
 	vim:SendKeyEvent(true, space, false, nil)
 	sleep()
 	vim:SendKeyEvent(false, space, false, nil)
 	sleep()
 	h:UnequipTools()
 	fusion_coil.Parent = char
-	sleep(0.75)
+	sleep(0.76644)
 end
 
 ui:Destroy()
