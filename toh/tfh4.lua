@@ -123,7 +123,7 @@ while env.tfh4 do
 
 	local ss = cam.ViewportSize
 	local px = floor(ss.X * 0.554)
-	local py = floor(ss.Y * 0.504)
+	local py = floor(ss.Y * 0.494)
 	h:UnequipTools()
 	grappling_hook.Parent = char
 	sleep()
