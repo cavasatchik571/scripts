@@ -14,7 +14,7 @@ local h = character:WaitForChild('Humanoid')
 
 if game.PlaceId == lobbyPlace then
 	local prevWalkSpeed = h.WalkSpeed
-	h.WalkSpeed *= 1.1
+	h.WalkSpeed *= 4
 	
 	while true and task.wait(0.04) do
 		h:MoveTo(workspace.mapint.matchmaking.ring_01.neon.Position)
@@ -100,6 +100,7 @@ while true do
 	end
 	
 	if h.Sit then
+		h.Health = 0 -- TEMP
 		local m = workspace:FindFirstChild('CoasterAnimationModels', true)
 		
 		if m then
