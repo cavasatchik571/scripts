@@ -72,7 +72,7 @@ ui_btn.FontFace = Font.new('rbxasset://fonts/families/Ubuntu.json', Enum.FontWei
 ui_btn.Interactable = true
 ui_btn.MaxVisibleGraphemes = 1
 ui_btn.Name = 'Button'
-ui_btn.Position = udim2_from_scale(0.75, 0.725)
+ui_btn.Position = udim2_from_scale(0.7, 0.725)
 ui_btn.Size = udim2_from_scale(0.144, 0.144)
 ui_btn.SizeConstraint = Enum.SizeConstraint.RelativeYY
 ui_btn.Text = '4'
@@ -122,8 +122,8 @@ while env.tfh4 do
 	end
 
 	local ss = cam.ViewportSize
-	local px = floor(ss.X * 0.64)
-	local py = floor(ss.Y * 0.144)
+	local px = floor(ss.X * 0.504)
+	local py = floor(ss.Y * 0.504)
 	h:UnequipTools()
 	grappling_hook.Parent = char
 	sleep()
