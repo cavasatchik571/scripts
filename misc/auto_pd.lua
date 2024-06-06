@@ -1,3 +1,4 @@
+-- <font color='#FAFAA0' weight='900'><stroke color='#C0B000'>Please donate guys, we really need your support!</stroke></font>
 -- check
 
 local place_id = 8737602449
@@ -19,7 +20,7 @@ local task_wait = task.wait
 local teleport_service = game:GetService('TeleportService')
 local teleport_service_teleport = teleport_service.Teleport
 local teleport_service_teleport_to_place_instance = teleport_service.TeleportToPlaceInstance
-local user_names = {4749189650, 4749190407, 4749194055, 4749195466, 4758373552, 5019066514}
+local user_ids = {}
 local vec3_new = Vector3.new
 local virtual_user = game:GetService('VirtualUser')
 local you = plrs.LocalPlayer
@@ -29,11 +30,11 @@ local zero_vec2 = Vector2.zero
 
 local max_plrs = plrs.MaxPlayers - 4
 local point = vec3_new(166, 5, 305)
-local random_messages_len = 40
 local random_messages = {
 	'Please donate, thank you for understanding.',
 	'Please donate guys, I\'ll appreciate your efforts.',
 	'Please donate, we\'ll appreciate your efforts :)',
+	'I\'m not away from the keyboard.',
 	'Can you donate please?',
 	'Can you donate? Thanks.',
 	'Can you donate? Many thanks.',
@@ -58,20 +59,33 @@ local random_messages = {
 	'Ваше щедрое пожертвование поможет нам достичь цели.',
 	'Поддержите наше дело и сделайте пожертвование сегодня.',
 	'Feel free to donate any amount, your support is valuable :)',
+	'Не стесняйтесь пожертвовать любую сумму, ваша поддержка ценна :)',
 	'Please donate, anything helps us!',
 	'Don\'t ignore our messages, thank you.',
 	':(',
 	'* shivers in the cold *',
 	'I\'m waiting for you!',
 	'Come here, please :((',
+	'Meow!~ Everyone is accepted, feel free to donate',
 	'Any amount is appreciated!',
 	'Don\'t be toxic.',
+	'.',
+	'..',
 	':<',
 	'Are there any generous donators online?',
+	'If so, please come, really appreciated.',
 	'Thank you so much :D',
-	'I understand, this is hard, but don\'t worry, please. :(',
-	'Ahh, if there would be nice players around me...'
+	'I understand, this is hard, but there\'s no need to be shy :}',
+	'Ahh, if there would be some nice players around me... ;^',
+	'uhh, guys, can you listen to meee??? if you see this, donate, thanks',
+	'Where are y\'all? I need donations :(',
+	'Each donation brings us closer to our goals, so please, help us, and we won\'t disturb you in future',
+	'Thanks in advance, we really need some donations',
+	'Come back! We need your help!',
+	'I\'m not AFK, my messages are always different'
 }
+
+local random_messages_len = #random_messages
 
 -- functions
 
@@ -210,13 +224,16 @@ plrs:Chat('/e dance' .. (idx == 1 and '' or tostring(idx)))
 task_wait(0.5)
 
 while true do
-	local t = 30
+	if check_restricted_user() then return teleport() end
+	rng:Shuffle(random_messages)
 
-	while t > 0 do
-		t -= heartbeat:Wait()
-		if not check_restricted_user() then continue end
-		teleport()
+	for idx = 1, random_messages_len do
+		local t = 8.5 + rng:NextNumber() / 2
+		while t > 0 do
+			t -= heartbeat:Wait()
+			if check_restricted_user() then return teleport() end
+		end
+
+		channel:SendAsync(random_messages[idx])
 	end
-
-	channel:SendAsync(random_messages[rng:NextInteger(1, random_messages_len)])
 end
