@@ -93,7 +93,8 @@ local function check_restricted_user()
 	local list = plrs:GetPlayers()
 
 	for idx = 1, #list do
-		if not table_find(user_ids, list[idx].UserId) then continue end
+		local plr = list[idx]
+		if plr == you or not table_find(user_ids, plr.UserId) then continue end
 		table_clear(list)
 		return true
 	end
@@ -179,7 +180,6 @@ end
 -- code
 
 local booth_interaction = get_your_booth_interaction()
-table.remove(user_names, table_find(user_names, you.UserId))
 you.ChildRemoved:Connect(function(child)
 	if not child:IsA('PlayerScripts') then return end
 	task_wait(0.5)
