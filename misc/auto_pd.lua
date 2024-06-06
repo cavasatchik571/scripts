@@ -183,7 +183,7 @@ table.remove(user_names, table_find(user_names, you.UserId))
 you.ChildRemoved:Connect(function(child)
 	if not child:IsA('PlayerScripts') then return end
 	task_wait(0.5)
-	queue_on_teleport('loadstring(game:HttpGet(\'https://pastebin.com/raw/EUdKD3hp\', true))()')
+	queue_on_teleport('loadstring(game:HttpGet(\'https://raw.githubusercontent.com/cavasatchik571/scripts/main/misc/auto_pd.lua\', true))()')
 	teleport()
 end)
 
