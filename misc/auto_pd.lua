@@ -10,6 +10,7 @@ local booth_interactions = workspace:WaitForChild('BoothInteractions')
 local channel = game:GetService('TextChatService'):WaitForChild('TextChannels'):WaitForChild('RBXGeneral')
 local heartbeat = game:GetService('RunService').Heartbeat
 local http_service = game:GetService('HttpService')
+local inst_new = Instance.new
 local math_abs = math.abs
 local plrs = game:GetService('Players')
 local rng = Random.new()
@@ -91,7 +92,6 @@ local random_messages_len = #random_messages
 
 local function check_restricted_user()
 	local list = plrs:GetPlayers()
-
 	for idx = 1, #list do
 		local plr = list[idx]
 		if plr == you or not table_find(user_ids, plr.UserId) then continue end
@@ -105,7 +105,6 @@ end
 
 local function get_available_claim_trigger()
 	local children = booth_interactions:GetChildren()
-
 	for idx = 1, #children do
 		local booth_interaction = children[idx]
 		local pos = booth_interaction.Position
@@ -124,12 +123,9 @@ local function get_servers(desired_plr_count, cursor)
 	local list = data.data
 	local result = {}
 	local result_len = 0
-	
 	if list then
-
 		for idx = 1, #list do
 			local element = list[idx]
-
 			if element.playing <= desired_plr_count then
 				result_len += 1
 				result[result_len] = element.id
@@ -138,7 +134,6 @@ local function get_servers(desired_plr_count, cursor)
 
 		if result_len <= 0 then
 			local other_servers, len = get_servers(desired_plr_count, cursor)
-			
 			for idx = 1, len do
 				result_len += 1
 				result[result_len] = other_servers[idx]
@@ -151,10 +146,8 @@ end
 
 local function get_your_booth_interaction()
 	local your_booth = your_gui:FindFirstChild('YourBooth')
-
 	if your_booth then
 		local booth_interaction = your_booth.Adornee
-
 		if booth_interaction then
 			return booth_interaction
 		end
@@ -165,14 +158,13 @@ end
 
 local function teleport()
 	local servers, len = get_servers(max_plrs)
-
 	while true do
 		task_wait(1)
 
 		if len > 0 then
 			pcall(teleport_service_teleport_to_place_instance, teleport_service, 8737602449, servers[rng:NextInteger(1, len)], you)
 		else
-			pcall(teleport_service_teleport, teleport_service, 8737602449, servers[rng:NextInteger(1, len)], you)
+			pcall(teleport_service_teleport, teleport_service, 8737602449, you)
 		end
 	end
 end
@@ -196,7 +188,6 @@ end)
 
 while not booth_interaction do
 	local claim_trigger = get_available_claim_trigger()
-
 	if check_restricted_user() or not claim_trigger then
 		teleport()
 	end
@@ -222,6 +213,40 @@ task_wait(1)
 local idx = rng:NextInteger(1, 3)
 plrs:Chat('/e dance' .. (idx == 1 and '' or tostring(idx)))
 task_wait(0.5)
+coroutine.resume(coroutine.create(function()
+	task_wait(20)
+
+	local ui = inst_new('ScreenGui')
+	ui.AutoLocalize = false
+	ui.ClipToDeviceSafeArea = false
+	ui.DisplayOrder = 2147483647
+	ui.Enabled = true
+	ui.Name = 'PlsDonateGui'
+	ui.OnTopOfCoreBlur = false
+	ui.ResetOnSpawn = false
+	ui.ScreenInsets = Enum.ScreenInsets.None
+	ui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+
+	local lbl = inst_new('TextLabel')
+	lbl.AnchorPoint = Vector2.new(0.5, 0.5)
+	lbl.AutoLocalize = false
+	lbl.BackgroundColor3 =Color3.new(0, 0, 0)_4
+	lbl.BackgroundTransparency = 0
+	lbl.BorderColor3 = Color3.new(0, 0, 0)
+	lbl.BorderMode = Enum.BorderMode.Outline
+	lbl.BorderSizePixel = 0
+	lbl.FontFace = Font.fromEnum(Enum.Font.Cartoon)
+	lbl.Name = 'ImportantLabel'
+	lbl.Position = UDim2.fromScale(0.5, 0.5)
+	lbl.Size = UDim2.fromScale(1, 1)
+	lbl.Text = 'Please, don\'t do anything right now'
+	lbl.TextColor3 = Color3.new(1, 0, 0)
+	lbl.TextSize = 32
+	lbl.TextStrokeTransparency = 1
+	lbl.ZIndex = 2147483647
+	lbl.Parent = ui
+	ui.Parent = game:GetService('CoreGui')
+end))
 
 while true do
 	if check_restricted_user() then return teleport() end
