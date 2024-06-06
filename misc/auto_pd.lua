@@ -93,7 +93,7 @@ local function check_restricted_user()
 	local list = plrs:GetPlayers()
 
 	for idx = 1, #list do
-		if not table_find(user_names, list[idx].UserId) then continue end
+		if not table_find(user_ids, list[idx].UserId) then continue end
 		table_clear(list)
 		return true
 	end
@@ -136,11 +136,11 @@ local function get_servers(desired_plr_count, cursor)
 		end
 
 		if result_len <= 0 then
-			local other_services, len = get_servers(desired_plr_count, cursor)
+			local other_servers, len = get_servers(desired_plr_count, cursor)
 			
 			for idx = 1, len do
 				result_len += 1
-				result[result_len] = other_services[idx]
+				result[result_len] = other_servers[idx]
 			end
 		end
 	end
