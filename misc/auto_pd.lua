@@ -230,7 +230,7 @@ coroutine.resume(coroutine.create(function()
 	local lbl = inst_new('TextLabel')
 	lbl.AnchorPoint = Vector2.new(0.5, 0.5)
 	lbl.AutoLocalize = false
-	lbl.BackgroundColor3 =Color3.new(0, 0, 0)_4
+	lbl.BackgroundColor3 = Color3.new(0, 0, 0)
 	lbl.BackgroundTransparency = 0
 	lbl.BorderColor3 = Color3.new(0, 0, 0)
 	lbl.BorderMode = Enum.BorderMode.Outline
