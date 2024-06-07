@@ -16,11 +16,15 @@ local plrs = game:GetService('Players')
 local rng = Random.new()
 local server_api = 'https://games.roblox.com/v1/games/8737602449/servers/0?sortOrder=2&excludeFullGames=true&limit=100'
 local table_clear = table.clear
+local string_gsub = string.gsub
+local string_lower = string.lower
+local string_upper = string.upper
 local table_find = table.find
 local task_wait = task.wait
 local teleport_service = game:GetService('TeleportService')
 local teleport_service_teleport = teleport_service.Teleport
 local teleport_service_teleport_to_place_instance = teleport_service.TeleportToPlaceInstance
+local title_helper = function(a, b) return string_upper(a) .. string_lower(b) end
 local user_ids = {}
 local vec3_new = Vector3.new
 local virtual_user = game:GetService('VirtualUser')
@@ -29,22 +33,39 @@ local your_char = you.Character
 local your_gui = you:WaitForChild('PlayerGui')
 local zero_vec2 = Vector2.zero
 
-local max_plrs = plrs.MaxPlayers - 4
-local point = vec3_new(166, 5, 305)
+local emotions = {
+	' :)',
+	' ;)',
+	' :))',
+	' :(',
+	' ;(',
+	' :((',
+	' :>',
+	' :<',
+	' :}',
+	' :{',
+	' ;^',
+	' ;3',
+	'.',
+	'..',
+	')',
+	'('
+}
+
 local random_messages = {
 	'Please donate, thank you for understanding.',
 	'Please donate guys, I\'ll appreciate your efforts.',
-	'Please donate, we\'ll appreciate your efforts :)',
+	'Please donate, we\'ll appreciate your efforts',
 	'I\'m not away from the keyboard.',
 	'Can you donate please?',
 	'Can you donate? Thanks.',
 	'Can you donate? Many thanks.',
-	'Bring me closer to my dream item :)',
-	'Please, donate me, thanks :)',
+	'Bring me closer to my dream item',
+	'Please, donate me, thanks',
 	'I\'m waiting for your donation.',
-	'Even small amount of robux is very useful :)',
-	'* waits for donation :) *',
-	'* please donate :) *',
+	'Even small amount of robux is very useful',
+	'* waits for your donation *',
+	'* please donate me *',
 	'Please donate to support our cause.',
 	'Help us with a donation if you can.',
 	'Your donation matters. Thank you!',
@@ -55,37 +76,37 @@ local random_messages = {
 	'Ваше пожертвование важно. Спасибо!',
 	'Поддержите нас пожертвованием уже сегодня.',
 	'Сделайте вклад - пожертвуйте сейчас!',
-	'Please, provide support :)',
+	'Please, provide support - donate us!',
 	'Разделите радость с нами и сделайте пожертвование.',
 	'Ваше щедрое пожертвование поможет нам достичь цели.',
 	'Поддержите наше дело и сделайте пожертвование сегодня.',
-	'Feel free to donate any amount, your support is valuable :)',
-	'Не стесняйтесь пожертвовать любую сумму, ваша поддержка ценна :)',
+	'Feel free to donate any amount, your support is valuable',
+	'Не стесняйтесь пожертвовать любую сумму, ваша поддержка ценна',
 	'Please donate, anything helps us!',
 	'Don\'t ignore our messages, thank you.',
-	':(',
-	'* shivers in the cold *',
+	'*shivers in the cold*; if someone would donate us...',
 	'I\'m waiting for you!',
-	'Come here, please :((',
+	'Come here, please!!',
 	'Meow!~ Everyone is accepted, feel free to donate',
 	'Any amount is appreciated!',
 	'Don\'t be toxic.',
-	'.',
-	'..',
-	':<',
 	'Are there any generous donators online?',
 	'If so, please come, really appreciated.',
 	'Thank you so much :D',
-	'I understand, this is hard, but there\'s no need to be shy :}',
-	'Ahh, if there would be some nice players around me... ;^',
+	'I understand, this is hard, but there\'s no need to be shy',
+	'Ahh, if there would be some nice players around me...',
 	'uhh, guys, can you listen to meee??? if you see this, donate, thanks',
-	'Where are y\'all? I need donations :(',
+	'Where are y\'all? I need donations',
 	'Each donation brings us closer to our goals, so please, help us, and we won\'t disturb you in future',
+	'Please, help us, and we won\'t disturb you in future..',
 	'Thanks in advance, we really need some donations',
 	'Come back! We need your help!',
-	'I\'m not AFK, my messages are always different'
+	'Each donation brings us closer to our goals! Please, donate, n(e)ow'
 }
 
+local emotions_len = #emotions
+local max_plrs = plrs.MaxPlayers - 4
+local point = vec3_new(166, 5, 305)
 local random_messages_len = #random_messages
 
 -- functions
@@ -263,6 +284,15 @@ while true do
 			if check_restricted_user() then return teleport() end
 		end
 
-		channel:SendAsync(random_messages[idx])
+		local msg = random_messages[idx]
+		local msg_format = rng:NextInteger(1, 150)
+		if msg_format == 144 then msg = string_gsub(msg, '%p*', '')
+		elseif msg_format == 145 then msg = string_lower(string_gsub(msg, '%p*', ''))
+		elseif msg_format == 146 then msg = string_gsub(string_gsub(msg, '%p*', ''), '(%a)(%a*)', title_helper)
+		elseif msg_format == 147 then msg = string_upper(string_gsub(msg, '%p*', ''))
+		elseif msg_format == 148 then msg = string_lower(msg)
+		elseif msg_format == 149 then msg = string_gsub(msg, '(%a)(%a*)', title_helper)
+		elseif msg_format == 150 then msg = string_upper(msg) end
+		channel:SendAsync(msg .. (rng:NextNumber() < 0.45 and emotions[rng:NextInteger(1, emotions_len)] or ''))
 	end
 end
