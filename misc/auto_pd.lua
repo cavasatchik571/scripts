@@ -213,6 +213,7 @@ task_wait(1)
 local idx = rng:NextInteger(1, 3)
 plrs:Chat('/e dance' .. (idx == 1 and '' or tostring(idx)))
 task_wait(0.5)
+setfpscap(5)
 coroutine.resume(coroutine.create(function()
 	task_wait(20)
 
@@ -228,6 +229,7 @@ coroutine.resume(coroutine.create(function()
 	ui.ZIndexBehavior = Enum.ZIndexBehavior.Global
 
 	local lbl = inst_new('TextLabel')
+	lbl.Active = true
 	lbl.AnchorPoint = Vector2.new(0.5, 0.5)
 	lbl.AutoLocalize = false
 	lbl.BackgroundColor3 = Color3.new(0, 0, 0)
@@ -235,13 +237,15 @@ coroutine.resume(coroutine.create(function()
 	lbl.BorderColor3 = Color3.new(0, 0, 0)
 	lbl.BorderMode = Enum.BorderMode.Outline
 	lbl.BorderSizePixel = 0
+	lbl.Draggable = false
 	lbl.FontFace = Font.fromEnum(Enum.Font.Cartoon)
 	lbl.Name = 'ImportantLabel'
 	lbl.Position = UDim2.fromScale(0.5, 0.5)
+	lbl.Selectable = true
 	lbl.Size = UDim2.fromScale(1, 1)
 	lbl.Text = 'Please, don\'t do anything right now'
 	lbl.TextColor3 = Color3.new(1, 0, 0)
-	lbl.TextSize = 32
+	lbl.TextSize = 39
 	lbl.TextStrokeTransparency = 1
 	lbl.ZIndex = 2147483647
 	lbl.Parent = ui
