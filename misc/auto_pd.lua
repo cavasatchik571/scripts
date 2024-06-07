@@ -14,7 +14,7 @@ local inst_new = Instance.new
 local math_abs = math.abs
 local plrs = game:GetService('Players')
 local rng = Random.new()
-local server_api = 'https://games.roblox.com/v1/games/' .. tostring(place_id) .. '/servers/0?sortOrder=2&excludeFullGames=true&limit=100'
+local server_api = 'https://games.roblox.com/v1/games/8737602449/servers/0?sortOrder=2&excludeFullGames=true&limit=100'
 local table_clear = table.clear
 local table_find = table.find
 local task_wait = task.wait
