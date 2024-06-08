@@ -7,7 +7,7 @@ local _4 = Color3.new(0, .4984, 0)
 
 local clear = table.clear
 local clone = table.clone
-local find = table.find
+local find = string.find
 local gs = game:GetService('GuiService')
 local hs = game:GetService('HapticService')
 local inst_new = Instance.new
