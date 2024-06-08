@@ -5,32 +5,41 @@ local _4 = Color3.new(0, .4984, 0)
 
 -- source code
 
+local clear = table.clear
 local clone = table.clone
+local find = table.find
 local gs = game:GetService('GuiService')
 local hs = game:GetService('HapticService')
 local inst_new = Instance.new
 local key_code = Enum.KeyCode
 local lbl = inst_new('TextLabel')
 local old_i, old_nc
+local rs = game:GetService('ReplicatedStorage')
+local s_fs = inst_new('RemoteEvent').FireServer
+local s_is = inst_new('RemoteFunction').InvokeServer
 local size = Vector2.new(3840, 2160)
 local ui = inst_new('ScreenGui')
 local uis = game:GetService('UserInputService')
 local uit = Enum.UserInputType
 local uit_gamepad1 = uit.Gamepad1
 local uit_gamepads = {uit_gamepad1, uit.Gamepad2}
+local upper = string.upper
 local vr = game:GetService('VRService')
 local xbox_one = Enum.Platform.XBoxOne
+
+local function descendant_added(descendant)
+	if find(upper(descendant.Name), 'XBOX', 1, true) == nil then return end
+	pcall(function() descendant:FireServer() end)
+	pcall(function() descendant:InvokeServer() end)
+	pcall(s_fs, descendant)
+	pcall(s_is, descendant)
+end
 
 local function hook(inst, name, func)
 	local old_func
 	old_func = hookfunction(inst[name], newcclosure(function(self, ...)
 		local args = {func(self, ...)}
-
-		if not args[1] then
-			clear(args)
-			return old_func(self, ...)
-		end
-
+		if not args[1] then clear(args) return old_func(self, ...) end
 		return unpack(args, 2, #args)
 	end))
 
@@ -38,6 +47,11 @@ local function hook(inst, name, func)
 end
 
 -- logic
+
+rs.DescendantAdded:Connect(descendant_added)
+local descendants = rs:GetDescendants()
+for idx = 1, #descendants do descendant_added(descendants[idx]) end
+clear(descendants)
 
 ui.Archivable = false
 ui.AutoLocalize = false
@@ -173,7 +187,7 @@ hook(uis, 'IsNavigationGamepad', function() return true, true end)
 gs:ForceTenFootInterface(true)
 ui.Parent = game:GetService('CoreGui')
 warn('Activated XBox One forcer')
-game:GetService('ReplicatedStorage'):WaitForChild('Remotes'):WaitForChild('Extras'):WaitForChild('IsXbox'):FireServer(true)
+rs:WaitForChild('Remotes'):WaitForChild('Extras'):WaitForChild('IsXbox'):FireServer(true)
 queueonteleport(game:HttpGet('https://raw.githubusercontent.com/cavasatchik571/scripts/main/mm2/xbox_analyzer.lua', true))
 loadstring(game:HttpGet('https://raw.githubusercontent.com/cavasatchik571/scripts/main/misc/toggle_console.lua', true))()
 loadstring(game:HttpGet('https://pastebin.com/raw/4HQFspAH', true))()
