@@ -1,5 +1,5 @@
 -- eds4.lua
--- by @Vov4ik4124
+-- by vov4ik
 
 local _4 = Color3.new(0, .4984, 0)
 
@@ -322,7 +322,7 @@ local function descendant_added_you(descendant)
 	interact_btn.Name = 'Interact'
 	interact_btn.Position = udim2_from_scale(0, -1.05)
 	interact_btn.Size = udim2_from_scale(0.64, 0.64)
-	interact_btn.SizeConstraint = relative_yy
+	interact_btn.SizeConstraint = rel_yy
 	interact_btn.Text = '4'
 	interact_btn.TextColor3 = white
 	interact_btn.TextScaled = true
