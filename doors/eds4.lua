@@ -1,5 +1,5 @@
--- eds4.lua4
--- @vov4ik
+-- eds4.lua
+-- by unknown
 
 local _4 = Color3.new(0, .4984, 0)
 
@@ -319,7 +319,7 @@ local function descendant_added_you(descendant)
 	interact_btn.FontFace = ubuntu
 	interact_btn.MaxVisibleGraphemes = 1
 	interact_btn.Name = 'Interact'
-	interact_btn.Position = udim2_from_scale(0, -1.05)
+	interact_btn.Position = udim2_from_scale(0, -1.1)
 	interact_btn.Size = udim2_from_scale(0.64, 0.64)
 	interact_btn.SizeConstraint = Enum.SizeConstraint.RelativeYY
 	interact_btn.Text = '4'
