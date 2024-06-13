@@ -23,6 +23,7 @@ local core_gui = game:GetService('CoreGui')
 local coroutine_create = coroutine.create
 local coroutine_resume = coroutine.resume
 local current_rooms = workspace:WaitForChild('CurrentRooms')
+local get_count = function(e) local r = 0 for _ in e do r += 1 end return r end
 local heartbeat = game:GetService('RunService').Heartbeat
 local idl = {}
 local ignore_symbol = newproxy(false)
@@ -190,7 +191,7 @@ local function get_library_code()
 		map[icon.ImageRectOffset.X] = icon.TextLabel.Text
 	end
 
-	for idx = 1, #map do code[idx] = '?' end
+	for idx = 1, get_count(map) do code[idx] = '?' end
 	for idx = 1, #ui do
 		local child = ui[idx]
 		local id = tonumber(child.Name)
@@ -219,7 +220,6 @@ local function remote_call(func, self, ...)
 
 	if pattern then
 		local args = {...}
-
 		for idx = 1, #args do
 			local val = pattern[idx]
 			if val == ignore_symbol then continue end
