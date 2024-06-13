@@ -32,7 +32,6 @@ local plrs = game:GetService('Players')
 local points = {}
 local properties = {}
 local re = game:GetService('ReplicatedStorage')
-local real = re:FindFirstChild('RemotesFolder') or re:FindFirstChild('EntityInfo')
 local smooth = Enum.SurfaceType.Smooth
 local smooth_plastic = Enum.Material.SmoothPlastic
 local starter_gui = game:GetService('StarterGui')
@@ -240,9 +239,8 @@ local function send_notification(...)
 	table_clear(properties)
 end
 
-local function solve_ebf() real.EBF:FireServer() end
-local function solve_pl(prompt) real.PL:FireServer(typeof(prompt) == 'string' and #prompt == 5 and tonumber(prompt) and prompt or '00000') end
-
+local function solve_ebf(real) real.EBF:FireServer() end
+local function solve_pl(real, prompt) real.PL:FireServer(typeof(prompt) == 'string' and #prompt == 5 and tonumber(prompt) and prompt or '00000') end
 local function descendant_added_cr(descendant)
 	if descendant == nil or typeof(descendant) ~= 'Instance' then return end
 	task_wait(0.004)
@@ -331,11 +329,13 @@ local function descendant_added_you(descendant)
 	interact_btn.TextStrokeTransparency = 0
 	interact_btn.Parent = descendant
 	interact_btn.Activated:Connect(function()
+		local real = re:FindFirstChild('RemotesFolder') or re:FindFirstChild('EntityInfo')
+		if not real then return end
 		local room = re.GameData.LatestRoom.Value
 		if room == 50 then
-			solve_pl(get_library_code())
+			solve_pl(real, get_library_code())
 		elseif room == 100 then
-			solve_ebf()
+			solve_ebf(real)
 		end
 	end)
 end
@@ -394,7 +394,7 @@ old_namecall = hmm(game, '__namecall', nc(function(self, ...)
 	return remote_call(old_namecall, self, ...)
 end))
 
-send_notification('Button1', 'OK', 'Duration', 4, 'Icon', 'rbxassetid://7440784829', 'Text', 'The exploit has been activated.', 'Title', '4')
+send_notification('Button1', 'OK', 'Duration', 4, 'Icon', 'rbxassetid://7440784829', 'Text', 'The exploit has been activated', 'Title', '4')
 
 while true do
 	task_wait(0.144)
