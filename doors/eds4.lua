@@ -1,5 +1,5 @@
--- eds4.lua
--- by unknown
+-- eds4.lua4
+-- @vov4ik
 
 local _4 = Color3.new(0, .4984, 0)
 
@@ -190,7 +190,7 @@ local function get_library_code()
 		map[icon.ImageRectOffset.X] = icon.TextLabel.Text
 	end
 
-	for idx = 1, #map do map[idx] = '?' end
+	for idx = 1, #map do code[idx] = '?' end
 	for idx = 1, #ui do
 		local child = ui[idx]
 		local id = tonumber(child.Name)
@@ -394,7 +394,7 @@ old_namecall = hmm(game, '__namecall', nc(function(self, ...)
 	return remote_call(old_namecall, self, ...)
 end))
 
-send_notification('Button1', 'OK', 'Duration', 4, 'Icon', 'rbxassetid://7440784829', 'Text', 'The exploit has been activated', 'Title', '4')
+send_notification('Button1', 'OK', 'Duration', 4, 'Icon', 'rbxassetid://7440784829', 'Text', 'The exploit has been activated.', 'Title', '4')
 
 while true do
 	task_wait(0.144)
