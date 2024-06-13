@@ -1,5 +1,5 @@
 -- eds4.lua
--- by @Vov4ik4124
+-- by unknown
 
 local _4 = Color3.new(0, .4984, 0)
 
@@ -18,6 +18,7 @@ env.bha4 = true
 
 local auto_prompts = {}
 local clone = game.Clone
+local color3_from_rgb = Color3.fromRGB
 local core_gui = game:GetService('CoreGui')
 local coroutine_create = coroutine.create
 local coroutine_resume = coroutine.resume
@@ -30,29 +31,33 @@ local lbls = {}
 local plrs = game:GetService('Players')
 local points = {}
 local properties = {}
-local replicated_storage = game:GetService('ReplicatedStorage')
+local re = game:GetService('ReplicatedStorage')
+local real = re:FindFirstChild('RemotesFolder') or re:FindFirstChild('EntityInfo')
 local smooth = Enum.SurfaceType.Smooth
 local smooth_plastic = Enum.Material.SmoothPlastic
 local starter_gui = game:GetService('StarterGui')
 local string_find = string.find
 local table_clear = table.clear
+local table_concat = table.concat
 local task_wait = task.wait
 local udim2_from_scale = UDim2.fromScale
 local vec3_bha4 = Vector3.new(0.44, 1.44, 0.44)
 local vec3_zero = Vector3.zero
 
+local black = color3_from_rgb(0, 0, 0)
 local frame = inst_new('Frame')
 local full = udim2_from_scale(1, 1)
-local latest_room = replicated_storage:WaitForChild('GameData'):WaitForChild('LatestRoom')
+local latest_room = re:WaitForChild('GameData'):WaitForChild('LatestRoom')
 local latest_room_changed = latest_room.Changed
 local old_function_is = empty_func
 local old_function_fs = empty_func
 local old_namecall = empty_func
 local starter_gui_set_core = starter_gui.SetCore
-local white = Color3.fromRGB(224, 224, 224)
+local ubuntu = Font.new('rbxasset://fonts/families/Ubuntu.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+local white = color3_from_rgb(255, 255, 255)
 local you = plrs.LocalPlayer
 local your_gui = pcall(tostring, core_gui) and core_gui or you:WaitForChild('PlayerGui')
-local patterns: {[RemoteEvent]: {any}} = setmetatable({}, {__newindex = function(t, k, v) if k ~= nil then rawset(t, k, v) end end})
+local patterns: any = setmetatable({}, {__newindex = function(t, k, v) if k ~= nil then rawset(t, k, v) end end})
 local raw_lbl4 = inst_new('TextLabel')
 raw_lbl4.BackgroundColor3 = _4
 raw_lbl4.BackgroundTransparency = 1
@@ -143,6 +148,101 @@ local function child_removed(child)
 	lbls[child] = nil
 end
 
+local function get_deg(pos)
+	local children = workspace:GetChildren()
+
+	for idx = 1, #children do
+		local child = children[idx]
+		if not child:IsA('Model') or (child:GetPivot().Position - pos).Magnitude > 240 then continue end
+		local core = child:FindFirstChild('Core')
+		if not core then continue end
+		local light = core:FindFirstChildOfClass('PointLight')
+		if not light or not light.Enabled then continue end
+		local name = child.Name
+
+		if name == 'BackdoorLookman' then
+			table_clear(children)
+			return -90
+		elseif name == 'Eyes' then
+			table_clear(children)
+			return 90
+		end
+	end
+
+	table_clear(children)
+	return ignore_symbol
+end
+
+local function get_library_code()
+	local bp = you.Backpack or game
+	local char = you.Character or game
+	local he = you.PlayerGui.PermUI:FindFirstChild('Hints')
+	local paper = (bp:FindFirstChild('LibraryHintPaper') or bp:FindFirstChild('LibraryHintPaperHard') or
+		char:FindFirstChild('LibraryHintPaper') or char:FindFirstChild('LibraryHintPaperHard'))
+
+	if not he or not paper then return '' end
+	local code = {}
+	local hints = he:GetChildren()
+	local map = {}
+	local ui = paper.UI:GetChildren()
+	for idx = 1, #hints do
+		local icon = hints[idx]
+		if icon.Name ~= 'Icon' then continue end
+		map[icon.ImageRectOffset.X] = icon.TextLabel.Text
+	end
+
+	for idx = 1, #map do map[idx] = '?' end
+	for idx = 1, #ui do
+		local child = ui[idx]
+		local id = tonumber(child.Name)
+		if not id then continue end
+		local number = map[child.ImageRectOffset.X]
+		if not number then continue end
+		code[id] = number
+	end
+
+	local result = table_concat(code)
+	table_clear(code)
+	table_clear(hints)
+	table_clear(map)
+	table_clear(ui)
+	return result
+end
+
+local function get_pos(obj)
+	if obj == nil or typeof(obj) ~= 'Instance' then return vec3_zero end
+	return (obj:IsA('Attachment') and obj.WorldPosition) or (obj:IsA('PVInstance') and obj:GetPivot().Position) or vec3_zero
+end
+
+local function remote_call(func, self, ...)
+	local pattern = patterns[self]
+	if pattern == ignore_symbol then return end
+
+	if pattern then
+		local args = {...}
+
+		for idx = 1, #args do
+			local val = pattern[idx]
+			if val == ignore_symbol then continue end
+			args[idx] = val
+		end
+
+		return func(self, unpack(args))  
+	else
+		return func(self, ...)
+	end
+end
+
+local function send_notification(...)
+	local args = {...}
+	for idx = 1, #args, 2 do properties[args[idx]] = args[idx + 1] end
+	while not pcall(starter_gui_set_core, starter_gui, 'SendNotification', properties) do task_wait(0.5) end
+	table_clear(properties)
+end
+
+local function solve_ebf() real.EBF:FireServer() end
+local function solve_pl(prompt) real.PL:FireServer(typeof(prompt) == 'string' and #prompt == 5 and tonumber(prompt) and prompt or '00000') end
+
 local function descendant_added_cr(descendant)
 	if descendant == nil or typeof(descendant) ~= 'Instance' then return end
 	task_wait(0.004)
@@ -208,60 +308,36 @@ local function descendant_added_w(descendant)
 	end
 end
 
-local function get_deg(pos)
-	local children = workspace:GetChildren()
-
-	for idx = 1, #children do
-		local child = children[idx]
-		if not child:IsA('Model') or (child:GetPivot().Position - pos).Magnitude > 240 then continue end
-		local core = child:FindFirstChild('Core')
-		if not core then continue end
-		local light = core:FindFirstChildOfClass('PointLight')
-		if not light or not light.Enabled then continue end
-		local name = child.Name
-
-		if name == 'BackdoorLookman' then
-			table_clear(children)
-			return -90
-		elseif name == 'Eyes' then
-			table_clear(children)
-			return 90
+local function descendant_added_you(descendant)
+	if typeof(descendant) ~= 'Instance' or descendant.Name ~= 'MinigameBackout' or descendant:FindFirstChild('Interact') then return end
+	local interact_btn = inst_new('TextButton')
+	interact_btn.AutoButtonColor = false
+	interact_btn.AutoLocalize = false
+	interact_btn.BackgroundColor3 = black
+	interact_btn.BackgroundTransparency = 0.5
+	interact_btn.BorderColor3 = _4
+	interact_btn.BorderMode = Enum.BorderMode.Outline
+	interact_btn.BorderSizePixel = 0
+	interact_btn.FontFace = ubuntu
+	interact_btn.MaxVisibleGraphemes = 1
+	interact_btn.Name = 'Interact'
+	interact_btn.Position = udim2_from_scale(0, -1.05)
+	interact_btn.Size = udim2_from_scale(0.64, 0.64)
+	interact_btn.SizeConstraint = Enum.SizeConstraint.RelativeYY
+	interact_btn.Text = '4'
+	interact_btn.TextColor3 = white
+	interact_btn.TextScaled = true
+	interact_btn.TextStrokeColor3 = _4
+	interact_btn.TextStrokeTransparency = 0
+	interact_btn.Parent = descendant
+	interact_btn.Activated:Connect(function()
+		local room = re.GameData.LatestRoom.Value
+		if room == 50 then
+			solve_pl(get_library_code())
+		elseif room == 100 then
+			solve_ebf()
 		end
-	end
-
-	table_clear(children)
-	return ignore_symbol
-end
-
-local function get_pos(obj)
-	if obj == nil or typeof(obj) ~= 'Instance' then return vec3_zero end
-	return (obj:IsA('Attachment') and obj.WorldPosition) or (obj:IsA('PVInstance') and obj:GetPivot().Position) or vec3_zero
-end
-
-local function remote_call(func, self, ...)
-	local pattern = patterns[self]
-	if pattern == ignore_symbol then return end
-
-	if pattern then
-		local args = {...}
-
-		for idx = 1, #args do
-			local val = pattern[idx]
-			if val == ignore_symbol then continue end
-			args[idx] = val
-		end
-
-		return func(self, unpack(args))  
-	else
-		return func(self, ...)
-	end
-end
-
-local function send_notification(...)
-	local args = {...}
-	for idx = 1, #args, 2 do properties[args[idx]] = args[idx + 1] end
-	while not pcall(starter_gui_set_core, starter_gui, 'SendNotification', properties) do task_wait(0.5) end
-	table_clear(properties)
+	end)
 end
 
 -- logic
@@ -288,8 +364,8 @@ frame.BackgroundTransparency = 1
 frame.Position = UDim2.new(1, -8, 1, -8)
 frame.Size = udim2_from_scale(0.224, 0.104)
 frame.Parent = ui
-replicated_storage.ChildAdded:Connect(child_added_rs)
-local children = replicated_storage:GetChildren()
+re.ChildAdded:Connect(child_added_rs)
+local children = re:GetChildren()
 for idx = 1, #children do coroutine_resume(coroutine_create(child_added_rs), children[idx]) end
 table_clear(children)
 workspace.ChildAdded:Connect(child_added_w)
@@ -301,6 +377,10 @@ current_rooms.DescendantAdded:Connect(descendant_added_cr)
 current_rooms.DescendantRemoving:Connect(function(descendant) auto_prompts[descendant] = nil end)
 local descendants = current_rooms:GetDescendants()
 for idx = 1, #descendants do coroutine_resume(coroutine_create(descendant_added_cr), descendants[idx]) end
+table_clear(descendants)
+you.DescendantAdded:Connect(descendant_added_you)
+local descendants = you:GetDescendants()
+for idx = 1, #descendants do coroutine_resume(coroutine_create(descendant_added_you), descendants[idx]) end
 table_clear(descendants)
 workspace.DescendantAdded:Connect(descendant_added_w)
 local descendants = workspace:GetDescendants()
