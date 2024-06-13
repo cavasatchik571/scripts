@@ -1,5 +1,5 @@
 -- eds4.lua
--- by unknown
+-- by @Vov4ik4124
 
 local _4 = Color3.new(0, .4984, 0)
 
@@ -17,13 +17,13 @@ if env.bha4 or (place_id ~= 6839171747 and place_id ~= 10549820578) then return 
 env.bha4 = true
 
 local auto_prompts = {}
+local border = Enum.ApplyStrokeMode.Border
 local clone = game.Clone
 local color3_from_rgb = Color3.fromRGB
 local core_gui = game:GetService('CoreGui')
 local coroutine_create = coroutine.create
 local coroutine_resume = coroutine.resume
 local current_rooms = workspace:WaitForChild('CurrentRooms')
-local get_count = function(e) local r = 0 for _ in e do r += 1 end return r end
 local heartbeat = game:GetService('RunService').Heartbeat
 local idl = {}
 local ignore_symbol = newproxy(false)
@@ -33,6 +33,8 @@ local plrs = game:GetService('Players')
 local points = {}
 local properties = {}
 local re = game:GetService('ReplicatedStorage')
+local rel_yy = Enum.SizeConstraint.RelativeYY
+local round = Enum.LineJoinMode.Round
 local smooth = Enum.SurfaceType.Smooth
 local smooth_plastic = Enum.Material.SmoothPlastic
 local starter_gui = game:GetService('StarterGui')
@@ -191,7 +193,6 @@ local function get_library_code()
 		map[icon.ImageRectOffset.X] = icon.TextLabel.Text
 	end
 
-	for idx = 1, get_count(map) do code[idx] = '?' end
 	for idx = 1, #ui do
 		local child = ui[idx]
 		local id = tonumber(child.Name)
@@ -217,9 +218,9 @@ end
 local function remote_call(func, self, ...)
 	local pattern = patterns[self]
 	if pattern == ignore_symbol then return end
-
 	if pattern then
 		local args = {...}
+
 		for idx = 1, #args do
 			local val = pattern[idx]
 			if val == ignore_symbol then continue end
@@ -319,19 +320,28 @@ local function descendant_added_you(descendant)
 	interact_btn.FontFace = ubuntu
 	interact_btn.MaxVisibleGraphemes = 1
 	interact_btn.Name = 'Interact'
-	interact_btn.Position = udim2_from_scale(0, -1.1)
+	interact_btn.Position = udim2_from_scale(0, -1.05)
 	interact_btn.Size = udim2_from_scale(0.64, 0.64)
-	interact_btn.SizeConstraint = Enum.SizeConstraint.RelativeYY
+	interact_btn.SizeConstraint = relative_yy
 	interact_btn.Text = '4'
 	interact_btn.TextColor3 = white
 	interact_btn.TextScaled = true
 	interact_btn.TextStrokeColor3 = _4
 	interact_btn.TextStrokeTransparency = 0
+
+	local stroke = inst_new('UIStroke')
+	stroke.ApplyStrokeMode = border
+	stroke.Color = black
+	stroke.Enabled = true
+	stroke.LineJoinMode = round
+	stroke.Name = 'Stroke'
+	stroke.Thickness = 4
+	stroke.Parent = interact_btn
 	interact_btn.Parent = descendant
 	interact_btn.Activated:Connect(function()
 		local real = re:FindFirstChild('RemotesFolder') or re:FindFirstChild('EntityInfo')
 		if not real then return end
-		local room = re.GameData.LatestRoom.Value
+		local room = latest_room.Value
 		if room == 50 then
 			solve_pl(real, get_library_code())
 		elseif room == 100 then
@@ -394,7 +404,7 @@ old_namecall = hmm(game, '__namecall', nc(function(self, ...)
 	return remote_call(old_namecall, self, ...)
 end))
 
-send_notification('Button1', 'OK', 'Duration', 4, 'Icon', 'rbxassetid://7440784829', 'Text', 'The exploit has been activated.', 'Title', '4')
+send_notification('Button1', 'OK', 'Duration', 4, 'Icon', 'rbxassetid://7440784829', 'Text', 'The exploit has been activated', 'Title', '4')
 
 while true do
 	task_wait(0.144)
