@@ -1,5 +1,5 @@
--- eds4.lua
--- by vov4ik
+-- eds4.lua4
+-- by @Vov4ik4124
 
 local _4 = Color3.new(0, .4984, 0)
 
@@ -241,7 +241,7 @@ local function send_notification(...)
 end
 
 local function solve_ebf(real) real.EBF:FireServer() end
-local function solve_pl(real, prompt) real.PL:FireServer(typeof(prompt) == 'string' and #prompt == 5 and tonumber(prompt) and prompt or '00000') end
+local function solve_pl(real, prompt) real.PL:FireServer(typeof(prompt) == 'string' and tonumber(prompt) and prompt or '00000') end
 local function descendant_added_cr(descendant)
 	if descendant == nil or typeof(descendant) ~= 'Instance' then return end
 	task_wait(0.004)
@@ -404,7 +404,7 @@ old_namecall = hmm(game, '__namecall', nc(function(self, ...)
 	return remote_call(old_namecall, self, ...)
 end))
 
-send_notification('Button1', 'OK', 'Duration', 4, 'Icon', 'rbxassetid://7440784829', 'Text', 'The exploit has been activated', 'Title', '4')
+send_notification('Button1', 'OK', 'Duration', 4, 'Icon', 'rbxassetid://7440784829', 'Text', 'The exploit has been activated.', 'Title', '4')
 
 while true do
 	task_wait(0.144)
