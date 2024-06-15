@@ -1,5 +1,5 @@
 -- arp4.lua
--- by @Vov4ik4124
+-- by vov4ik
 
 local _4 = Color3.new(0, .4984, 0)
 
@@ -79,8 +79,14 @@ local virtual_user_button1_down = virtual_user.Button1Down
 local virtual_user_button1_up = virtual_user.Button1Up
 local vec2_zero = Vector2.zero
 local vec3_zero = Vector3.zero
-local fire_proximity_prompt = fireproximityprompt or fireProximityPrompt or FireProximityPrompt or fire_proximity_prompt or function(prompt)
+local fire_proximity_prompt = function(prompt)
+	if typeof(prompt) ~= 'Instance' or not prompt:IsA('ProximityPrompt') then return end
+	local cam = workspace.CurrentCamera
+	if not cam then return end
+	cam.CFrame = cf_new(cam.CFrame.Position, prompt.Parent:GetPivot().Position)
+	sleep()
 	prompt:InputHoldBegin()
+	sleep()
 	defer(prompt.InputHoldEnd, prompt)
 end
 
@@ -179,6 +185,7 @@ if a90 ~= nil then a90.Parent = nil end
 local connection_1 = latest_room:GetPropertyChangedSignal('Value'):Connect(latest_room_changed)
 latest_room_changed()
 notify('The script has been activated', 'Rooms', '', 0)
+
 while pathfind_ui.Parent ~= nil do
 	local char = plr.Character
 	if char == nil then fail_fallback() continue end
@@ -266,7 +273,10 @@ while pathfind_ui.Parent ~= nil do
 	clear(waypoints)
 end
 
-if a90 ~= nil then a90.Parent = modules end
+if a90 ~= nil then
+	a90.Parent = modules
+end
+
 connection_0:Disconnect()
 connection_1:Disconnect()
 path:Destroy()
