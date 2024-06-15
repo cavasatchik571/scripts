@@ -245,7 +245,7 @@ while pathfind_ui.Parent ~= nil do
 			pathfind_ui.Parent ~= nil and not (hrp:IsGrounded() and is_safe() == false) do
 			local your_pos = hrp.Position
 			local diff = pos - your_pos - offset
-			if diff.Magnitude <= 1.24 then break end
+			if diff.Magnitude <= 1.74 then break end
 			if not hrp:IsGrounded() then
 				local parent = destination.Parent
 				if parent ~= nil and parent.Name == 'Rooms_Locker' and (destination.Position - hrp.Position).Magnitude < 5 then
