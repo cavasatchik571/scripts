@@ -246,7 +246,7 @@ local function stringify(e: any)
 			return 'UDim2.fromOffset(' .. stringify(ox) .. ', ' .. stringify(oy) .. ')'
 		end
 
-		return 'UDim.new(' .. stringify(sx) .. ', ' .. stringify(ox) .. ', ' .. stringify(sy) .. ', ' .. stringify(oy) .. ')'
+		return 'UDim2.new(' .. stringify(sx) .. ', ' .. stringify(ox) .. ', ' .. stringify(sy) .. ', ' .. stringify(oy) .. ')'
 	elseif accurate_type == 'Vector2' or accurate_type == 'Vector2int16' then
 		local x, y = e.X, e.Y
 
