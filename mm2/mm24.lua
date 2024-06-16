@@ -147,9 +147,8 @@ ui_btn.ZIndex = 4000
 
 local funcs_len = 2
 local funcs = {
-	function(obj)
-		return typeof(obj.Parent) == 'Instance' and obj.Name == 'GunDrop'
-	end,
+	function(obj) return typeof(obj.Parent) == 'Instance' and obj.Name == 'GunDrop' end,
+	function(obj) return typeof(obj.Parent) == 'Instance' and obj.Name == 'Trap' end,
 	function(obj)
 		local parent = obj.Parent
 		if typeof(parent) ~= 'Instance' or parent.Name == 'Handle' then return false end
@@ -255,7 +254,7 @@ local function scripted_shoot()
 	)
 
 	if uis:GetLastInputType() == touch then
-		local id = rng:NextInteger(14, 2147483647)
+		local id = rng:NextInteger(4, 2147483647)
 		local point = cam:WorldToScreenPoint(pos)
 		vim:SendTouchEvent(id, 0, point.X + rng_x, point.Y + rng_y)
 		task_wait(0.014)
@@ -289,6 +288,7 @@ local function workspace_added(descendant)
 		descendant.Reflectance = 0
 		descendant.RightSurface = smooth
 		descendant.TopSurface = smooth
+
 		local special = is_special(descendant)
 		if not special then
 			task_wait(0.004)
