@@ -1,5 +1,5 @@
 -- auto_farm_mm2.lua
--- by @Vov4ik4124
+-- by unknown
 
 local _4 = Color3.new(0, .2514, 0)
 
@@ -10,7 +10,7 @@ local env = (getgenv or function() end)() or _ENV or shared or _G
 env.MF = not env.MF and true or nil
 if not env.MF then return end
 
-local shift = Vector3.new(0, -2, 0)
+local offset = Vector3.new(0, -2, 0)
 local speed = 20
 local step = 15
 
@@ -28,10 +28,7 @@ local starter_gui = game:GetService('StarterGui')
 local you = plrs.LocalPlayer
 local zero = Vector3.zero
 
-local function _set(a, b, c)
-	a[b] = c
-end
-
+local _set = function(a, b, c) a[b] = c end
 local fti = firetouchinterest or fire_touch_interest or function(p0, p1, uint)
 	if uint then warn('UInt is unsupported') end
 	local fct0, fct1, fp0 = p0.CanTouch, p1.CanTouch, p0.Position
@@ -133,12 +130,15 @@ while env.MF do
 	sort(coins, sort_coins)
 	local coin = coins[1]
 	local p1 = coin.Position
-	local diff = p1 + shift - p0
+	local diff = p1 + offset - p0
 	if diff.Magnitude <= 0.24 then clear(coins) continue end
-	local collisions = map:FindFirstChild('GlitchProof')
-	if collisions then collisions:Destroy() end
-	local deco = map:FindFirstChild('Map')
-	if deco then deco:Destroy() end
+	local children = map:GetChildren()
+	for i = 1, #children do
+		local child = children[i]
+		if child == cc then continue end
+		child:Destroy()
+	end
+	clear(children)
 	h.PlatformStand = true
 	reset_velocity(char)
 	local pos = p0 + diff.Unit * dt * speed
