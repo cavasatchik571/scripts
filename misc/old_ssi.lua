@@ -45,7 +45,7 @@ local function download_properties_async(class)
 
 		local api = hs:JSONDecode(result).pageProps.data.apiReference
 		local inherits = api.inherits
-		for idx = 1, #inherits do downloaded_properties(inherits[idx]) end
+		for idx = 1, #inherits do download_properties_async(inherits[idx]) end
 		local list = api.properties
 		for idx = 1, #list do
 			len += 1
