@@ -43,7 +43,10 @@ local function download_properties_async(class)
 		local len = #entry
 		downloaded_properties[class] = entry
 
-		local list = hs:JSONDecode(result).pageProps.data.apiReference.properties
+		local api = hs:JSONDecode(result).pageProps.data.apiReference
+		local inherits = api.inherits
+		for idx = 1, #inherits do downloaded_properties(inherits[idx]) end
+		local list = api.properties
 		for idx = 1, #list do
 			len += 1
 			entry[len] = string_match(list[idx].name or '', '%a+%.(.*)', 1) or ''
@@ -55,7 +58,6 @@ end
 
 local function is_property_read_only(obj, k)
 	local succ, err = pcall(copy, obj, obj, k)
-
 	return not succ and string_find(tostring(err), 'read only', 1, true) ~= nil
 end
 
