@@ -24,9 +24,11 @@ local ps = game:GetService('RunService').PreSimulation
 local remove = table.remove
 local round = math.round
 local sort = table.sort
+local starter_gui = game:GetService('StarterGui')
 local you = plrs.LocalPlayer
 local zero = Vector3.zero
-local _set = function(a, b, c)
+
+local function _set(a, b, c)
 	a[b] = c
 end
 
@@ -111,6 +113,8 @@ end
 
 -- logic
 
+starter_gui:SetCore('SendNotification', {Button1 = 'OK', Duration = 4, Title = 'MM2', Text = 'Auto farm activated'})
+
 while env.MF do
 	local dt = ps:Wait()
 	if not get_is_alive(you) then continue end
@@ -131,6 +135,8 @@ while env.MF do
 	local p1 = coin.Position
 	local diff = p1 + shift - p0
 	if diff.Magnitude <= 0.24 then clear(coins) continue end
+	local collisions = map:FindFirstChild('GlitchProof')
+	if collisions then collisions:Destroy() end
 	local deco = map:FindFirstChild('Map')
 	if deco then deco:Destroy() end
 	h.PlatformStand = true
@@ -141,3 +147,7 @@ while env.MF do
 	fti(hrp, coin, 0)
 	clear(coins)
 end
+
+starter_gui:SetCore('SendNotification', {Button1 = 'OK', Duration = 4, Title = 'MM2', Text = 'Auto farm deactivated'})
+if not get_is_alive(you) then return end
+you.Character:FindFirstChildOfClass('Humanoid').PlatformStand = false
