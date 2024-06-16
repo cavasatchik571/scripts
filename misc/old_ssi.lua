@@ -3,17 +3,16 @@
 local cf_identity = CFrame.identity
 local env = (getgenv or function() end)() or _ENV or shared or _G
 local game_get_service = game.GetService
-local hs = pcall(tostring, game:GetService('CoreGui')) and game or game:GetService('HttpService')
-local hs_get_async = hs == game and hs.HttpGet or hs.GetAsync
+local hs = game:GetService('HttpService')
+local hs_provider = pcall(tostring, game:GetService('CoreGui')) and game or hs
+local http_get_async = hs_provider == game and game.HttpGet or hs.GetAsync
 local instance_new = Instance.new
 local math_min = math.min
 local math_round = math.round
 local string_find = string.find
 local string_format = string.format
-local string_gmatch = string.gmatch
 local string_gsub = string.gsub
 local string_match = string.match
-local string_upper = string.upper
 local table_clear = table.clear
 local table_concat = table.concat
 local table_find = table.find
@@ -23,18 +22,6 @@ local terrain = workspace.Terrain
 local copy = function(a, b, c) b[c] = a[c] return nil end
 local get = function(a, b) return a[b] end
 local set = function(a, b, c) a[b] = c return nil end
-
-local api_pattern = '<tr class=\34([ %-%s%w]+)\34>'
-local class_pattern = 'member%-([%p%s%w]+) row-'
-local hyperlink_pattern = '<a class=\34element%-link\34 href=\34/ref/class/(%w+)%.html\34>'
-local ignore_characters_pattern = '[\n\r\t]'
-
-local inherits_pattern = '<section id=\34tree\34><section id=\34superclasses\34><header><h2>Inherits ' ..
-	'<span class=\34element%-count\34>%(%d+%)</span></h2></header><ul class=\34truncated%-list element%-list\34>(.-)</ul></section>'
-
-local properties_pattern = '<section id=\34members%-index\34><header><h2>Member index <span class=\34element%-count\34>%(%d+%)</span>' ..
-	'</h2></header><table class=\34index%-card member%-index%-card\34><thead><tr><th class=\34col%-type\34>%w*</th><th class' ..
-	'=\34col%-icon\34>%w*</th><th class=\34col%-member\34>%w*</th><th class=\34col%-history\34>%w*</th></tr></thead><tbody>(.*)</tbody>'
 
 local instances = {}
 local instances_len = 0
@@ -46,35 +33,20 @@ env.Properties = downloaded_properties
 
 local function download_properties_async(class)
 	if type(class) ~= 'string' or #class <= 0 or class == '' or downloaded_properties[class] then return end
-	local succ, result = pcall(hs_get_async, hs, 'https://robloxapi.github.io/ref/class/' .. class, true)
+	local succ, result = pcall(
+		http_get_async, hs_provider,
+		'https://create.roblox.com/docs/_next/data/OzlUBb-03fHNBySF-LMVY/reference/engine/classes/' .. class .. '.json', true
+	)
 
 	if succ then
-		local inline_html = string_gsub(result or '', ignore_characters_pattern, '')
-
-		if class ~= 'Instance' then
-			for other_class in string_gmatch(string_match(inline_html, inherits_pattern), hyperlink_pattern) do
-				download_properties_async(other_class)
-			end
-		end
-
 		local entry = downloaded_properties[class] or {}
 		local len = #entry
 		downloaded_properties[class] = entry
 
-		for class in string_gmatch(string_match(inline_html, properties_pattern), api_pattern) do
-			if string_find(class, 'row-Property', 1, true) and
-				not string_find(class, 'api-deprecated', 1, true) and
-				not string_find(class, 'api-hidden', 1, true) and
-				not string_find(class, 'api-not-browsable', 1, true) and
-				not string_find(class, 'api-removed', 1, true) then
-
-				local property = string_match(class, class_pattern)
-
-				if property and not string_find(string_upper(property), 'WORLD', 1, true) then
-					len += 1
-					entry[len] = property
-				end
-			end
+		local list = hs:JSONDecode(result).pageProps.data.apiReference.properties
+		for idx = 1, #list do
+			len += 1
+			entry[len] = string_match(list[idx].name or '', '%a+%.(.*)', 1) or ''
 		end
 
 		table_sort(entry)
