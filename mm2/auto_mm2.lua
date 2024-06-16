@@ -113,7 +113,7 @@ end
 
 -- logic
 
-starter_gui:SetCore('SendNotification', {Button1 = 'OK', Duration = 4, Title = 'MM2', Text = 'Auto farm activated'})
+starter_gui:SetCore('SendNotification', {Button1 = 'OK', Duration = 4, Title = 'MM2', Text = 'Auto farm script has been activated.'})
 
 while env.MF do
 	local dt = ps:Wait()
@@ -129,7 +129,7 @@ while env.MF do
 	local coins = cc:GetChildren()
 	local p0 = hrp:GetPivot().Position
 	filter_coins(coins)
-	if #coins <= 0 or (coins[1].Position - p0).Magnitude > 1000 then continue end
+	if #coins <= 0 or (coins[1].Position - p0).Magnitude > 400 then continue end
 	sort(coins, sort_coins)
 	local coin = coins[1]
 	local p1 = coin.Position
@@ -148,6 +148,6 @@ while env.MF do
 	clear(coins)
 end
 
-starter_gui:SetCore('SendNotification', {Button1 = 'OK', Duration = 4, Title = 'MM2', Text = 'Auto farm deactivated'})
+starter_gui:SetCore('SendNotification', {Button1 = 'OK', Duration = 4, Title = 'MM2', Text = 'Auto farm script has been deactivated.'})
 if not get_is_alive(you) then return end
 you.Character:FindFirstChildOfClass('Humanoid').PlatformStand = false
