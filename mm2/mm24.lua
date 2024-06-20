@@ -1,25 +1,21 @@
--- mm24.lua
--- by @Vov4ik4124
+--!nolint
+--!nonstrict
 
 local _4 = Color3.new(0, .4984, 0)
 
--- source code
+-- by @Vov4ik4124
 
-local place_id = game.PlaceId
-if place_id ~= 142823291 then return end
-local empty_func = function(...) end
-local env = (getgenv or empty_func)() or _ENV or shared or _G
-local new_mm24 = not env.mm24 and true or nil
-env.mm24 = new_mm24
-if not new_mm24 then return end
-local mm24_settings = env.mm24_settings
-local first_time = mm24_settings == nil
-if first_time then
-	mm24_settings = {mouse = {}}
-	env.mm24_settings = mm24_settings
-end
-
-local activated = false
+if game.PlaceId ~= 142823291 then return end
+local gncm = getnamecallmethod or get_namecall_method
+local hf = hookfunction or hook_function
+local hmm = hookmetamethod or hook_meta_method
+local nc = newcclosure
+local plrs = game:GetService('Players')
+local you = plrs.LocalPlayer
+if not gncm or not hf or not hmm or not nc then return you:Kick('MM24 doesn\'t support your executor') end
+local env = (getgenv or function() end)() or shared or _G
+if env.mm24 then return end
+env.mm24 = true
 local cam = workspace.CurrentCamera
 local cf_new = CFrame.new
 local clear = table.clear
@@ -29,132 +25,160 @@ local colors_white = color3_from_rgb(255, 255, 255)
 local core_gui = game:GetService('CoreGui')
 local coroutine_create = coroutine.create
 local coroutine_resume = coroutine.resume
+local coroutine_yield = coroutine.yield
 local data = {}
-local find = string.find
+local dead = Enum.HumanoidStateType.Dead
 local get_plr_data = game:GetService('ReplicatedStorage'):WaitForChild('Remotes'):WaitForChild('Extras'):WaitForChild('GetPlayerData')
-local gs = game:GetService('GuiService')
+local gui_service = game:GetService('GuiService')
 local highlights = {}
 local inst_new = Instance.new
-local it = Enum.UserInputType
-local keyboard = it.Keyboard
-local key_code = Enum.KeyCode.Y
-local lbls = {}
-local light_inst = inst_new('PointLight')
-local light_part = inst_new('Part')
 local lighting = game:GetService('Lighting')
-local lowest_quality = Enum.QualityLevel.Level01
-local min = math.min
-local mm24_highlight = inst_new('BoxHandleAdornment')
-local offset = Vector3.new(0, 3.444, 0)
-local offset_x = 30
-local offset_y = 30
-local other_mouse = mm24_settings.mouse
-local plrs = game:GetService('Players')
+local name_tags = {}
+local other_mouse = {}
 local ray_new = Ray.new
-local rendering = settings().Rendering
 local rng = Random.new()
-local sg = game:GetService('StarterGui')
-local sg_sc = sg.SetCore
-local sg_scp = {}
+local sleep = task.wait
 local smooth = Enum.SurfaceType.Smooth
 local smooth_plastic = Enum.Material.SmoothPlastic
 local starter_player = game:GetService('StarterPlayer')
-local stroke = inst_new('UIStroke')
-local task_wait = task.wait
-local terrain = workspace.Terrain
-local touch = it.Touch
-local udim2_from_offset = UDim2.fromOffset
-local udim2_from_scale = UDim2.fromScale
-local ui = inst_new('ScreenGui')
-local ui_btn = inst_new('TextButton')
+local touch = Enum.UserInputType.Touch
+local ubuntu_font = Font.new('rbxasset://fonts/families/Ubuntu.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+local udim2_fs = UDim2.fromScale
 local uis = game:GetService('UserInputService')
 local upper = string.upper
-local vec3_zero = Vector3.zero
+local vec2_new = Vector2.new
+local vec3_new = Vector3.new
 local vim = game:GetService('VirtualInputManager')
-local you = plrs.LocalPlayer
-light_inst.Brightness = 1.444
-light_inst.Color = _4
-light_inst.Enabled = true
-light_inst.Name = '4'
-light_inst.Range = 48
-light_inst.Shadows = false
-light_inst.Parent = light_part
 
-light_part.Anchored = true
-light_part.BackSurface = smooth
-light_part.BottomSurface = smooth
-light_part.CanCollide = false
-light_part.CanQuery = false
-light_part.CanTouch = false
-light_part.CastShadow = false
-light_part.Color = _4
-light_part.EnableFluidForces = false
-light_part.FrontSurface = smooth
-light_part.LeftSurface = smooth
-light_part.Massless = true
-light_part.Material = smooth_plastic
-light_part.Name = '4'
-light_part.RightSurface = smooth
-light_part.Size = vec3_zero
-light_part.TopSurface = smooth
-light_part.Transparency = 1
-light_part.Parent = workspace
+local highlight_prefab = inst_new('BoxHandleAdornment')
+highlight_prefab.AdornCullingMode = Enum.AdornCullingMode.Never
+highlight_prefab.AlwaysOnTop = true
+highlight_prefab.Color3 = _4
+highlight_prefab.Name = 'Highlight'
+highlight_prefab.Transparency = 0.644
+highlight_prefab.ZIndex = 4
 
-mm24_highlight.AdornCullingMode = Enum.AdornCullingMode.Never
-mm24_highlight.AlwaysOnTop = true
-mm24_highlight.Color3 = _4
-mm24_highlight.Name = 'Highlight'
-mm24_highlight.Transparency = 0.644
-mm24_highlight.Visible = true
-mm24_highlight.ZIndex = 4
+local name_tag = inst_new('BillboardGui')
+name_tag.Active = false
+name_tag.AlwaysOnTop = true
+name_tag.AutoLocalize = false
+name_tag.ClipsDescendants = false
+name_tag.ExtentsOffsetWorldSpace = vec3_new(0, 1, 0)
+name_tag.LightInfluence = 0
+name_tag.MaxDistance = 1440
+name_tag.Name = 'NameTag'
+name_tag.ResetOnSpawn = false
+name_tag.Size = udim2_fs(6, 1.44)
+name_tag.StudsOffsetWorldSpace = vec3_new(0, 1.44, 0)
 
-stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-stroke.Color = colors_white
-stroke.Enabled = true
-stroke.LineJoinMode = Enum.LineJoinMode.Round
-stroke.Name = 'Stroke'
-stroke.Thickness = 4
-stroke.Parent = ui_btn
+local name_tag_lbl = inst_new('TextLabel')
+name_tag_lbl.Active = false
+name_tag_lbl.BackgroundColor3 = colors_white
+name_tag_lbl.BackgroundTransparency = 1
+name_tag_lbl.BorderColor3 = colors_white
+name_tag_lbl.FontFace = ubuntu_font
+name_tag_lbl.Interactable = false
+name_tag_lbl.MaxVisibleGraphemes = 24
+name_tag_lbl.Name = 'Label'
+name_tag_lbl.Text = ''
+name_tag_lbl.TextColor3 = colors_white
+name_tag_lbl.TextScaled = true
+name_tag_lbl.TextStrokeColor3 = colors_black
+name_tag_lbl.TextStrokeTransparency = 0
+name_tag_lbl.ZIndex = 4000
+name_tag_lbl.Parent = name_tag
 
+local ui = inst_new('ScreenGui')
 ui.AutoLocalize = false
 ui.ClipToDeviceSafeArea = false
 ui.DisplayOrder = 4000
 ui.IgnoreGuiInset = true
 ui.Name = '4Gui'
 ui.ResetOnSpawn = false
-ui.ZIndexBehavior = Enum.ZIndexBehavior.Global
-ui.Parent = pcall(tostring, core_gui) and core_gui or you:WaitForChild('PlayerGui')
 
-ui_btn.Active = false
-ui_btn.AnchorPoint = Vector2.new(0.5, 0.5)
+local ui_btn = inst_new('TextButton')
+ui_btn.Active = true
+ui_btn.AnchorPoint = vec2_new(0.5, 0.5)
 ui_btn.AutoButtonColor = false
-ui_btn.AutoLocalize = false
 ui_btn.BackgroundColor3 = colors_black
-ui_btn.BackgroundTransparency = 1
+ui_btn.BackgroundTransparency = 0.5
 ui_btn.BorderColor3 = _4
 ui_btn.BorderMode = Enum.BorderMode.Outline
 ui_btn.BorderSizePixel = 4
-ui_btn.FontFace = Font.new('rbxasset://fonts/families/Ubuntu.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
-ui_btn.Interactable = false
-ui_btn.Name = 'Element'
+ui_btn.FontFace = ubuntu_font
+ui_btn.MaxVisibleGraphemes = 1
+ui_btn.Name = 'Interact'
+ui_btn.Position = udim2_fs(0.75, 0.725)
+ui_btn.Size = udim2_fs(0.144, 0.144)
+ui_btn.SizeConstraint = Enum.SizeConstraint.RelativeYY
 ui_btn.Text = '4'
 ui_btn.TextColor3 = colors_white
 ui_btn.TextScaled = true
-ui_btn.TextStrokeColor3 = colors_black
+ui_btn.TextStrokeColor3 = _4
 ui_btn.TextStrokeTransparency = 0
-ui_btn.Visible = false
 ui_btn.ZIndex = 4000
 
-local funcs_len = 3
-local funcs = {
-	function(obj) return typeof(obj.Parent) == 'Instance' and obj.Name == 'GunDrop' end,
-	function(obj) return typeof(obj.Parent) == 'Instance' and obj.Name == 'Trap' end,
-	function(obj)
-		local parent = obj.Parent
-		if typeof(parent) ~= 'Instance' or parent.Name == 'Handle' then return false end
+do
+	local line = inst_new('Frame')
+	line.Active = false
+	line.AnchorPoint = vec2_new(0, 0)
+	line.BackgroundColor3 = colors_white
+	line.BorderColor3 = colors_black
+	line.BorderSizePixel = 0
+	line.Interactable = false
+	line.Name = 'Line'
+	line.Position = udim2_fs(0, 0)
+
+	local new_line_1 = line:Clone()
+	new_line_1.AnchorPoint = vec2_new(0, 1)
+	new_line_1.Size = udim2_fs(1, 0.04)
+	new_line_1.Parent = name_tag_lbl
+
+	local new_line_2 = line:Clone()
+	new_line_2.Position = udim2_fs(0, 1)
+	new_line_2.Size = udim2_fs(1, 0.04)
+	new_line_2.Parent = name_tag_lbl
+
+	local new_line_3 = line:Clone()
+	new_line_3.AnchorPoint = vec2_new(1, 0)
+	new_line_3.Size = udim2_fs(0.04, 1)
+	new_line_3.Parent = name_tag_lbl
+
+	local new_line_4 = line:Clone()
+	new_line_4.Position = udim2_fs(1, 0)
+	new_line_4.Size = udim2_fs(0.04, 1)
+	new_line_4.Parent = name_tag_lbl
+	name_tag_lbl.Changed:Connect(function(prop)
+		if prop ~= 'BorderColor3' then return end
+		local color = name_tag_lbl.BorderColor3
+		new_line_1.BorderColor3, new_line_2.BorderColor3, new_line_3.BorderColor3, new_line_4.BorderColor3 = color, color, color, color
+	end)
+
+	local ui_stroke = inst_new('UIStroke')
+	ui_stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	ui_stroke.Color = colors_black
+	ui_stroke.Enabled = true
+	ui_stroke.LineJoinMode = Enum.LineJoinMode.Round
+	ui_stroke.Name = 'Stroke'
+	ui_stroke.Thickness = 4
+	ui_stroke.Parent = ui_btn
+end
+
+ui.Parent = pcall(tostring, core_gui) and core_gui or you:WaitForChild('PlayerGui')
+
+-- omg4 ...
+
+local function child_added_lighting(e) if e:IsA('PostEffect') then e.Enabled = false end end
+local function set(a: any, b: any, c: any) a[b] = c end
+local special_func_checks: {any} = {
+	function(e) return e.Parent and e.Name == 'GunDrop' end,
+	function(e) return e.Parent and e.Name == 'ThrowingKnife' end,
+	function(e) return e.Parent and e.Name == 'Trap' end,
+	function(e)
+		local parent = e.Parent
+		if not parent or parent.Name == 'Handle' then return false end
 		local effect = parent:FindFirstChildOfClass('ParticleEmitter')
-		if effect == nil then return false end
-		return effect.Texture == 'rbxassetid://16885815956'
+		return effect and effect.Texture == 'rbxassetid://16885815956' or false
 	end
 }
 
@@ -165,9 +189,45 @@ local function change_mouse_properties(...)
 	clear(args)
 end
 
+local function check_special(e)
+	for idx = 1, #special_func_checks do if special_func_checks[idx](e) then return true end end
+	return false
+end
+
+local function descendant_added_w(e)
+	if e:IsA('BasePart') then
+		e.BackSurface, e.BottomSurface, e.FrontSurface, e.LeftSurface, e.RightSurface, e.TopSurface = smooth, smooth, smooth, smooth, smooth, smooth
+		e.Material, e.Reflectance = smooth_plastic, 0
+		local special = check_special(e)
+		if not special then
+			sleep(0.004)
+			local char = e.Parent
+			if char == nil then return end
+			local plr = plrs:FindFirstChild(char.Name)
+			if plr == nil or plr == you then return end
+			local h = char:WaitForChild('Humanoid', 0.4)
+			if h == nil or h.Health <= 0 or h:GetState() == dead then return end
+		end
+
+		local highlight = highlights[e]
+		if highlight then return end
+		local new_highlight = highlight_prefab:Clone()
+		if special then new_highlight.Name, new_highlight.Transparency = 'SpecialHighlight', 0.24 end
+		highlights[e] = new_highlight
+		new_highlight.Parent = ui
+	elseif e:IsA('Decal') then
+		e.Transparency = 1
+	elseif e:IsA('Beam') or e:IsA('Fire') or e:IsA('Highlight') or e:IsA('Light') or
+		e:IsA('ParticleEmitter') or e:IsA('Smoke') or e:IsA('Sparkles') or e:IsA('Trail') then
+		e.Enabled = false
+	elseif e:IsA('Attachment') or e:IsA('Constraint') or e:IsA('Explosion') or e:IsA('FloorWire') or e:IsA('ForceField') then
+		e.Visible = false
+	end
+end
+
 local function get_plr_pos(mode)
 	local cam_pos = cam.CFrame.Position
-	local dist = 444
+	local dist = 400
 	local list = plrs:GetPlayers()
 	local result
 
@@ -179,7 +239,7 @@ local function get_plr_pos(mode)
 		local char = element.Character
 		if char == nil then continue end
 		local h = char:FindFirstChildOfClass('Humanoid')
-		if h == nil or h.Health <= 0 or h:GetState().Value == 15 then continue end
+		if h == nil or h.Health <= 0 or h:GetState() == dead then continue end
 		local hrp = h.RootPart
 		if hrp == nil then continue end
 		if mode == 'Murderer' then
@@ -189,305 +249,185 @@ local function get_plr_pos(mode)
 		end
 		local new_dist = (cam_pos - hrp.Position).Magnitude
 		if new_dist >= dist then continue end
-		dist = new_dist
-		result = hrp
+		dist, result = new_dist, hrp
 	end
 
 	clear(list)
 	return result
 end
 
-local function is_special(obj)
-	for idx = 1, funcs_len do if funcs[idx](obj) then return true end end
-	return false
+local function multi_call_internal()
+	while true do
+		local args = {coroutine_yield()}
+		local func = args[1]
+		if not func then return end
+		func(unpack(args, 2))
+		clear(args)
+	end
 end
 
-local function notify(btn, dur, img, text, title)
-	sg_scp.Button1 = btn
-	sg_scp.Duration = dur
-	sg_scp.Icon = img
-	sg_scp.Text = text
-	sg_scp.Title = title
-	pcall(sg_sc, sg, 'SendNotification', sg_scp)
-	clear(sg_scp)
-end
-
-local function lighting_added(descendant)
-	if not descendant:IsA('PostEffect') then return end
-	descendant.Enabled = false
-end
-
-local function plrs_added(plr)
+local function plr_added(plr)
 	if plr == you then return end
-	local plr_lbl = lbls[plr]
-	if plr_lbl ~= nil then return end
-	local new_lbl = ui_btn:Clone()
-	lbls[plr] = new_lbl
-	new_lbl.Name = tostring(plr.UserId)
-	new_lbl.Parent = ui
+	local name_tag = name_tags[plr]
+	if name_tag then return end
+	name_tag = name_tag_lbl:Clone()
+	name_tag.Label.Text = plr.Name
+	name_tags[plr] = name_tag
+	name_tag.Parent = ui
 end
 
-local function scripted_shoot()
-	if activated then return end
+lighting.ChildAdded:Connect(child_added_lighting)
+local list = lighting:GetChildren()
+for i = 1, #list do child_added_lighting(list[i]) end
+clear(list)
+local thread = coroutine_create(multi_call_internal)
+workspace.DescendantAdded:Connect(descendant_added_w)
+workspace.DescendantRemoving:Connect(function(e)
+	local highlight = highlights[e]
+	if highlight == nil then return end
+	highlights[e] = nil
+	highlight:Destroy()
+end)
+local list = workspace:GetDescendants()
+for i = 1, #list do coroutine_resume(thread, descendant_added_w, list[i]) end
+clear(list)
+coroutine_resume(thread)
+plrs.PlayerAdded:Connect(plr_added)
+plrs.PlayerRemoving:Connect(function(plr)
+	if plr == you then return end
+	local name_tag = name_tags[plr]
+	if not name_tag then return end
+	name_tags[plr] = nil
+	name_tag:Destroy()
+end)
+local list = plrs:GetPlayers()
+for i = 1, #list do plr_added(list[i]) end
+clear(list)
+
+local did_exist, rendering_stuff = pcall(settings)
+local lowest_quality = Enum.QualityLevel.Level01
+local terrain = workspace.Terrain
+if did_exist then
+	local rendering = rendering_stuff.Rendering
+	pcall(set, rendering, 'EagerBulkExecution', false)
+	pcall(set, rendering, 'EditQualityLevel', lowest_quality)
+	pcall(set, rendering, 'EnableFRM', false)
+	pcall(set, rendering, 'FrameRateManager', Enum.FramerateManagerMode.Off)
+	pcall(set, rendering, 'QualityLevel', lowest_quality)
+end
+
+lighting.FogColor, lighting.FogEnd, lighting.FogStart, lighting.GlobalShadows = colors_black, 9e9, 9e9, false
+terrain.WaterReflectance, terrain.WaterTransparency, terrain.WaterWaveSize, terrain.WaterWaveSpeed = 0, 0, 0, 0
+
+local function target(part)
+	local cam_pos = cam.CFrame.Position
+	local pos = part.Position
+	local screen_point = cam:WorldToScreenPoint(pos)
+	local x = screen_point.X + 30 + rng:NextInteger(-1, 1)
+	local y = screen_point.Y + 30 + rng:NextInteger(-1, 1)
+	ui_btn.Interactable = true
+	change_mouse_properties(
+		'Hit', cf_new(pos), 'Origin', cf_new(cam_pos, pos), 'Target', part,
+		'UnitRay', ray_new(cam_pos, (pos - cam_pos).Unit), 'X', x, 'Y', y
+	)
+	return x, y
+end
+
+local old_func
+old_func = hmm(game, '__index', nc(function(self, key) return self == you:GetMouse() and other_mouse[key] or old_func(self, key) end))
+ui_btn.Activated:Connect(function()
+	if not ui_btn.Interactable then return end
 	local your_char = you.Character
-	if your_char == nil then return end
+	if not your_char then return end
 	local your_h = your_char:FindFirstChildOfClass('Humanoid')
-	if your_h == nil or your_h.Health <= 0 or your_h:GetState().Value == 15 then return end
+	if not your_h or your_h.Health <= 0 or your_h:GetState() == dead then return end
 	local your_hrp = your_h.RootPart
-	if your_hrp == nil then return end
+	if not your_hrp then return end
 	local your_tool = your_char:FindFirstChildOfClass('Tool')
-	if your_tool == nil then return end
+	if not your_tool then return end
 	local name = your_tool.Name
 	local is_gun = name == 'Gun'
 	local is_knife = name == 'Knife'
 	if not is_gun and not is_knife then return end
 	local other_part = (is_gun and get_plr_pos('Murderer')) or (is_knife and get_plr_pos('Sheriff')) or get_plr_pos('')
-	if other_part == nil then return end
-	local cam_pos = cam.CFrame.Position
-	local pos = other_part.Position
-	local rng_x = offset_x + rng:NextInteger(-1, 1)
-	local rng_y = offset_y + rng:NextInteger(-1, 1)
-	activated = true
-	change_mouse_properties(
-		'Hit', cf_new(pos), 'Origin', cf_new(cam_pos, pos), 'Target', other_part,
-		'UnitRay', ray_new(cam_pos, (pos - cam_pos).Unit), 'X', rng_x, 'Y', rng_y
-	)
+	if not other_part then return end
+	local left_top_corner = gui_service:GetGuiInset()
+	local safe_zone_offsets = gui_service:GetSafeZoneOffsets()
+	local cx, cy = safe_zone_offsets.left, safe_zone_offsets.top
+	clear(safe_zone_offsets)
+	cx += left_top_corner.X
+	cy += left_top_corner.Y
 
 	if uis:GetLastInputType() == touch then
-		local id = rng:NextInteger(4, 2147483647)
-		local point = cam:WorldToScreenPoint(pos)
-		vim:SendTouchEvent(id, 0, point.X + rng_x, point.Y + rng_y)
-		task_wait(0.014)
-		local point = cam:WorldToScreenPoint(pos)
-		vim:SendTouchEvent(id, 2, point.X + rng_x, point.Y + rng_y)
+		local x, y = target(other_part)
+		vim:SendTouchEvent(14, 0, x + cx, y + cy)
+		sleep(0.004)
+		local x, y = target(other_part)
+		vim:SendTouchEvent(14, 2, x + cx, y + cy)
 	else
-		local point = cam:WorldToScreenPoint(pos)
-		local x = point.X + rng_x
-		local y = point.Y + rng_y
+		local x, y = target(other_part)
+		x += cx
+		y += cy
 		vim:SendMouseButtonEvent(x, y, 0, true, nil, 0)
 		vim:SendMouseButtonEvent(x, y, 1, true, nil, 0)
-		task_wait(0.014)
-		local point = cam:WorldToScreenPoint(pos)
-		local x = point.X + rng_x
-		local y = point.Y + rng_y
+		sleep(0.004)
+		local x, y = target(other_part)
+		x += cx
+		y += cy
 		vim:SendMouseButtonEvent(x, y, 0, false, nil, 0)
 		vim:SendMouseButtonEvent(x, y, 1, false, nil, 0)
 	end
 
 	change_mouse_properties()
-	activated = false
-end
+	ui_btn.Interactable = false
+end)
 
-local function workspace_added(descendant)
-	if descendant:IsA('BasePart') then
-		descendant.BackSurface = smooth
-		descendant.BottomSurface = smooth
-		descendant.FrontSurface = smooth
-		descendant.LeftSurface = smooth
-		descendant.Material = smooth_plastic
-		descendant.Reflectance = 0
-		descendant.RightSurface = smooth
-		descendant.TopSurface = smooth
+local sg = game:GetService('StarterGui')
+local sg_sc = sg.SetCore
+local sg_scp = {Button1 = 'OK', Duration = 4, Icon = 'rbxassetid://7440784829', Text = 'Script activated', Title = 'MM24'}
+while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.04) end end
+clear(sg_scp)
 
-		local special = is_special(descendant)
-		if not special then
-			task_wait(0.004)
-			local char = descendant.Parent
-			if char == nil then return end
-			local plr = plrs:FindFirstChild(char.Name)
-			if plr == nil or plr == you then return end
-			local h = char:WaitForChild('Humanoid', 0.4)
-			if h == nil or h.Health <= 0 or h:GetState().Value == 15 then return end
-		end
-
-		local highlight = highlights[descendant]
-		if highlight ~= nil then return end
-		local new_highlight = mm24_highlight:Clone()
-		if special then new_highlight.Name, new_highlight.Transparency = 'SpecialHighlight', 0.24 end
-		highlights[descendant] = new_highlight
-		new_highlight.Parent = ui
-	elseif descendant:IsA('Decal') then
-		descendant.Transparency = 1
-	elseif descendant:IsA('Beam') or descendant:IsA('Fire') or descendant:IsA('Highlight') or descendant:IsA('ParticleEmitter') or
-		descendant:IsA('Smoke') or descendant:IsA('Sparkles') or descendant:IsA('Trail') then
-		descendant.Enabled = false
-	elseif descendant:IsA('Attachment') or descendant:IsA('Constraint') or descendant:IsA('Explosion') or
-		descendant:IsA('FloorWire') or descendant:IsA('ForceField') then
-		descendant.Visible = false
-	end
-end
-
--- logic
-
-if first_time then
-	local old_func = empty_func
-	old_func = hookmetamethod(game, '__index', newcclosure(function(self, key)
-		return self == you:GetMouse() and other_mouse[key] or old_func(self, key)
-	end))
-end
-
-local connections = {
-	cam.DescendantAdded:Connect(lighting_added),
-	lighting.DescendantAdded:Connect(lighting_added),
-	plrs.PlayerAdded:Connect(plrs_added),
-	plrs.PlayerRemoving:Connect(function(plr)
-		local plr_lbl = lbls[plr]
-		if plr_lbl == nil then return end
-		plr_lbl:Destroy()
-		lbls[plr] = nil
-	end),
-	uis.InputBegan:Connect(function(input, gpe)
-		if gpe or gs.MenuIsOpen or input.KeyCode ~= key_code or input.UserInputType ~= keyboard or uis:GetFocusedTextBox() ~= nil then return end
-		scripted_shoot()
-	end),
-	workspace.DescendantAdded:Connect(workspace_added),
-	workspace.DescendantRemoving:Connect(function(descendant)
-		local highlight = highlights[descendant]
-		if highlight == nil then return end
-		highlight:Destroy()
-		highlights[descendant] = nil
-	end)
-}
-
-local list_1 = lighting:GetDescendants()
-local list_2 = plrs:GetPlayers()
-local list_3 = workspace:GetDescendants()
 local new_jh = starter_player.CharacterJumpHeight * 1.144
 local new_jp = starter_player.CharacterJumpPower * 1.144
 local new_ws = starter_player.CharacterWalkSpeed * 1.144
-for idx = 1, #list_1 do coroutine_resume(coroutine_create(lighting_added), list_1[idx]) end
-for idx = 1, #list_2 do coroutine_resume(coroutine_create(plrs_added), list_2[idx]) end
-for idx = 1, #list_3 do coroutine_resume(coroutine_create(workspace_added), list_3[idx]) end
-clear(list_1)
-clear(list_2)
-clear(list_3)
 coroutine_resume(coroutine_create(function()
-	while env.mm24 do
+	while true do
 		data = get_plr_data:InvokeServer() or data
-		task_wait(1.4)
-	end
+		for plr, name_tag in next, name_tags do
+			if not name_tag then continue end
+			local bp = plr:FindFirstChildOfClass('Backpack')
+			if not bp then continue end
+			local char = plr.Character
+			if not char then continue end
+			local lbl = name_tag.Label
+			local role = upper((data[plr.Name] or data).Role or '')
+			if bp:FindFirstChild('Knife') or char:FindFirstChild('Knife') or
+				role == 'FREEZER' or role == 'INFECTED' or role == 'MURDERER' or role == 'ZOMBIE' then
+				lbl.BorderColor3 = _4
+				lbl.TextColor3 = _4
+			elseif bp:FindFirstChild('Gun') or char:FindFirstChild('Gun') or
+				role == 'HERO' or role == 'RUNNER' or role == 'SHERIFF' or role == 'SURVIVOR' then
+				lbl.BorderColor3 = colors_black
+				lbl.TextColor3 = colors_white
+			else
+				lbl.BorderColor3 = colors_white
+				lbl.TextColor3 = colors_white
+			end
+		end
 
-	clear(data)
+		sleep(1.44)
+	end
 end))
 
-local interact_btn = ui_btn:Clone()
-local new_stroke = interact_btn:FindFirstChildOfClass('UIStroke') do if new_stroke then new_stroke.Color = colors_black end end
-local lighting_settings = {FogColor = lighting.FogColor, FogEnd = lighting.FogEnd, FogStart = lighting.FogStart, GlobalShadows = lighting.GlobalShadows}
-local rendering_quality_level = rendering.QualityLevel
-local terrain_settings = {
-	WaterReflectance = terrain.WaterReflectance, WaterTransparency = terrain.WaterTransparency,
-	WaterWaveSize = terrain.WaterWaveSize, WaterWaveSpeed = terrain.WaterWaveSpeed
-}
-
-interact_btn.Active = true
-interact_btn.BackgroundTransparency = 0.5
-interact_btn.BorderSizePixel = 0
-interact_btn.Interactable = true
-interact_btn.MaxVisibleGraphemes = 1
-interact_btn.Name = 'Interact'
-interact_btn.Position = udim2_from_scale(0.75, 0.725)
-interact_btn.Size = udim2_from_scale(0.144, 0.144)
-interact_btn.SizeConstraint = Enum.SizeConstraint.RelativeYY
-interact_btn.Text = '4'
-interact_btn.TextColor3 = colors_white
-interact_btn.TextStrokeColor3 = _4
-interact_btn.Visible = false
-interact_btn.Parent = ui
-interact_btn.MouseButton1Up:Connect(scripted_shoot)
-notify('OK', 4, 'rbxassetid://7440784829', 'Script activated', 'MM24')
-
-while env.mm24 do
-	task_wait()
-	local cam_pos = cam.CFrame.Position
-	light_part.Position = cam_pos
-	for adornee, highlight in next, highlights do
-		if typeof(adornee) ~= 'Instance' or not adornee:IsA('BasePart') then continue end
-		local parent = adornee.Parent
-		if parent == nil or highlight.Parent == nil then continue end
-		highlight.Adornee = adornee
-		highlight.Size = adornee.Size * (highlight.Name == 'SpecialHighlight' and 2 or 1)
-		local plr = plrs:GetPlayerFromCharacter(parent)
-		if plr == nil then continue end
-		local lbl = ui:FindFirstChild(tostring(plr.UserId))
-		if lbl == nil or not lbl:IsA('GuiObject') then continue end
-		highlight.Color3 = lbl.BorderColor3
-	end
-
-	for plr, plr_lbl in next, lbls do
-		plr_lbl.Visible = false
-		if plr_lbl.Parent == nil then continue end
-		local char = plr.Character
-		if char == nil or char.Parent ~= workspace then continue end
-		local h = char:FindFirstChildOfClass('Humanoid')
-		if h == nil or h.Health <= 0 or h:GetState().Value == 15 then continue end
-		local hrp = h.RootPart
-		if hrp == nil then continue end
-		local pos = (hrp.Position or vec3_zero) + offset
-		local pos_2d = cam:WorldToViewportPoint(pos)
-		local pos_dist = (cam_pos - pos).Magnitude
-		if pos_2d.Z < 0 or pos_dist > 444 then continue end
-		local lbl_stroke = plr_lbl:FindFirstChildOfClass('UIStroke')
-		if lbl_stroke == nil or not lbl_stroke:IsA('UIStroke') then continue end
-		local name = plr.Name
-		local role = upper(tostring((data[name] or data).Role))
-		lbl_stroke.Thickness = min(4, 100 / pos_dist)
-		plr_lbl.Position = udim2_from_offset(pos_2d.X, pos_2d.Y)
-		plr_lbl.Size = udim2_from_offset(3000 / pos_dist, 600 / pos_dist)
-		plr_lbl.Text = name
-		plr_lbl.Visible = true
-
-		if plr:FindFirstChild('Knife', true) ~= nil or char:FindFirstChild('Knife') ~= nil or
-			role == 'FREEZER' or role == 'INFECTED' or role == 'MURDERER' or role == 'ZOMBIE' then
-			plr_lbl.BorderColor3 = _4
-			plr_lbl.TextColor3 = _4
-			lbl_stroke.Color = _4
-		elseif plr:FindFirstChild('Gun', true) ~= nil or char:FindFirstChild('Gun') ~= nil or
-			role == 'HERO' or role == 'RUNNER' or role == 'SHERIFF' or role == 'SURVIVOR' then
-			plr_lbl.BorderColor3 = colors_black
-			plr_lbl.TextColor3 = colors_white
-			lbl_stroke.Color = colors_black
-		else
-			plr_lbl.BorderColor3 = colors_white
-			plr_lbl.TextColor3 = colors_white
-			lbl_stroke.Color = colors_white
-		end
-	end
-
-	interact_btn.Visible = false
-	lighting.FogColor, lighting.FogEnd, lighting.FogStart, lighting.GlobalShadows = colors_black, 9e9, 9e9, false
-	rendering.QualityLevel = lowest_quality
-	terrain.WaterReflectance, terrain.WaterTransparency, terrain.WaterWaveSize, terrain.WaterWaveSpeed = 0, 0, 0, 0
-	local your_char = you.Character
-	if your_char == nil then continue end
-	local your_h = your_char:FindFirstChildOfClass('Humanoid')
-	if your_h == nil or your_h.Health <= 0 or your_h:GetState().Value == 15 then continue end
-	local your_hrp = your_h.RootPart
-	if your_hrp == nil then continue end
-	local your_tn = (your_char:FindFirstChildOfClass('Tool') or game).Name
-	interact_btn.Visible = (your_tn == 'Gun' or your_tn == 'Knife') and uis:GetLastInputType() == touch
-	your_h.JumpHeight = new_jh
-	your_h.WalkSpeed = new_jp
-	your_h.WalkSpeed = new_ws
+while true do
+	sleep(0.04)
+	local char = you.Character
+	if not char then continue end
+	local h = char:FindFirstChildOfClass('Humanoid')
+	if not h or h.Health <= 0 or h:GetState() == dead then continue end
+	if h.UseJumpPower then if h.JumpPower ~= 0 then h.JumpPower = new_jp end else if h.JumpHeight ~= 0 then h.JumpHeight = new_jh end end
+	if h.WalkSpeed == 0 then continue end
+	h.WalkSpeed = new_ws
+	ui_btn.Parent = (char:FindFirstChild('Gun') or char:FindFirstChild('Knife')) and ui or nil
 end
-
-ui_btn:Destroy()
-ui:Destroy()
-stroke:Destroy()
-rendering.QualityLevel = rendering_quality_level
-notify('OK', 4, 'rbxassetid://7440784829', 'Script deactivated', 'MM24')
-mm24_highlight:Destroy()
-light_part:Destroy()
-light_inst:Destroy()
-interact_btn:Destroy()
-for key, val in next, terrain_settings do terrain[key] = val end
-for key, val in next, lighting_settings do lighting[key] = val end
-for idx = 1, 7 do connections[idx]:Disconnect() end
-for _, lbl in next, lbls do lbl:Destroy() end
-for _, highlight in next, highlights do highlight:Destroy() end
-clear(terrain_settings)
-clear(other_mouse)
-clear(lighting_settings)
-clear(lbls)
-clear(highlights)
-clear(connections)
-activated = false
