@@ -133,7 +133,7 @@ ui_btn.ZIndex = 4000
 stroke:Clone().Parent = ui_btn
 ui.Parent = pcall(tostring, core_gui) and core_gui or you:WaitForChild('PlayerGui')
 
----4
+---4 Vov4ik
 
 local function child_added_lighting(e) if e:IsA('PostEffect') then e.Enabled = false end end
 local function set(a: any, b: any, c: any) a[b] = c end
@@ -255,6 +255,7 @@ plrs.PlayerRemoving:Connect(function(plr)
 	name_tags[plr] = nil
 	plr_tag:Destroy()
 end)
+
 local list = plrs:GetPlayers()
 for i = 1, #list do plr_added(list[i]) end
 clear(list)
@@ -293,9 +294,7 @@ local function scripted_shoot()
 	local your_char = you.Character
 	if not your_char then return end
 	local your_h = your_char:FindFirstChildOfClass('Humanoid')
-	if not your_h or your_h.Health <= 0 or your_h:GetState() == dead then return end
-	local your_hrp = your_h.RootPart
-	if not your_hrp then return end
+	if not your_h or your_h.Health <= 0 or your_h:GetState() == dead or not your_h.RootPart then return end
 	local your_tool = your_char:FindFirstChildOfClass('Tool')
 	if not your_tool then return end
 	local name = your_tool.Name
@@ -362,10 +361,11 @@ coroutine_resume(coroutine_create(function()
 			if not char then name_tag.Adornee = nil continue end
 			local h = char:FindFirstChildOfClass('Humanoid')
 			if not h or h.Health <= 0 or h:GetState() == dead then name_tag.Adornee = nil continue end
+			local hrp = h.RootPart
+			if not hrp then name_tag.Adornee = nil continue end
 			local lbl = name_tag.Label
 			local role = upper((data[plr.Name] or data).Role or '')
-			name_tag.Adornee = char
-
+			name_tag.Adornee = hrp
 			if bp:FindFirstChild('Knife') or char:FindFirstChild('Knife') or
 				role == 'FREEZER' or role == 'INFECTED' or
 				role == 'MURDERER' or role == 'ZOMBIE' then
@@ -380,9 +380,7 @@ coroutine_resume(coroutine_create(function()
 				lbl.BorderColor3 = colors_white
 				lbl.TextColor3 = colors_white
 			end
-
-			local stroke = lbl.Stroke
-			stroke.Color = lbl.BorderColor3
+			lbl.Stroke.Color = lbl.BorderColor3
 		end
 		sleep(1.4)
 	end
@@ -396,7 +394,9 @@ while true do
 		if not char then continue end
 		local h = char:FindFirstChildOfClass('Humanoid')
 		if not h or h.Health <= 0 or h:GetState() == dead then continue end
-		plr_tag.Label.Stroke.Thickness = min(4, 100 / (pos - char:GetPivot().Position).Magnitude)
+		local hrp = h.RootPart
+		if not hrp then continue end
+		plr_tag.Label.Stroke.Thickness = min(4, 100 / (hrp:GetPivot().Position - pos).Magnitude)
 	end
 
 	for adornee, highlight in next, highlights do
@@ -415,7 +415,7 @@ while true do
 	local char = you.Character
 	if not char then continue end
 	local h = char:FindFirstChildOfClass('Humanoid')
-	if not h or h.Health <= 0 or h:GetState() == dead then continue end
+	if not h or h.Health <= 0 or h:GetState() == dead or not h.RootPart then continue end
 	ui_btn.Parent = (char:FindFirstChild('Gun') or char:FindFirstChild('Knife')) and ui or nil
 	if h.UseJumpPower then if h.JumpPower ~= 0 then h.JumpPower = new_jp end else if h.JumpHeight ~= 0 then h.JumpHeight = new_jh end end
 	if h.WalkSpeed == 0 then continue end
