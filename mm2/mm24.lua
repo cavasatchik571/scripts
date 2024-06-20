@@ -72,7 +72,7 @@ name_tag.MaxDistance = 1440
 name_tag.Name = 'NameTag'
 name_tag.ResetOnSpawn = false
 name_tag.Size = udim2_fs(6, 1.44)
-name_tag.StudsOffsetWorldSpace = vec3_new(0, 1.44, 0)
+name_tag.StudsOffsetWorldSpace = vec3_new(0, 1.94, 0)
 
 local name_tag_lbl = inst_new('TextLabel')
 name_tag_lbl.Active = false
