@@ -145,7 +145,7 @@ ui_btn.TextStrokeTransparency = 0
 ui_btn.Visible = false
 ui_btn.ZIndex = 4000
 
-local funcs_len = 2
+local funcs_len = 3
 local funcs = {
 	function(obj) return typeof(obj.Parent) == 'Instance' and obj.Name == 'GunDrop' end,
 	function(obj) return typeof(obj.Parent) == 'Instance' and obj.Name == 'Trap' end,
