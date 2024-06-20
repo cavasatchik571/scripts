@@ -25,7 +25,6 @@ local colors_white = color3_from_rgb(255, 255, 255)
 local core_gui = game:GetService('CoreGui')
 local coroutine_create = coroutine.create
 local coroutine_resume = coroutine.resume
-local coroutine_yield = coroutine.yield
 local data = {}
 local dead = Enum.HumanoidStateType.Dead
 local get_plr_data = game:GetService('ReplicatedStorage'):WaitForChild('Remotes'):WaitForChild('Extras'):WaitForChild('GetPlayerData')
@@ -256,31 +255,20 @@ local function get_plr_pos(mode)
 	return result
 end
 
-local function multi_call_internal()
-	while true do
-		local args = {coroutine_yield()}
-		local func = args[1]
-		if not func then return end
-		func(unpack(args, 2))
-		clear(args)
-	end
-end
-
 local function plr_added(plr)
 	if plr == you then return end
-	local name_tag = name_tags[plr]
-	if name_tag then return end
-	name_tag = name_tag_lbl:Clone()
-	name_tag.Label.Text = plr.Name
-	name_tags[plr] = name_tag
-	name_tag.Parent = ui
+	local plr_tag = name_tags[plr]
+	if plr_tag then return end
+	plr_tag = name_tag:Clone()
+	plr_tag.Label.Text = plr.Name
+	name_tags[plr] = plr_tag
+	plr_tag.Parent = ui
 end
 
 lighting.ChildAdded:Connect(child_added_lighting)
 local list = lighting:GetChildren()
 for i = 1, #list do child_added_lighting(list[i]) end
 clear(list)
-local thread = coroutine_create(multi_call_internal)
 workspace.DescendantAdded:Connect(descendant_added_w)
 workspace.DescendantRemoving:Connect(function(e)
 	local highlight = highlights[e]
@@ -289,16 +277,15 @@ workspace.DescendantRemoving:Connect(function(e)
 	highlight:Destroy()
 end)
 local list = workspace:GetDescendants()
-for i = 1, #list do coroutine_resume(thread, descendant_added_w, list[i]) end
+for i = 1, #list do coroutine_resume(coroutine_create(descendant_added_w), list[i]) end
 clear(list)
-coroutine_resume(thread)
 plrs.PlayerAdded:Connect(plr_added)
 plrs.PlayerRemoving:Connect(function(plr)
 	if plr == you then return end
-	local name_tag = name_tags[plr]
-	if not name_tag then return end
+	local plr_tag = name_tags[plr]
+	if not plr_tag then return end
 	name_tags[plr] = nil
-	name_tag:Destroy()
+	plr_tag:Destroy()
 end)
 local list = plrs:GetPlayers()
 for i = 1, #list do plr_added(list[i]) end
@@ -402,12 +389,15 @@ coroutine_resume(coroutine_create(function()
 			if not char then continue end
 			local lbl = name_tag.Label
 			local role = upper((data[plr.Name] or data).Role or '')
+
 			if bp:FindFirstChild('Knife') or char:FindFirstChild('Knife') or
-				role == 'FREEZER' or role == 'INFECTED' or role == 'MURDERER' or role == 'ZOMBIE' then
+				role == 'FREEZER' or role == 'INFECTED' or
+				role == 'MURDERER' or role == 'ZOMBIE' then
 				lbl.BorderColor3 = _4
 				lbl.TextColor3 = _4
 			elseif bp:FindFirstChild('Gun') or char:FindFirstChild('Gun') or
-				role == 'HERO' or role == 'RUNNER' or role == 'SHERIFF' or role == 'SURVIVOR' then
+				role == 'HERO' or role == 'RUNNER' or
+				role == 'SHERIFF' or role == 'SURVIVOR' then
 				lbl.BorderColor3 = colors_black
 				lbl.TextColor3 = colors_white
 			else
