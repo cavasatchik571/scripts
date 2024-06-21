@@ -199,8 +199,8 @@ local function descendant_added_w(e)
 		debris:AddItem(new_highlight, 0.4)
 	elseif e:IsA('Decal') then
 		e.Transparency = 1
-	elseif e:IsA('Fire') or e:IsA('Highlight') or e:IsA('Light') or e:IsA('ParticleEmitter') or e:IsA('PostEffect') or
-		e:IsA('Smoke') or e:IsA('Sparkles') or e:IsA('Trail') then
+	elseif e:IsA('Fire') or e:IsA('Highlight') or e:IsA('Light') or e:IsA('ParticleEmitter') or
+		e:IsA('PostEffect') or e:IsA('Smoke') or e:IsA('Sparkles') or e:IsA('Trail') then
 		e.Enabled = false
 	elseif e:IsA('Attachment') or e:IsA('Constraint') or e:IsA('Explosion') or e:IsA('FloorWire') or e:IsA('ForceField') then
 		e.Visible = false
