@@ -6,13 +6,13 @@ local _4 = Color3.new(0, .4984, 0)
 -- by @Vov4ik4124
 
 if game.PlaceId ~= 142823291 then return end
+local fti = firetouchinterest or fire_touch_interest
 local gncm = getnamecallmethod or get_namecall_method
-local hf = hookfunction or hook_function
 local hmm = hookmetamethod or hook_meta_method
 local nc = newcclosure
 local plrs = game:GetService('Players')
 local you = plrs.LocalPlayer
-if not gncm or not hf or not hmm or not nc then return you:Kick('MM24 doesn\'t support your executor') end
+if not fti or not gncm or not hmm or not nc then return you:Kick('MM24 doesn\'t support your executor') end
 local env = (getgenv or function() end)() or shared or _G
 if env.mm24 then return end
 env.mm24 = true
@@ -29,7 +29,7 @@ local data = {}
 local dead = Enum.HumanoidStateType.Dead
 local enum_uit = Enum.UserInputType
 local get_plr_data = game:GetService('ReplicatedStorage'):WaitForChild('Remotes'):WaitForChild('Extras'):WaitForChild('GetPlayerData')
-local gui_service = game:GetService('GuiService')
+local gs = game:GetService('GuiService')
 local highlights = {}
 local inst_new = Instance.new
 local key_code = Enum.KeyCode.Four
@@ -105,9 +105,9 @@ local ui = inst_new('ScreenGui')
 ui.AutoLocalize = false
 ui.ClipToDeviceSafeArea = false
 ui.DisplayOrder = 4000
-ui.IgnoreGuiInset = true
 ui.Name = '4Gui'
 ui.ResetOnSpawn = false
+ui.ScreenInsets = Enum.ScreenInsets.None
 
 local ui_btn = inst_new('TextButton')
 ui_btn.Active = true
@@ -133,13 +133,16 @@ ui_btn.ZIndex = 4000
 stroke:Clone().Parent = ui_btn
 ui.Parent = pcall(tostring, core_gui) and core_gui or you:WaitForChild('PlayerGui')
 
----4 Vov4ik
+---4💚
 
 local function child_added_lighting(e) if e:IsA('PostEffect') then e.Enabled = false end end
 local function set(a: any, b: any, c: any) a[b] = c end
 local special_func_checks: {any} = {
 	function(e) return e.Parent and e.Name == 'GunDrop' end,
-	function(e) return e.Parent and e.Name == 'ThrowingKnife' end,
+	function(e)
+		local parent = e.Parent
+		return parent and parent.Name == 'ThrowingKnife' or false
+	end,
 	function(e) return e.Parent and e.Name == 'Trap' end,
 	function(e)
 		local parent = e.Parent
@@ -192,9 +195,8 @@ local function descendant_added_w(e)
 	end
 end
 
-local function get_plr_pos(mode)
+local function get_plr_pos(dist, mode)
 	local cam_pos = cam.CFrame.Position
-	local dist = 400
 	local list = plrs:GetPlayers()
 	local result
 	for idx = 1, #list do
@@ -301,15 +303,11 @@ local function scripted_shoot()
 	local is_gun = name == 'Gun'
 	local is_knife = name == 'Knife'
 	if not is_gun and not is_knife then return end
-	local other_part = (is_gun and get_plr_pos('Murderer')) or (is_knife and get_plr_pos('Sheriff')) or get_plr_pos('')
+	local other_part = (is_gun and get_plr_pos(666, 'Murderer')) or (is_knife and get_plr_pos(666, 'Sheriff')) or get_plr_pos(666, '')
 	if not other_part then return end
-	local left_top_corner = gui_service:GetGuiInset()
-	local safe_zone_offsets = gui_service:GetSafeZoneOffsets()
-	local cx, cy = safe_zone_offsets.left, safe_zone_offsets.top
-	clear(safe_zone_offsets)
-	cx += left_top_corner.X
-	cy += left_top_corner.Y
-
+	local apos = ui.AbsolutePosition
+	local cx, cy = -apos.X, -apos.Y
+	ui_btn.Interactable = false
 	if uis:GetLastInputType() == touch then
 		local x, y = target(other_part)
 		vim:SendTouchEvent(14, 0, x + cx, y + cy)
@@ -329,13 +327,12 @@ local function scripted_shoot()
 		vim:SendMouseButtonEvent(x, y, 0, false, nil, 0)
 		vim:SendMouseButtonEvent(x, y, 1, false, nil, 0)
 	end
-
 	change_mouse_properties()
-	ui_btn.Interactable = false
+	ui_btn.Interactable = true
 end
 
 uis.InputBegan:Connect(function(input, gpe)
-	if gpe or input.KeyCode ~= key_code or input.UserInputType ~= keyboard or uis:GetFocusedTextBox() then return end
+	if gpe or gs.MenuIsOpen or input.KeyCode ~= key_code or input.UserInputType ~= keyboard or uis:GetFocusedTextBox() then return end
 	scripted_shoot()
 end)
 
@@ -382,6 +379,7 @@ coroutine_resume(coroutine_create(function()
 			end
 			lbl.Stroke.Color = lbl.BorderColor3
 		end
+
 		sleep(1.4)
 	end
 end))
@@ -413,10 +411,22 @@ while true do
 	end
 
 	local char = you.Character
-	if not char then continue end
+	if not char then ui_btn.Parent = nil continue end
 	local h = char:FindFirstChildOfClass('Humanoid')
-	if not h or h.Health <= 0 or h:GetState() == dead or not h.RootPart then continue end
-	ui_btn.Parent = (char:FindFirstChild('Gun') or char:FindFirstChild('Knife')) and ui or nil
+	if not h or h.Health <= 0 or h:GetState() == dead or not h.RootPart then ui_btn.Parent = nil continue end
+	local knife = char:FindFirstChild('Knife')
+	ui_btn.Parent = (char:FindFirstChild('Gun') or knife) and ui or nil
+	if knife then
+		local handle = knife:FindFirstChild('Handle')
+		if handle then
+			local hrp = get_plr_pos(5, '')
+			if hrp then
+				fti(handle, hrp, 1)
+				fti(handle, hrp, 0)
+			end
+		end
+	end
+
 	if h.UseJumpPower then if h.JumpPower ~= 0 then h.JumpPower = new_jp end else if h.JumpHeight ~= 0 then h.JumpHeight = new_jh end end
 	if h.WalkSpeed == 0 then continue end
 	h.WalkSpeed = new_ws
