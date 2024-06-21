@@ -311,7 +311,7 @@ local function scripted_shoot()
 	if uis:GetLastInputType() == touch then
 		local x, y = target(other_part)
 		vim:SendTouchEvent(14, 0, x + cx, y + cy)
-		sleep(0.004)
+		sleep(0.014)
 		local x, y = target(other_part)
 		vim:SendTouchEvent(14, 2, x + cx, y + cy)
 	else
@@ -320,7 +320,7 @@ local function scripted_shoot()
 		y += cy
 		vim:SendMouseButtonEvent(x, y, 0, true, nil, 0)
 		vim:SendMouseButtonEvent(x, y, 1, true, nil, 0)
-		sleep(0.004)
+		sleep(0.014)
 		local x, y = target(other_part)
 		x += cx
 		y += cy
