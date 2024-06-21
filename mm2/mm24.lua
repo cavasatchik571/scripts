@@ -27,6 +27,7 @@ local coroutine_create = coroutine.create
 local coroutine_resume = coroutine.resume
 local data = {}
 local dead = Enum.HumanoidStateType.Dead
+local debris = game:GetService('Debris')
 local enum_uit = Enum.UserInputType
 local get_plr_data = game:GetService('ReplicatedStorage'):WaitForChild('Remotes'):WaitForChild('Extras'):WaitForChild('GetPlayerData')
 local gs = game:GetService('GuiService')
@@ -133,7 +134,7 @@ ui_btn.ZIndex = 4000
 stroke:Clone().Parent = ui_btn
 ui.Parent = pcall(tostring, core_gui) and core_gui or you:WaitForChild('PlayerGui')
 
----4 by Vov4ik
+---4  💚
 
 local function child_added_lighting(e) if e:IsA('PostEffect') then e.Enabled = false end end
 local function set(a: any, b: any, c: any) a[b] = c end
@@ -141,7 +142,11 @@ local special_func_checks: {any} = {
 	function(e) return e.Parent and e.Name == 'GunDrop' end,
 	function(e)
 		local parent = e.Parent
-		return parent and parent.Name == 'ThrowingKnife' or false
+		if parent and parent.Name == 'ThrowingKnife' then
+			debris:AddItem(parent, 14)
+			return true
+		end
+		return false
 	end,
 	function(e) return e.Parent and e.Name == 'Trap' end,
 	function(e)
@@ -178,7 +183,6 @@ local function descendant_added_w(e)
 			local h = char:WaitForChild('Humanoid', 0.4)
 			if not h or h.Health <= 0 or h:GetState() == dead then return end
 		end
-
 		local highlight = highlights[e]
 		if highlight then return end
 		local new_highlight = highlight_prefab:Clone()
@@ -215,7 +219,6 @@ local function get_plr_pos(dist, mode)
 		elseif mode == 'Sheriff' then
 			if not bp:FindFirstChild('Gun') and not char:FindFirstChild('Gun') then continue end
 		end
-
 		local new_dist = (cam_pos - hrp.Position).Magnitude
 		if new_dist >= dist then continue end
 		dist, result = new_dist, hrp
@@ -287,7 +290,6 @@ local function target(part)
 		'Hit', cf_new(pos), 'Origin', cf_new(cam_pos, pos), 'Target', part,
 		'UnitRay', ray_new(cam_pos, (pos - cam_pos).Unit), 'X', x, 'Y', y
 	)
-
 	return x, y
 end
 
@@ -349,7 +351,6 @@ local new_ws = starter_player.CharacterWalkSpeed * 1.144
 coroutine_resume(coroutine_create(function()
 	while true do
 		data = get_plr_data:InvokeServer() or data
-
 		for plr, name_tag in next, name_tags do
 			if not name_tag or not plr then continue end
 			local bp = plr:FindFirstChildOfClass('Backpack')
@@ -379,7 +380,6 @@ coroutine_resume(coroutine_create(function()
 			end
 			lbl.Stroke.Color = lbl.BorderColor3
 		end
-
 		sleep(1.4)
 	end
 end))
