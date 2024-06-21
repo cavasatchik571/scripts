@@ -134,7 +134,7 @@ ui_btn.ZIndex = 4000
 stroke:Clone().Parent = ui_btn
 ui.Parent = pcall(tostring, core_gui) and core_gui or you:WaitForChild('PlayerGui')
 
----4  💚
+---4 w/💚
 
 local function child_added_lighting(e) if e:IsA('PostEffect') then e.Enabled = false end end
 local function set(a: any, b: any, c: any) a[b] = c end
@@ -191,17 +191,17 @@ local function descendant_added_w(e)
 		new_highlight.Parent = ui
 	elseif e:IsA('Beam') then
 		e.Enabled = false
-		local a0 = e.Attachment0
-		local a1 = e.Attachment1
+		local a0: any = e.Attachment0
+		local a1: any = e.Attachment1
 		if not a0 or not a1 then return end
 		a0 = a0.WorldPosition
 		a1 = a1.WorldPosition
 		local new_highlight = highlight_prefab:Clone()
 		new_highlight.Adornee = terrain
 		new_highlight.CFrame = cf_new((a0 + a1) / 2, a0)
-		new_highlight.Size = vec3_new(0.14, 0.14, (a1 - a0).Magnitude)
+		new_highlight.Size = vec3_new(0.244, 0.244, (a1 - a0).Magnitude)
 		new_highlight.Parent = ui
-		debris:AddItem(new_highlight, 1.4)
+		debris:AddItem(new_highlight, 0.644)
 	elseif e:IsA('Decal') then
 		e.Transparency = 1
 	elseif e:IsA('Fire') or e:IsA('Highlight') or e:IsA('Light') or e:IsA('ParticleEmitter') or
@@ -318,7 +318,7 @@ local function scripted_shoot()
 	local is_gun = name == 'Gun'
 	local is_knife = name == 'Knife'
 	if not is_gun and not is_knife then return end
-	local other_part = (is_gun and get_plr_pos(666, 'Murderer')) or (is_knife and get_plr_pos(666, 'Sheriff')) or get_plr_pos(666, '')
+	local other_part = (is_gun and get_plr_pos(740, 'Murderer')) or (is_knife and get_plr_pos(740, 'Sheriff')) or get_plr_pos(740, '')
 	if not other_part then return end
 	local apos = ui.AbsolutePosition
 	local cx, cy = -apos.X, -apos.Y
@@ -360,9 +360,9 @@ local sg_sc = sg.SetCore
 local sg_scp = {Button1 = 'OK', Duration = 4, Icon = 'rbxassetid://7440784829', Text = 'Script activated', Title = 'MM24'}
 while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.04) end end
 clear(sg_scp)
-local new_jh = starter_player.CharacterJumpHeight * 1.14
-local new_jp = starter_player.CharacterJumpPower * 1.14
-local new_ws = starter_player.CharacterWalkSpeed * 1.14
+local new_jh = starter_player.CharacterJumpHeight * 1.144
+local new_jp = starter_player.CharacterJumpPower * 1.144
+local new_ws = starter_player.CharacterWalkSpeed * 1.144
 coroutine_resume(coroutine_create(function()
 	while true do
 		data = get_plr_data:InvokeServer() or data
@@ -429,7 +429,7 @@ while true do
 	if knife then
 		local handle = knife:FindFirstChild('Handle')
 		if handle then
-			local hrp = get_plr_pos(5.4, '')
+			local hrp = get_plr_pos(5.444, '')
 			if hrp then
 				fti(handle, hrp, 1)
 				fti(handle, hrp, 0)
