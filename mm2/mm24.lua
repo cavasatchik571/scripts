@@ -39,6 +39,7 @@ local lighting = game:GetService('Lighting')
 local min = math.min
 local name_tags = {}
 local other_mouse = {}
+local plrs_pos = {}
 local ray_new = Ray.new
 local sleep = task.wait
 local smooth = Enum.SurfaceType.Smooth
@@ -52,6 +53,7 @@ local uis = game:GetService('UserInputService')
 local upper = string.upper
 local vec2_new = Vector2.new
 local vec3_new = Vector3.new
+local vec3_zero = Vector3.zero
 local vim = game:GetService('VirtualInputManager')
 
 local highlight_prefab = inst_new('BoxHandleAdornment')
@@ -134,7 +136,7 @@ ui_btn.ZIndex = 4000
 stroke:Clone().Parent = ui_btn
 ui.Parent = pcall(tostring, core_gui) and core_gui or you:WaitForChild('PlayerGui')
 
----4 w/💚
+---4; w/💚
 
 local function child_added_lighting(e) if e:IsA('PostEffect') then e.Enabled = false end end
 local function set(a: any, b: any, c: any) a[b] = c end
@@ -160,12 +162,12 @@ local special_func_checks: {any} = {
 local function change_mouse_properties(...)
 	clear(other_mouse)
 	local args = {...}
-	for idx = 1, #args, 2 do other_mouse[args[idx]] = args[idx + 1] end
+	for i = 1, #args, 2 do other_mouse[args[i]] = args[i + 1] end
 	clear(args)
 end
 
 local function check_special(e)
-	for idx = 1, #special_func_checks do if special_func_checks[idx](e) then return true end end
+	for i = 1, #special_func_checks do if special_func_checks[i](e) then return true end end
 	return false
 end
 
@@ -212,12 +214,12 @@ local function descendant_added_w(e)
 	end
 end
 
-local function get_plr_pos(dist, mode)
-	local cam_pos = cam.CFrame.Position
+local function get_plr(origin, dist, mode)
 	local list = plrs:GetPlayers()
+	local name = (mode == 'Murderer' and 'Knife') or (mode == 'Sheriff' and 'Gun') or nil
 	local result
-	for idx = 1, #list do
-		local element = list[idx]
+	for i = 1, #list do
+		local element = list[i]
 		if not element or element == you then continue end
 		local bp = element:FindFirstChildOfClass('Backpack')
 		if not bp then continue end
@@ -227,17 +229,11 @@ local function get_plr_pos(dist, mode)
 		if not h or h.Health <= 0 or h:GetState() == dead then continue end
 		local hrp = h.RootPart
 		if not hrp then continue end
-		if mode == 'Murderer' then
-			if not bp:FindFirstChild('Knife') and not char:FindFirstChild('Knife') then continue end
-		elseif mode == 'Sheriff' then
-			if not bp:FindFirstChild('Gun') and not char:FindFirstChild('Gun') then continue end
-		end
-
-		local new_dist = (cam_pos - hrp.Position).Magnitude
+		if name and not bp:FindFirstChild(name) and not char:FindFirstChild(name) then continue end
+		local new_dist = (hrp.Position - origin).Magnitude
 		if new_dist >= dist then continue end
-		dist, result = new_dist, hrp
+		dist, result = new_dist, element
 	end
-
 	clear(list)
 	return result
 end
@@ -292,14 +288,16 @@ if did_exist then
 	pcall(set, rendering, 'QualityLevel', lowest_quality)
 end
 
-local function target(part)
+local function target(hrp, plr)
 	local cam_pos = cam.CFrame.Position
-	local pos = part.Position
+	local hrp_pos = hrp.Position
+	local linear_diff = ((plrs_pos[plr] or hrp_pos) - hrp_pos).Unit
+	local pos = (linear_diff.X == linear_diff.X and (linear_diff * 0.4) or vec3_zero) + hrp_pos
 	local screen_point = cam:WorldToScreenPoint(pos)
 	local x, y = screen_point.X, screen_point.Y
 	ui_btn.Interactable = true
 	change_mouse_properties(
-		'Hit', cf_new(pos), 'Origin', cf_new(cam_pos, pos), 'Target', part,
+		'Hit', cf_new(pos), 'Origin', cf_new(cam_pos, pos), 'Target', hrp,
 		'UnitRay', ray_new(cam_pos, (pos - cam_pos).Unit), 'X', x, 'Y', y
 	)
 
@@ -311,38 +309,39 @@ local function scripted_shoot()
 	local your_char = you.Character
 	if not your_char then return end
 	local your_h = your_char:FindFirstChildOfClass('Humanoid')
-	if not your_h or your_h.Health <= 0 or your_h:GetState() == dead or not your_h.RootPart then return end
+	if not your_h or your_h.Health <= 0 or your_h:GetState() == dead then return end
+	local your_hrp = your_h.RootPart
+	if not your_hrp then return end
 	local your_tool = your_char:FindFirstChildOfClass('Tool')
 	if not your_tool then return end
 	local name = your_tool.Name
 	local is_gun = name == 'Gun'
 	local is_knife = name == 'Knife'
 	if not is_gun and not is_knife then return end
-	local other_part = (is_gun and get_plr_pos(740, 'Murderer')) or (is_knife and get_plr_pos(740, 'Sheriff')) or get_plr_pos(740, '')
-	if not other_part then return end
+	local other_plr = get_plr(your_hrp.Position, 740, (is_gun and 'Murderer') or (is_knife and 'Sheriff') or '')
+	if not other_plr then return end
+	local other_hrp = other_plr.Character:FindFirstChildOfClass('Humanoid').RootPart
 	local apos = ui.AbsolutePosition
 	local cx, cy = -apos.X, -apos.Y
 	local mb = (is_gun and 0) or (is_knife and 1) or 0
 	ui_btn.Interactable = false
-
 	if uis:GetLastInputType() == touch then
-		local x, y = target(other_part)
+		local x, y = target(other_hrp, other_plr)
 		vim:SendTouchEvent(14, 0, x + cx, y + cy)
-		sleep(0.014)
-		local x, y = target(other_part)
+		sleep(0.0204)
+		local x, y = target(other_hrp, other_plr)
 		vim:SendTouchEvent(14, 2, x + cx, y + cy)
 	else
-		local x, y = target(other_part)
+		local x, y = target(other_hrp, other_plr)
 		x += cx
 		y += cy
 		vim:SendMouseButtonEvent(x, y, mb, true, nil, 0)
-		sleep(0.014)
-		local x, y = target(other_part)
+		sleep(0.0204)
+		local x, y = target(other_hrp, other_plr)
 		x += cx
 		y += cy
 		vim:SendMouseButtonEvent(x, y, mb, false, nil, 0)
 	end
-
 	change_mouse_properties()
 	ui_btn.Interactable = true
 end
@@ -372,39 +371,49 @@ end))
 
 while true do
 	sleep()
+	local list = plrs:GetPlayers()
 	local pos = workspace.CurrentCamera.CFrame.Position
+	for i = 1, #list do
+		local plr = list[i]
+		if plr == you then continue end
+		local char = plr.Character
+		if not char then plrs_pos[plr] = nil continue end
+		local h = char:FindFirstChildOfClass('Humanoid')
+		if not h or h.Health <= 0 or h:GetState() == dead then plrs_pos[plr] = nil continue end
+		local hrp = h.RootPart
+		if not hrp then plrs_pos[plr] = nil continue end
+		plrs_pos[plr] = hrp.Position
+	end
+
+	clear(list)
+	for plr, _ in next, plrs_pos do if not plr.Parent then plrs_pos[plr] = nil end end
 	for plr, plr_tag in next, name_tags do
 		if not plr_tag or not plr then continue end
 		local bp = plr:FindFirstChildOfClass('Backpack')
-		if not bp then plr_tag.Adornee = nil continue end
+		if not bp then plr_tag.Adornee, plr_tag.Enabled = nil, false continue end
 		local char = plr.Character
-		if not char then plr_tag.Adornee = nil continue end
+		if not char then plr_tag.Adornee, plr_tag.Enabled = nil, false continue end
 		local h = char:FindFirstChildOfClass('Humanoid')
-		if not h or h.Health <= 0 or h:GetState() == dead then plr_tag.Adornee = nil continue end
+		if not h or h.Health <= 0 or h:GetState() == dead then plr_tag.Adornee, plr_tag.Enabled = nil, false continue end
 		local hrp = h.RootPart
-		if not hrp then plr_tag.Adornee = nil continue end
+		if not hrp then plr_tag.Adornee, plr_tag.Enabled = nil, false continue end
 		local lbl = plr_tag.Label
 		local role = upper((data[plr.Name] or data).Role or '')
-		plr_tag.Adornee = hrp
-
+		plr_tag.Adornee, plr_tag.Enabled = hrp, true
 		if bp:FindFirstChild('Knife') or char:FindFirstChild('Knife') or
-			role == 'FREEZER' or role == 'INFECTED' or
-			role == 'MURDERER' or role == 'ZOMBIE' then
+			role == 'FREEZER' or role == 'INFECTED' or role == 'MURDERER' or role == 'ZOMBIE' then
 			lbl.BorderColor3 = _4
 			lbl.TextColor3 = _4
 		elseif bp:FindFirstChild('Gun') or char:FindFirstChild('Gun') or
-			role == 'HERO' or role == 'RUNNER' or
-			role == 'SHERIFF' or role == 'SURVIVOR' then
+			role == 'HERO' or role == 'RUNNER' or role == 'SHERIFF' or role == 'SURVIVOR' then
 			lbl.BorderColor3 = colors_black
 			lbl.TextColor3 = colors_white
 		else
 			lbl.BorderColor3 = colors_white
 			lbl.TextColor3 = colors_white
 		end
-
 		local stroke = lbl.Stroke
-		stroke.Color = lbl.BorderColor3
-		stroke.Thickness = min(4, 100 / (hrp:GetPivot().Position - pos).Magnitude)
+		stroke.Color, stroke.Thickness = lbl.BorderColor3, min(4, 100 / (hrp.Position - pos).Magnitude)
 	end
 
 	for adornee, highlight in next, highlights do
@@ -423,21 +432,22 @@ while true do
 	local char = you.Character
 	if not char then ui_btn.Parent = nil continue end
 	local h = char:FindFirstChildOfClass('Humanoid')
-	if not h or h.Health <= 0 or h:GetState() == dead or not h.RootPart then ui_btn.Parent = nil continue end
+	if not h or h.Health <= 0 or h:GetState() == dead then ui_btn.Parent = nil continue end
+	local hrp = h.RootPart
+	if not hrp then ui_btn.Parent = nil continue end
+	if h.UseJumpPower then if h.JumpPower ~= 0 then h.JumpPower = new_jp end else if h.JumpHeight ~= 0 then h.JumpHeight = new_jh end end
+	if h.WalkSpeed ~= 0 then h.WalkSpeed = new_ws end
 	local knife = char:FindFirstChild('Knife')
 	ui_btn.Parent = (char:FindFirstChild('Gun') or knife) and ui or nil
 	if knife then
 		local handle = knife:FindFirstChild('Handle')
 		if handle then
-			local hrp = get_plr_pos(5.444, '')
-			if hrp then
-				fti(handle, hrp, 1)
-				fti(handle, hrp, 0)
+			local other_plr = get_plr(hrp.Position, 5.444, '')
+			if other_plr then
+				local other_hrp = other_plr.Character:FindFirstChildOfClass('Humanoid').RootPart
+				fti(handle, other_hrp, 1)
+				fti(handle, other_hrp, 0)
 			end
 		end
 	end
-
-	if h.UseJumpPower then if h.JumpPower ~= 0 then h.JumpPower = new_jp end else if h.JumpHeight ~= 0 then h.JumpHeight = new_jh end end
-	if h.WalkSpeed == 0 then continue end
-	h.WalkSpeed = new_ws
 end
