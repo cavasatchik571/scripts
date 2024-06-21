@@ -39,7 +39,6 @@ local lighting = game:GetService('Lighting')
 local min = math.min
 local name_tags = {}
 local other_mouse = {}
-local plrs_pos = {}
 local ray_new = Ray.new
 local sleep = task.wait
 local smooth = Enum.SurfaceType.Smooth
@@ -218,6 +217,7 @@ local function get_plr(origin, dist, mode)
 	local list = plrs:GetPlayers()
 	local name = (mode == 'Murderer' and 'Knife') or (mode == 'Sheriff' and 'Gun') or nil
 	local result
+
 	for i = 1, #list do
 		local element = list[i]
 		if not element or element == you then continue end
@@ -234,6 +234,7 @@ local function get_plr(origin, dist, mode)
 		if new_dist >= dist then continue end
 		dist, result = new_dist, element
 	end
+
 	clear(list)
 	return result
 end
@@ -288,11 +289,10 @@ if did_exist then
 	pcall(set, rendering, 'QualityLevel', lowest_quality)
 end
 
-local function target(hrp, plr)
+local function target(hrp)
 	local cam_pos = cam.CFrame.Position
 	local hrp_pos = hrp.Position
-	local linear_diff = ((plrs_pos[plr] or hrp_pos) - hrp_pos).Unit
-	local pos = (linear_diff.X == linear_diff.X and (linear_diff * 0.4) or vec3_zero) + hrp_pos
+	local pos = hrp_pos
 	local screen_point = cam:WorldToScreenPoint(pos)
 	local x, y = screen_point.X, screen_point.Y
 	ui_btn.Interactable = true
@@ -325,23 +325,25 @@ local function scripted_shoot()
 	local cx, cy = -apos.X, -apos.Y
 	local mb = (is_gun and 0) or (is_knife and 1) or 0
 	ui_btn.Interactable = false
+
 	if uis:GetLastInputType() == touch then
-		local x, y = target(other_hrp, other_plr)
+		local x, y = target(other_hrp)
 		vim:SendTouchEvent(14, 0, x + cx, y + cy)
 		sleep(0.0204)
-		local x, y = target(other_hrp, other_plr)
+		local x, y = target(other_hrp)
 		vim:SendTouchEvent(14, 2, x + cx, y + cy)
 	else
-		local x, y = target(other_hrp, other_plr)
+		local x, y = target(other_hrp)
 		x += cx
 		y += cy
 		vim:SendMouseButtonEvent(x, y, mb, true, nil, 0)
 		sleep(0.0204)
-		local x, y = target(other_hrp, other_plr)
+		local x, y = target(other_hrp)
 		x += cx
 		y += cy
 		vim:SendMouseButtonEvent(x, y, mb, false, nil, 0)
 	end
+
 	change_mouse_properties()
 	ui_btn.Interactable = true
 end
@@ -371,22 +373,7 @@ end))
 
 while true do
 	sleep()
-	local list = plrs:GetPlayers()
 	local pos = workspace.CurrentCamera.CFrame.Position
-	for i = 1, #list do
-		local plr = list[i]
-		if plr == you then continue end
-		local char = plr.Character
-		if not char then plrs_pos[plr] = nil continue end
-		local h = char:FindFirstChildOfClass('Humanoid')
-		if not h or h.Health <= 0 or h:GetState() == dead then plrs_pos[plr] = nil continue end
-		local hrp = h.RootPart
-		if not hrp then plrs_pos[plr] = nil continue end
-		plrs_pos[plr] = hrp.Position
-	end
-
-	clear(list)
-	for plr, _ in next, plrs_pos do if not plr.Parent then plrs_pos[plr] = nil end end
 	for plr, plr_tag in next, name_tags do
 		if not plr_tag or not plr then continue end
 		local bp = plr:FindFirstChildOfClass('Backpack')
@@ -400,6 +387,7 @@ while true do
 		local lbl = plr_tag.Label
 		local role = upper((data[plr.Name] or data).Role or '')
 		plr_tag.Adornee, plr_tag.Enabled = hrp, true
+
 		if bp:FindFirstChild('Knife') or char:FindFirstChild('Knife') or
 			role == 'FREEZER' or role == 'INFECTED' or role == 'MURDERER' or role == 'ZOMBIE' then
 			lbl.BorderColor3 = _4
@@ -412,6 +400,7 @@ while true do
 			lbl.BorderColor3 = colors_white
 			lbl.TextColor3 = colors_white
 		end
+
 		local stroke = lbl.Stroke
 		stroke.Color, stroke.Thickness = lbl.BorderColor3, min(4, 100 / (hrp.Position - pos).Magnitude)
 	end
@@ -439,6 +428,7 @@ while true do
 	if h.WalkSpeed ~= 0 then h.WalkSpeed = new_ws end
 	local knife = char:FindFirstChild('Knife')
 	ui_btn.Parent = (char:FindFirstChild('Gun') or knife) and ui or nil
+
 	if knife then
 		local handle = knife:FindFirstChild('Handle')
 		if handle then
