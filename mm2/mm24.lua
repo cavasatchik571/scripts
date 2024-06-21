@@ -133,7 +133,7 @@ ui_btn.ZIndex = 4000
 stroke:Clone().Parent = ui_btn
 ui.Parent = pcall(tostring, core_gui) and core_gui or you:WaitForChild('PlayerGui')
 
----4 made w/💚
+---4  💚
 
 local function child_added_lighting(e) if e:IsA('PostEffect') then e.Enabled = false end end
 local function set(a: any, b: any, c: any) a[b] = c end
@@ -190,11 +190,14 @@ local function descendant_added_w(e)
 		new_highlight.Parent = ui
 	elseif e:IsA('Beam') then
 		e.Enabled = false
-		local a0 = e.Attachment0.WorldPosition
-		local a1 = e.Attachment1.WorldPosition
+		local a0 = e.Attachment0
+		local a1 = e.Attachment1
+		if not a0 or not a1 then return end
+		a0 = a0.WorldPosition
+		a1 = a1.WorldPosition
 		local new_highlight = highlight_prefab:Clone()
-		new_highlight.CFrame = cf_new(a0, a1)
-		new_highlight.Size = vec3_new(0.04, 0.04, (a0 - a1).Magnitude)
+		new_highlight.CFrame = cf_new((a0 + a1) / 2, a0)
+		new_highlight.Size = vec3_new(0.14, 0.14, (a1 - a0).Magnitude)
 		new_highlight.Parent = ui
 		debris:AddItem(new_highlight, 0.4)
 	elseif e:IsA('Decal') then
@@ -227,10 +230,12 @@ local function get_plr_pos(dist, mode)
 		elseif mode == 'Sheriff' then
 			if not bp:FindFirstChild('Gun') and not char:FindFirstChild('Gun') then continue end
 		end
+
 		local new_dist = (cam_pos - hrp.Position).Magnitude
 		if new_dist >= dist then continue end
 		dist, result = new_dist, hrp
 	end
+
 	clear(list)
 	return result
 end
@@ -318,6 +323,7 @@ local function scripted_shoot()
 	local cx, cy = -apos.X, -apos.Y
 	local mb = (is_gun and 0) or (is_knife and 1) or 0
 	ui_btn.Interactable = false
+
 	if uis:GetLastInputType() == touch then
 		local x, y = target(other_part)
 		vim:SendTouchEvent(14, 0, x + cx, y + cy)
@@ -335,6 +341,7 @@ local function scripted_shoot()
 		y += cy
 		vim:SendMouseButtonEvent(x, y, mb, false, nil, 0)
 	end
+
 	change_mouse_properties()
 	ui_btn.Interactable = true
 end
@@ -352,6 +359,7 @@ local sg_sc = sg.SetCore
 local sg_scp = {Button1 = 'OK', Duration = 4, Icon = 'rbxassetid://7440784829', Text = 'Script activated', Title = 'MM24'}
 while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.04) end end
 clear(sg_scp)
+
 local new_jh = starter_player.CharacterJumpHeight * 1.144
 local new_jp = starter_player.CharacterJumpPower * 1.144
 local new_ws = starter_player.CharacterWalkSpeed * 1.144
@@ -378,6 +386,7 @@ while true do
 		local lbl = plr_tag.Label
 		local role = upper((data[plr.Name] or data).Role or '')
 		plr_tag.Adornee = hrp
+
 		if bp:FindFirstChild('Knife') or char:FindFirstChild('Knife') or
 			role == 'FREEZER' or role == 'INFECTED' or
 			role == 'MURDERER' or role == 'ZOMBIE' then
@@ -392,6 +401,7 @@ while true do
 			lbl.BorderColor3 = colors_white
 			lbl.TextColor3 = colors_white
 		end
+
 		local stroke = lbl.Stroke
 		stroke.Color = lbl.BorderColor3
 		stroke.Thickness = min(4, 100 / (hrp:GetPivot().Position - pos).Magnitude)
