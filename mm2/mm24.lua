@@ -133,7 +133,7 @@ ui_btn.ZIndex = 4000
 stroke:Clone().Parent = ui_btn
 ui.Parent = pcall(tostring, core_gui) and core_gui or you:WaitForChild('PlayerGui')
 
----4💚
+---4 by Vov4ik
 
 local function child_added_lighting(e) if e:IsA('PostEffect') then e.Enabled = false end end
 local function set(a: any, b: any, c: any) a[b] = c end
@@ -280,8 +280,8 @@ local function target(part)
 	local cam_pos = cam.CFrame.Position
 	local pos = part.Position
 	local screen_point = cam:WorldToScreenPoint(pos)
-	local x = screen_point.X + 30 + rng:NextInteger(-1, 1)
-	local y = screen_point.Y + 30 + rng:NextInteger(-1, 1)
+	local x = screen_point.X + rng:NextInteger(-1, 1)
+	local y = screen_point.Y + rng:NextInteger(-1, 1)
 	ui_btn.Interactable = true
 	change_mouse_properties(
 		'Hit', cf_new(pos), 'Origin', cf_new(cam_pos, pos), 'Target', part,
@@ -307,6 +307,7 @@ local function scripted_shoot()
 	if not other_part then return end
 	local apos = ui.AbsolutePosition
 	local cx, cy = -apos.X, -apos.Y
+	local mb = (is_gun and 0) or (is_knife and 1) or 0
 	ui_btn.Interactable = false
 	if uis:GetLastInputType() == touch then
 		local x, y = target(other_part)
@@ -318,14 +319,12 @@ local function scripted_shoot()
 		local x, y = target(other_part)
 		x += cx
 		y += cy
-		vim:SendMouseButtonEvent(x, y, 0, true, nil, 0)
-		vim:SendMouseButtonEvent(x, y, 1, true, nil, 0)
+		vim:SendMouseButtonEvent(x, y, mb, true, nil, 0)
 		sleep(0.014)
 		local x, y = target(other_part)
 		x += cx
 		y += cy
-		vim:SendMouseButtonEvent(x, y, 0, false, nil, 0)
-		vim:SendMouseButtonEvent(x, y, 1, false, nil, 0)
+		vim:SendMouseButtonEvent(x, y, mb, false, nil, 0)
 	end
 	change_mouse_properties()
 	ui_btn.Interactable = true
@@ -350,6 +349,7 @@ local new_ws = starter_player.CharacterWalkSpeed * 1.144
 coroutine_resume(coroutine_create(function()
 	while true do
 		data = get_plr_data:InvokeServer() or data
+
 		for plr, name_tag in next, name_tags do
 			if not name_tag or not plr then continue end
 			local bp = plr:FindFirstChildOfClass('Backpack')
