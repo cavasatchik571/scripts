@@ -134,7 +134,7 @@ ui_btn.ZIndex = 4000
 stroke:Clone().Parent = ui_btn
 ui.Parent = pcall(tostring, core_gui) and core_gui or you:WaitForChild('PlayerGui')
 
----4 💚
+---4  💚
 
 local function child_added_lighting(e) if e:IsA('PostEffect') then e.Enabled = false end end
 local function set(a: any, b: any, c: any) a[b] = c end
@@ -201,7 +201,7 @@ local function descendant_added_w(e)
 		new_highlight.CFrame = cf_new((a0 + a1) / 2, a0)
 		new_highlight.Size = vec3_new(0.14, 0.14, (a1 - a0).Magnitude)
 		new_highlight.Parent = ui
-		debris:AddItem(new_highlight, 4)
+		debris:AddItem(new_highlight, 1.4)
 	elseif e:IsA('Decal') then
 		e.Transparency = 1
 	elseif e:IsA('Fire') or e:IsA('Highlight') or e:IsA('Light') or e:IsA('ParticleEmitter') or
@@ -360,9 +360,9 @@ local sg_sc = sg.SetCore
 local sg_scp = {Button1 = 'OK', Duration = 4, Icon = 'rbxassetid://7440784829', Text = 'Script activated', Title = 'MM24'}
 while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.04) end end
 clear(sg_scp)
-local new_jh = starter_player.CharacterJumpHeight * 1.144
-local new_jp = starter_player.CharacterJumpPower * 1.144
-local new_ws = starter_player.CharacterWalkSpeed * 1.144
+local new_jh = starter_player.CharacterJumpHeight * 1.14
+local new_jp = starter_player.CharacterJumpPower * 1.14
+local new_ws = starter_player.CharacterWalkSpeed * 1.14
 coroutine_resume(coroutine_create(function()
 	while true do
 		data = get_plr_data:InvokeServer() or data
