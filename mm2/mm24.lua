@@ -40,7 +40,6 @@ local min = math.min
 local name_tags = {}
 local other_mouse = {}
 local ray_new = Ray.new
-local rng = Random.new()
 local sleep = task.wait
 local smooth = Enum.SurfaceType.Smooth
 local smooth_plastic = Enum.Material.SmoothPlastic
@@ -134,7 +133,7 @@ ui_btn.ZIndex = 4000
 stroke:Clone().Parent = ui_btn
 ui.Parent = pcall(tostring, core_gui) and core_gui or you:WaitForChild('PlayerGui')
 
----4  💚
+---4 made w/💚
 
 local function child_added_lighting(e) if e:IsA('PostEffect') then e.Enabled = false end end
 local function set(a: any, b: any, c: any) a[b] = c end
@@ -189,10 +188,19 @@ local function descendant_added_w(e)
 		if special then new_highlight.Name, new_highlight.Transparency = 'SpecialHighlight', 0.24 end
 		highlights[e] = new_highlight
 		new_highlight.Parent = ui
+	elseif e:IsA('Beam') then
+		e.Enabled = false
+		local a0 = e.Attachment0.WorldPosition
+		local a1 = e.Attachment1.WorldPosition
+		local new_highlight = highlight_prefab:Clone()
+		new_highlight.CFrame = cf_new(a0, a1)
+		new_highlight.Size = vec3_new(0.04, 0.04, (a0 - a1).Magnitude)
+		new_highlight.Parent = ui
+		debris:AddItem(new_highlight, 0.4)
 	elseif e:IsA('Decal') then
 		e.Transparency = 1
-	elseif e:IsA('Beam') or e:IsA('Fire') or e:IsA('Highlight') or e:IsA('Light') or
-		e:IsA('ParticleEmitter') or e:IsA('Smoke') or e:IsA('Sparkles') or e:IsA('Trail') then
+	elseif e:IsA('Fire') or e:IsA('Highlight') or e:IsA('Light') or e:IsA('ParticleEmitter') or e:IsA('PostEffect') or
+		e:IsA('Smoke') or e:IsA('Sparkles') or e:IsA('Trail') then
 		e.Enabled = false
 	elseif e:IsA('Attachment') or e:IsA('Constraint') or e:IsA('Explosion') or e:IsA('FloorWire') or e:IsA('ForceField') then
 		e.Visible = false
@@ -267,6 +275,8 @@ clear(list)
 local did_exist, rendering_stuff = pcall(settings)
 local lowest_quality = Enum.QualityLevel.Level01
 local terrain = workspace.Terrain
+lighting.FogColor, lighting.FogEnd, lighting.FogStart, lighting.GlobalShadows = colors_black, 9e9, 9e9, false
+terrain.WaterReflectance, terrain.WaterTransparency, terrain.WaterWaveSize, terrain.WaterWaveSpeed = 0, 0, 0, 0
 if did_exist then
 	local rendering = rendering_stuff.Rendering
 	pcall(set, rendering, 'EagerBulkExecution', false)
@@ -276,20 +286,17 @@ if did_exist then
 	pcall(set, rendering, 'QualityLevel', lowest_quality)
 end
 
-lighting.FogColor, lighting.FogEnd, lighting.FogStart, lighting.GlobalShadows = colors_black, 9e9, 9e9, false
-terrain.WaterReflectance, terrain.WaterTransparency, terrain.WaterWaveSize, terrain.WaterWaveSpeed = 0, 0, 0, 0
-
 local function target(part)
 	local cam_pos = cam.CFrame.Position
 	local pos = part.Position
 	local screen_point = cam:WorldToScreenPoint(pos)
-	local x = screen_point.X + rng:NextInteger(-1, 1)
-	local y = screen_point.Y + rng:NextInteger(-1, 1)
+	local x, y = screen_point.X, screen_point.Y
 	ui_btn.Interactable = true
 	change_mouse_properties(
 		'Hit', cf_new(pos), 'Origin', cf_new(cam_pos, pos), 'Target', part,
 		'UnitRay', ray_new(cam_pos, (pos - cam_pos).Unit), 'X', x, 'Y', y
 	)
+
 	return x, y
 end
 
@@ -351,35 +358,6 @@ local new_ws = starter_player.CharacterWalkSpeed * 1.144
 coroutine_resume(coroutine_create(function()
 	while true do
 		data = get_plr_data:InvokeServer() or data
-		for plr, name_tag in next, name_tags do
-			if not name_tag or not plr then continue end
-			local bp = plr:FindFirstChildOfClass('Backpack')
-			if not bp then name_tag.Adornee = nil continue end
-			local char = plr.Character
-			if not char then name_tag.Adornee = nil continue end
-			local h = char:FindFirstChildOfClass('Humanoid')
-			if not h or h.Health <= 0 or h:GetState() == dead then name_tag.Adornee = nil continue end
-			local hrp = h.RootPart
-			if not hrp then name_tag.Adornee = nil continue end
-			local lbl = name_tag.Label
-			local role = upper((data[plr.Name] or data).Role or '')
-			name_tag.Adornee = hrp
-			if bp:FindFirstChild('Knife') or char:FindFirstChild('Knife') or
-				role == 'FREEZER' or role == 'INFECTED' or
-				role == 'MURDERER' or role == 'ZOMBIE' then
-				lbl.BorderColor3 = _4
-				lbl.TextColor3 = _4
-			elseif bp:FindFirstChild('Gun') or char:FindFirstChild('Gun') or
-				role == 'HERO' or role == 'RUNNER' or
-				role == 'SHERIFF' or role == 'SURVIVOR' then
-				lbl.BorderColor3 = colors_black
-				lbl.TextColor3 = colors_white
-			else
-				lbl.BorderColor3 = colors_white
-				lbl.TextColor3 = colors_white
-			end
-			lbl.Stroke.Color = lbl.BorderColor3
-		end
 		sleep(1.4)
 	end
 end))
@@ -388,13 +366,35 @@ while true do
 	sleep()
 	local pos = workspace.CurrentCamera.CFrame.Position
 	for plr, plr_tag in next, name_tags do
+		if not plr_tag or not plr then continue end
+		local bp = plr:FindFirstChildOfClass('Backpack')
+		if not bp then plr_tag.Adornee = nil continue end
 		local char = plr.Character
-		if not char then continue end
+		if not char then plr_tag.Adornee = nil continue end
 		local h = char:FindFirstChildOfClass('Humanoid')
-		if not h or h.Health <= 0 or h:GetState() == dead then continue end
+		if not h or h.Health <= 0 or h:GetState() == dead then plr_tag.Adornee = nil continue end
 		local hrp = h.RootPart
-		if not hrp then continue end
-		plr_tag.Label.Stroke.Thickness = min(4, 100 / (hrp:GetPivot().Position - pos).Magnitude)
+		if not hrp then plr_tag.Adornee = nil continue end
+		local lbl = plr_tag.Label
+		local role = upper((data[plr.Name] or data).Role or '')
+		plr_tag.Adornee = hrp
+		if bp:FindFirstChild('Knife') or char:FindFirstChild('Knife') or
+			role == 'FREEZER' or role == 'INFECTED' or
+			role == 'MURDERER' or role == 'ZOMBIE' then
+			lbl.BorderColor3 = _4
+			lbl.TextColor3 = _4
+		elseif bp:FindFirstChild('Gun') or char:FindFirstChild('Gun') or
+			role == 'HERO' or role == 'RUNNER' or
+			role == 'SHERIFF' or role == 'SURVIVOR' then
+			lbl.BorderColor3 = colors_black
+			lbl.TextColor3 = colors_white
+		else
+			lbl.BorderColor3 = colors_white
+			lbl.TextColor3 = colors_white
+		end
+		local stroke = lbl.Stroke
+		stroke.Color = lbl.BorderColor3
+		stroke.Thickness = min(4, 100 / (hrp:GetPivot().Position - pos).Magnitude)
 	end
 
 	for adornee, highlight in next, highlights do
@@ -419,7 +419,7 @@ while true do
 	if knife then
 		local handle = knife:FindFirstChild('Handle')
 		if handle then
-			local hrp = get_plr_pos(5, '')
+			local hrp = get_plr_pos(5.4, '')
 			if hrp then
 				fti(handle, hrp, 1)
 				fti(handle, hrp, 0)
