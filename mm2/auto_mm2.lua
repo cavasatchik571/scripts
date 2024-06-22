@@ -141,13 +141,20 @@ while env.MF do
 	end
 	clear(children)
 	reset_velocity(char)
-	local particle_emitter = cc:FindFirstChildWhichIsA('ParticleEmitter', true)
-	if particle_emitter and particle_emitter.Texture == 'rbxassetid://16885815956' then
+	local particle_emitter
+	local descendants = cc:GetDescendants()
+	for i = 1, #descendants do
+		local descendant = descendants[i]
+		if not descendant:IsA('ParticleEmitter') or descendant.Texture ~= 'rbxassetid://16885815956' or descendant.Parent:FindFirstChildWhichIsA('MeshPart').Transparency > 0 then continue end
+		particle_emitter = descendant
+		break
+	end
+	clear(descendants)
+	if particle_emitter then
 		hrp.CFrame = particle_emitter.Parent:GetPivot()
 		continue
 	else
-		local icon = you:FindFirstChild('FullBagIcon', true)
-		if icon and icon.Visible and not bp:FindFirstChild('Knife') and not char:FindFirstChild('Knife') then h.Health = 0 continue end
+		pcall(function() if you.PlayerGui.MainGUI.Game.CoinBags.Container.Coin.FullBagIcon.Visible then h.Health = 0 end end)
 	end
 	local coins = cc:GetChildren()
 	local p0 = hrp:GetPivot().Position
