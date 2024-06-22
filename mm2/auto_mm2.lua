@@ -20,6 +20,7 @@ local rng = Random.new()
 local round = math.round
 local sort = table.sort
 local starter_gui = game:GetService('StarterGui')
+local step = rng:NextNumber(4, 6)
 local you = plrs.LocalPlayer
 local vec2_zero = Vector2.zero
 local vec3_zero = Vector3.zero
@@ -96,8 +97,7 @@ end
 local function sort_coins(a, b)
 	local ap, bp = a.Position or vec3_zero, b.Position or vec3_zero
 	local p0 = you.Character:GetPivot().Position
-	local score_a = -(ap - p0).Magnitude
-	local score_b = -(bp - p0).Magnitude
+	local score_a, score_b = -(ap - p0).Magnitude, -(bp - p0).Magnitude
 	local threat = get_threat()
 	if threat then
 		local p1 = threat.Character:GetPivot().Position
@@ -119,7 +119,7 @@ end)
 
 while env.MF do
 	local dt = ps:Wait()
-	local step = rng:NextNumber(4, 6)
+	step = rng:NextNumber(4, 6)
 	if not get_is_alive(you) then continue end
 	local char = you.Character
 	local h = char:FindFirstChildOfClass('Humanoid')
