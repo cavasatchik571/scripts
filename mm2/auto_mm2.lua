@@ -6,8 +6,8 @@ env.MF = not env.MF and true or nil
 if not env.MF then return end
 
 local offset = Vector3.new(0, -2, 0)
-local speed = 20
-local step = 15
+local speed = 24
+local step = 12
 
 local cf_new = CFrame.new
 local cf_yxz = CFrame.fromEulerAnglesYXZ
@@ -17,6 +17,7 @@ local pi = math.pi
 local plrs = game:GetService('Players')
 local ps = game:GetService('RunService').PreSimulation
 local remove = table.remove
+local rng = Random.new()
 local round = math.round
 local sort = table.sort
 local starter_gui = game:GetService('StarterGui')
@@ -123,7 +124,7 @@ while env.MF do
 	local char = you.Character
 	local h = char:FindFirstChildOfClass('Humanoid')
 	local hrp = h.RootPart
-	h.PlatformStand = false
+	h.PlatformStand, workspace.Gravity = false, 196.2
 	local map = workspace:FindFirstChild('Normal')
 	if not map then continue end
 	local cc = map:FindFirstChild('CoinContainer')
@@ -144,9 +145,9 @@ while env.MF do
 		child:Destroy()
 	end
 	clear(children)
-	h.PlatformStand = true
+	h.PlatformStand, workspace.Gravity = true, 0
 	reset_velocity(char)
-	local pos = p0 + diff.Unit * dt * speed
+	local pos = p0 + diff.Unit * dt * (speed - rng:NextNumber(0, 4))
 	hrp:PivotTo(cf_new(pos) * cf_yxz(pi, select(2, cf_new(pos, p1).Rotation:ToEulerAnglesYXZ()), 0))
 	fti(hrp, coin, 1)
 	fti(hrp, coin, 0)
