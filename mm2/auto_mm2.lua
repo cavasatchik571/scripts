@@ -1,8 +1,3 @@
--- auto_farm_mm2.lua
--- by unknown
-
-local _4 = Color3.new(0, .2514, 0)
-
 -- source code
 
 if game.PlaceId ~= 142823291 then return end
@@ -26,7 +21,11 @@ local round = math.round
 local sort = table.sort
 local starter_gui = game:GetService('StarterGui')
 local you = plrs.LocalPlayer
-local zero = Vector3.zero
+local vec2_zero = Vector2.zero
+local vec3_zero = Vector3.zero
+local vu = game:GetService('VirtualUser')
+local vu_b1d = vu.Button1Down
+local vu_b1u = vu.Button1Up
 
 local _set = function(a, b, c) a[b] = c end
 local fti = firetouchinterest or fire_touch_interest or function(p0, p1, uint)
@@ -88,14 +87,14 @@ local function reset_velocity(inst)
 	for i = 1, #list do
 		local element = list[i]
 		if not element:IsA('BasePart') then continue end
-		element.AssemblyAngularVelocity, element.AssemblyLinearVelocity = zero, zero
+		element.AssemblyAngularVelocity, element.AssemblyLinearVelocity = vec3_zero, vec3_zero
 		element.CanCollide, element.CanQuery = false, false
 	end
 	clear(list)
 end
 
 local function sort_coins(a, b)
-	local ap, bp = a.Position or zero, b.Position or zero
+	local ap, bp = a.Position or vec3_zero, b.Position or vec3_zero
 	local p0 = you.Character:GetPivot().Position
 	local score_a = -(ap - p0).Magnitude
 	local score_b = -(bp - p0).Magnitude
@@ -111,6 +110,12 @@ end
 -- logic
 
 starter_gui:SetCore('SendNotification', {Button1 = 'OK', Duration = 4, Title = 'MM2', Text = 'Auto farm script has been activated.'})
+local connection = you.Idled:Connect(function()
+	if not env.MF then return end
+	pcall(vu_b1d, vu, vec2_zero)
+	ps:Wait()
+	pcall(vu_b1u, vu, vec2_zero)
+end)
 
 while env.MF do
 	local dt = ps:Wait()
@@ -149,5 +154,6 @@ while env.MF do
 end
 
 starter_gui:SetCore('SendNotification', {Button1 = 'OK', Duration = 4, Title = 'MM2', Text = 'Auto farm script has been deactivated.'})
+connection:Disconnect()
 if not get_is_alive(you) then return end
 you.Character:FindFirstChildOfClass('Humanoid').PlatformStand = false
