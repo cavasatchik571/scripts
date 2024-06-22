@@ -141,7 +141,7 @@ ui_btn.ZIndex = 4000
 stroke:Clone().Parent = ui_btn
 ui.Parent = pcall(tostring, core_gui) and core_gui or you:WaitForChild('PlayerGui')
 
----4;  vov4/💚
+---4💚
 
 local function create_beam(p0, p1): any
 	local new_highlight = highlight_prefab:Clone()
@@ -158,9 +158,8 @@ local special_func_checks: {any} = {
 	function(e)
 		local parent = e.Parent
 		if parent and parent.Name == 'ThrowingKnife' then
-			local blade_pos = parent:WaitForChild('BladePosition')
-			local unit: any = 40 * blade_pos:WaitForChild('Vector3Value').Value
-			blade_pos = blade_pos.Position
+			local blade_pos: any = parent:WaitForChild('BladePosition').Position
+			local unit: any = 40 * parent:WaitForChild('Vector3Value').Value
 			local beam = create_beam(blade_pos - unit, blade_pos + unit)
 			beam.Color3 = murderer_color
 			beam.Parent = parent
@@ -316,6 +315,7 @@ local function target(hrp)
 		'Hit', cf_new(pos), 'Origin', cf_new(cam_pos, pos), 'Target', hrp,
 		'UnitRay', ray_new(cam_pos, (pos - cam_pos).Unit), 'X', x, 'Y', y
 	)
+
 	return x, y
 end
 
