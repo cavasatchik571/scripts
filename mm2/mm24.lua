@@ -147,7 +147,7 @@ local function create_beam(p0, p1): any
 	local new_highlight = highlight_prefab:Clone()
 	new_highlight.Adornee = terrain
 	new_highlight.CFrame = cf_new((p0 + p1) / 2, p0)
-	new_highlight.Size = vec3_new(0.244, 0.244, (p1 - p0).Magnitude)
+	new_highlight.Size = vec3_new(0.24, 0.24, (p1 - p0).Magnitude)
 	return new_highlight
 end
 
@@ -159,8 +159,8 @@ local special_func_checks: {any} = {
 		local parent = e.Parent
 		if parent and parent.Name == 'ThrowingKnife' then
 			local blade_pos: any = parent:WaitForChild('BladePosition').Position
-			local unit: any = 40 * parent:WaitForChild('Vector3Value').Value
-			local beam = create_beam(blade_pos - unit, blade_pos + unit)
+			local unit: any = 400 * parent:WaitForChild('Vector3Value').Value
+			local beam = create_beam(blade_pos, blade_pos + unit)
 			beam.Color3 = murderer_color
 			beam.Parent = parent
 			debris:AddItem(parent, 10)
@@ -442,7 +442,7 @@ while true do
 	if knife then
 		local handle = knife:FindFirstChild('Handle')
 		if handle then
-			local other_plr = get_plr(hrp.Position, 4.444, nil)
+			local other_plr = get_plr(hrp.Position, 4.4, nil)
 			if other_plr then
 				local other_hrp = other_plr.Character:FindFirstChildOfClass('Humanoid').RootPart
 				fti(handle, other_hrp, 1)
