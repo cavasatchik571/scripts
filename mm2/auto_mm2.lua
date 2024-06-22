@@ -7,7 +7,6 @@ if not env.MF then return end
 
 local offset = Vector3.new(0, -2, 0)
 local speed = 22.5
-local step = 4
 
 local cf_new = CFrame.new
 local cf_yxz = CFrame.fromEulerAnglesYXZ
@@ -120,6 +119,7 @@ end)
 
 while env.MF do
 	local dt = ps:Wait()
+	local step = rng:NextNumber(4, 6)
 	if not get_is_alive(you) then continue end
 	local char = you.Character
 	local h = char:FindFirstChildOfClass('Humanoid')
