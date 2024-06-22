@@ -124,20 +124,19 @@ while env.MF do
 	local char = you.Character
 	local h = char:FindFirstChildOfClass('Humanoid')
 	local hrp = h.RootPart
-	h.PlatformStand, workspace.Gravity = false, 196.2
 	local map = workspace:FindFirstChild('Normal')
-	if not map then continue end
+	if not map then h.PlatformStand, workspace.Gravity = false, 196.2 continue end
 	local cc = map:FindFirstChild('CoinContainer')
-	if not cc then continue end
+	if not cc then h.PlatformStand, workspace.Gravity = false, 196.2 continue end
 	local coins = cc:GetChildren()
 	local p0 = hrp:GetPivot().Position
 	filter_coins(coins)
-	if #coins <= 0 or (coins[1].Position - p0).Magnitude > 400 then continue end
+	if #coins <= 0 or (coins[1].Position - p0).Magnitude > 400 then h.PlatformStand, workspace.Gravity = false, 196.2 continue end
 	sort(coins, sort_coins)
 	local coin = coins[1]
 	local p1 = coin.Position
 	local diff = p1 + offset - p0
-	if diff.Magnitude <= 0.24 then clear(coins) continue end
+	if diff.Magnitude <= 0.24 then clear(coins) h.PlatformStand, workspace.Gravity = false, 196.2 continue end
 	local children = map:GetChildren()
 	for i = 1, #children do
 		local child = children[i]
