@@ -55,6 +55,10 @@ local vec3_new = Vector3.new
 local vec3_zero = Vector3.zero
 local vim = game:GetService('VirtualInputManager')
 
+local innocent_color = colors_white
+local murderer_color = color3_from_rgb(255, 0, 0)
+local sheriff_color = color3_from_rgb(0, 0, 255)
+
 local highlight_prefab = inst_new('BoxHandleAdornment')
 highlight_prefab.AdornCullingMode = Enum.AdornCullingMode.Never
 highlight_prefab.AlwaysOnTop = true
@@ -68,9 +72,10 @@ name_tag.Active = false
 name_tag.AlwaysOnTop = true
 name_tag.AutoLocalize = false
 name_tag.ClipsDescendants = false
+name_tag.Enabled = false
 name_tag.ExtentsOffsetWorldSpace = vec3_new(0, 1, 0)
 name_tag.LightInfluence = 0
-name_tag.MaxDistance = 1440
+name_tag.MaxDistance = 740
 name_tag.Name = 'NameTag'
 name_tag.ResetOnSpawn = false
 name_tag.Size = udim2_fs(6, 1.44)
@@ -80,7 +85,8 @@ local name_tag_lbl = inst_new('TextLabel')
 name_tag_lbl.Active = false
 name_tag_lbl.BackgroundColor3 = colors_white
 name_tag_lbl.BackgroundTransparency = 1
-name_tag_lbl.BorderColor3 = colors_white
+name_tag_lbl.BorderColor3 = _4
+name_tag_lbl.BorderSizePixel = 4
 name_tag_lbl.FontFace = ubuntu_font
 name_tag_lbl.Interactable = false
 name_tag_lbl.MaxVisibleGraphemes = 24
@@ -135,7 +141,15 @@ ui_btn.ZIndex = 4000
 stroke:Clone().Parent = ui_btn
 ui.Parent = pcall(tostring, core_gui) and core_gui or you:WaitForChild('PlayerGui')
 
----4; w/💚
+---4; w / 💚
+
+local function create_beam(p0, p1): any
+	local new_highlight = highlight_prefab:Clone()
+	new_highlight.Adornee = terrain
+	new_highlight.CFrame = cf_new((p0 + p1) / 2, p0)
+	new_highlight.Size = vec3_new(0.244, 0.244, (p1 - p0).Magnitude)
+	return new_highlight
+end
 
 local function child_added_lighting(e) if e:IsA('PostEffect') then e.Enabled = false end end
 local function set(a: any, b: any, c: any) a[b] = c end
@@ -144,12 +158,21 @@ local special_func_checks: {any} = {
 	function(e)
 		local parent = e.Parent
 		if parent and parent.Name == 'ThrowingKnife' then
-			debris:AddItem(parent, 14)
+			local blade_pos = parent:WaitForChild('BladePosition')
+			local unit: any = 40 * blade_pos:WaitForChild('Vector3Value').Value
+			blade_pos = blade_pos.Position
+			local beam = create_beam(blade_pos - unit, blade_pos + unit)
+			beam.Color3 = murderer_color
+			beam.Parent = parent
+			debris:AddItem(parent, 10)
 			return true
 		end
 		return false
 	end,
-	function(e) return e.Parent and e.Name == 'Trap' end,
+	function(e)
+		local parent = e.Parent
+		return parent and parent.Name == 'Trap' or false
+	end,
 	function(e)
 		local parent = e.Parent
 		if not parent or parent.Name == 'Handle' then return false end
@@ -192,17 +215,12 @@ local function descendant_added_w(e)
 		new_highlight.Parent = ui
 	elseif e:IsA('Beam') then
 		e.Enabled = false
-		local a0: any = e.Attachment0
-		local a1: any = e.Attachment1
+		local a0, a1 = e.Attachment0, e.Attachment1
 		if not a0 or not a1 then return end
-		a0 = a0.WorldPosition
-		a1 = a1.WorldPosition
-		local new_highlight = highlight_prefab:Clone()
-		new_highlight.Adornee = terrain
-		new_highlight.CFrame = cf_new((a0 + a1) / 2, a0)
-		new_highlight.Size = vec3_new(0.244, 0.244, (a1 - a0).Magnitude)
-		new_highlight.Parent = ui
-		debris:AddItem(new_highlight, 0.644)
+		local beam = create_beam(a0.WorldPosition, a1.WorldPosition)
+		beam.Color3 = sheriff_color
+		beam.Parent = ui
+		debris:AddItem(beam, 0.644)
 	elseif e:IsA('Decal') then
 		e.Transparency = 1
 	elseif e:IsA('Fire') or e:IsA('Highlight') or e:IsA('Light') or e:IsA('ParticleEmitter') or
@@ -217,7 +235,6 @@ local function get_plr(origin, dist, mode)
 	local list = plrs:GetPlayers()
 	local name = (mode == 'Murderer' and 'Knife') or (mode == 'Sheriff' and 'Gun') or nil
 	local result
-
 	for i = 1, #list do
 		local element = list[i]
 		if not element or element == you then continue end
@@ -234,7 +251,6 @@ local function get_plr(origin, dist, mode)
 		if new_dist >= dist then continue end
 		dist, result = new_dist, element
 	end
-
 	clear(list)
 	return result
 end
@@ -300,7 +316,6 @@ local function target(hrp)
 		'Hit', cf_new(pos), 'Origin', cf_new(cam_pos, pos), 'Target', hrp,
 		'UnitRay', ray_new(cam_pos, (pos - cam_pos).Unit), 'X', x, 'Y', y
 	)
-
 	return x, y
 end
 
@@ -318,14 +333,13 @@ local function scripted_shoot()
 	local is_gun = name == 'Gun'
 	local is_knife = name == 'Knife'
 	if not is_gun and not is_knife then return end
-	local other_plr = get_plr(your_hrp.Position, 740, (is_gun and 'Murderer') or (is_knife and 'Sheriff') or '')
+	local other_plr = get_plr(your_hrp.Position, 740, (is_gun and 'Murderer') or (is_knife and 'Sheriff') or nil)
 	if not other_plr then return end
 	local other_hrp = other_plr.Character:FindFirstChildOfClass('Humanoid').RootPart
 	local apos = ui.AbsolutePosition
 	local cx, cy = -apos.X, -apos.Y
 	local mb = (is_gun and 0) or (is_knife and 1) or 0
 	ui_btn.Interactable = false
-
 	if uis:GetLastInputType() == touch then
 		local x, y = target(other_hrp)
 		vim:SendTouchEvent(14, 0, x + cx, y + cy)
@@ -343,7 +357,6 @@ local function scripted_shoot()
 		y += cy
 		vim:SendMouseButtonEvent(x, y, mb, false, nil, 0)
 	end
-
 	change_mouse_properties()
 	ui_btn.Interactable = true
 end
@@ -361,13 +374,19 @@ local sg_sc = sg.SetCore
 local sg_scp = {Button1 = 'OK', Duration = 4, Icon = 'rbxassetid://7440784829', Text = 'Script activated', Title = 'MM24'}
 while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.04) end end
 clear(sg_scp)
-local new_jh = starter_player.CharacterJumpHeight * 1.144
-local new_jp = starter_player.CharacterJumpPower * 1.144
-local new_ws = starter_player.CharacterWalkSpeed * 1.144
+local new_jh = starter_player.CharacterJumpHeight * 1.14
+local new_jp = starter_player.CharacterJumpPower * 1.14
+local new_ws = starter_player.CharacterWalkSpeed * 1.14
 coroutine_resume(coroutine_create(function()
 	while true do
 		data = get_plr_data:InvokeServer() or data
-		sleep(1.4)
+		sleep(1.44)
+		local char = you.Character
+		if not char then continue end
+		local h = char:FindFirstChildOfClass('Humanoid')
+		if not h or h.Health <= 0 or h:GetState() == dead then continue end
+		if h.UseJumpPower then if h.JumpPower ~= 0 then h.JumpPower = new_jp end else if h.JumpHeight ~= 0 then h.JumpHeight = new_jh end end
+		if h.WalkSpeed ~= 0 then h.WalkSpeed = new_ws end
 	end
 end))
 
@@ -384,25 +403,19 @@ while true do
 		if not h or h.Health <= 0 or h:GetState() == dead then plr_tag.Adornee, plr_tag.Enabled = nil, false continue end
 		local hrp = h.RootPart
 		if not hrp then plr_tag.Adornee, plr_tag.Enabled = nil, false continue end
+		local color = innocent_color
 		local lbl = plr_tag.Label
 		local role = upper((data[plr.Name] or data).Role or '')
 		plr_tag.Adornee, plr_tag.Enabled = hrp, true
-
 		if bp:FindFirstChild('Knife') or char:FindFirstChild('Knife') or
 			role == 'FREEZER' or role == 'INFECTED' or role == 'MURDERER' or role == 'ZOMBIE' then
-			lbl.BorderColor3 = _4
-			lbl.TextColor3 = _4
+			color = murderer_color
 		elseif bp:FindFirstChild('Gun') or char:FindFirstChild('Gun') or
 			role == 'HERO' or role == 'RUNNER' or role == 'SHERIFF' or role == 'SURVIVOR' then
-			lbl.BorderColor3 = colors_black
-			lbl.TextColor3 = colors_white
-		else
-			lbl.BorderColor3 = colors_white
-			lbl.TextColor3 = colors_white
+			color = sheriff_color
 		end
-
 		local stroke = lbl.Stroke
-		stroke.Color, stroke.Thickness = lbl.BorderColor3, min(4, 100 / (hrp.Position - pos).Magnitude)
+		lbl.TextColor3, stroke.Color, stroke.Thickness = color, color, min(4, 100 / (hrp.Position - pos).Magnitude)
 	end
 
 	for adornee, highlight in next, highlights do
@@ -424,15 +437,12 @@ while true do
 	if not h or h.Health <= 0 or h:GetState() == dead then ui_btn.Parent = nil continue end
 	local hrp = h.RootPart
 	if not hrp then ui_btn.Parent = nil continue end
-	if h.UseJumpPower then if h.JumpPower ~= 0 then h.JumpPower = new_jp end else if h.JumpHeight ~= 0 then h.JumpHeight = new_jh end end
-	if h.WalkSpeed ~= 0 then h.WalkSpeed = new_ws end
 	local knife = char:FindFirstChild('Knife')
 	ui_btn.Parent = (char:FindFirstChild('Gun') or knife) and ui or nil
-
 	if knife then
 		local handle = knife:FindFirstChild('Handle')
 		if handle then
-			local other_plr = get_plr(hrp.Position, 5.444, '')
+			local other_plr = get_plr(hrp.Position, 4.444, nil)
 			if other_plr then
 				local other_hrp = other_plr.Character:FindFirstChildOfClass('Humanoid').RootPart
 				fti(handle, other_hrp, 1)
