@@ -51,6 +51,8 @@ end
 
 local function get_is_alive(plr)
 	if typeof(plr) ~= 'Instance' or not plr:IsA('Player') or not plr:FindFirstChildOfClass('Backpack') then return false end
+	local bp = plr:FindFirstChildOfClass('Backpack')
+	if not bp then return false end
 	local char = plr.Character
 	if not char then return false end
 	local h = char:FindFirstChildOfClass('Humanoid')
@@ -122,24 +124,15 @@ while env.MF do
 	local dt = ps:Wait()
 	step = rng:NextNumber(4, 6)
 	if not get_is_alive(you) then continue end
+	local bp = you:FindFirstChildOfClass('Backpack')
 	local char = you.Character
 	local h = char:FindFirstChildOfClass('Humanoid')
-	h.PlatformStand = false
 	local hrp = h.RootPart
+	h.PlatformStand = false
 	local map = workspace:FindFirstChild('Normal')
 	if not map then workspace.Gravity = 196.2 continue end
 	local cc = map:FindFirstChild('CoinContainer')
 	if not cc then workspace.Gravity = 196.2 continue end
-	local coins = cc:GetChildren()
-	local p0 = hrp:GetPivot().Position
-	filter_coins(coins)
-	if #coins <= 0 or (coins[1].Position - p0).Magnitude > 400 then continue end
-	sort(coins, sort_coins)
-	local coin = coins[1]
-	clear(coins)
-	local p1 = coin.Position
-	local diff = p1 + offset - p0
-	if diff.Magnitude <= 0.24 then continue end
 	local children = map:GetChildren()
 	for i = 1, #children do
 		local child = children[i]
@@ -147,10 +140,27 @@ while env.MF do
 		child:Destroy()
 	end
 	clear(children)
-	h.PlatformStand, workspace.Gravity = true, 0
 	reset_velocity(char)
+	local particle_emitter = cc:FindFirstChildWhichIsA('ParticleEmitter', true)
+	if particle_emitter and particle_emitter.Texture == 'rbxassetid://16885815956' then
+		hrp.CFrame = particle_emitter.Parent:GetPivot()
+		continue
+	else
+		local icon = you:FindFirstChild('FullBagIcon', true)
+		if icon and icon.Visible and not bp:FindFirstChild('Knife') and not char:FindFirstChild('Knife') then h.Health = 0 continue end
+	end
+	local coins = cc:GetChildren()
+	local p0 = hrp:GetPivot().Position
+	filter_coins(coins)
+	if #coins <= 0 then continue end
+	sort(coins, sort_coins)
+	local coin = coins[1]
+	clear(coins)
+	local p1 = coin.Position
+	local diff = p1 + offset - p0
 	local pos = p0 + diff.Unit * dt * (speed - rng:NextNumber(0, 4))
-	hrp:PivotTo(cf_new(pos) * cf_yxz(pi, select(2, cf_new(pos, p1).Rotation:ToEulerAnglesYXZ()), 0))
+	h.PlatformStand, workspace.Gravity = true, 0
+	hrp.CFrame = cf_new(pos) * cf_yxz(pi, select(2, cf_new(pos, p1).Rotation:ToEulerAnglesYXZ()), 0)
 	fti(hrp, coin, 1)
 	fti(hrp, coin, 0)
 end
