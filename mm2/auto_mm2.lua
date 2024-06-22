@@ -153,7 +153,7 @@ while env.MF do
 	if particle_emitter then
 		hrp.CFrame = particle_emitter.Parent:GetPivot()
 		continue
-	else
+	elseif not bp:FindFirstChild('Knife') and not char:FindFirstChild('Knife') then
 		pcall(function() if you.PlayerGui.MainGUI.Game.CoinBags.Container.Coin.FullBagIcon.Visible then h.Health = 0 end end)
 	end
 	local coins = cc:GetChildren()
