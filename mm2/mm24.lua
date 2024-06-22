@@ -141,7 +141,7 @@ ui_btn.ZIndex = 4000
 stroke:Clone().Parent = ui_btn
 ui.Parent = pcall(tostring, core_gui) and core_gui or you:WaitForChild('PlayerGui')
 
----4; w / 💚
+---4;  vov4/💚
 
 local function create_beam(p0, p1): any
 	local new_highlight = highlight_prefab:Clone()
@@ -428,7 +428,7 @@ while true do
 		if not plr then continue end
 		local plr_tag = name_tags[plr]
 		if not plr_tag then continue end
-		highlight.Color3 = plr_tag.Label.BorderColor3
+		highlight.Color3 = plr_tag.Label.TextColor3
 	end
 
 	local char = you.Character
