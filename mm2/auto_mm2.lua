@@ -6,8 +6,8 @@ env.MF = not env.MF and true or nil
 if not env.MF then return end
 
 local offset = Vector3.new(0, -2, 0)
-local speed = 22
-local step = 12
+local speed = 22.5
+local step = 4
 
 local cf_new = CFrame.new
 local cf_yxz = CFrame.fromEulerAnglesYXZ
@@ -66,7 +66,7 @@ end
 local function get_threat()
 	local char = you.Character
 	local char_pos = char:GetPivot().Position
-	local item_name = (you:FindFirstChildOfClass('Backpack'):FindFirstChild('Knife') or char:FindFirstChild('Knife')) and 'Gun' or 'Knife'
+	--local item_name = (you:FindFirstChildOfClass('Backpack'):FindFirstChild('Knife') or char:FindFirstChild('Knife')) and 'Gun' or 'Knife'
 	local list = plrs:GetPlayers()
 	local radius = 400
 	local result
@@ -74,7 +74,7 @@ local function get_threat()
 		local element = list[i]
 		if element == you or not get_is_alive(element) then continue end
 		local other_char = element.Character
-		if not element:FindFirstChildOfClass('Backpack'):FindFirstChild(item_name) and not other_char:FindFirstChild(item_name) then continue end
+		--if not element:FindFirstChildOfClass('Backpack'):FindFirstChild(item_name) and not other_char:FindFirstChild(item_name) then continue end
 		local dist = (char_pos - other_char:GetPivot().Position).Magnitude
 		if dist > radius then continue end
 		radius, result = dist, element
