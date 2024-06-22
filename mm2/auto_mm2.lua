@@ -97,7 +97,8 @@ end
 local function sort_coins(a, b)
 	local ap, bp = a.Position or vec3_zero, b.Position or vec3_zero
 	local p0 = you.Character:GetPivot().Position
-	local score_a, score_b = -(ap - p0).Magnitude, -(bp - p0).Magnitude
+	local score_a = -(ap - p0).Magnitude
+	local score_b = -(bp - p0).Magnitude
 	local threat = get_threat()
 	if threat then
 		local p1 = threat.Character:GetPivot().Position
@@ -123,20 +124,22 @@ while env.MF do
 	if not get_is_alive(you) then continue end
 	local char = you.Character
 	local h = char:FindFirstChildOfClass('Humanoid')
+	h.PlatformStand = false
 	local hrp = h.RootPart
 	local map = workspace:FindFirstChild('Normal')
-	if not map then h.PlatformStand, workspace.Gravity = false, 196.2 continue end
+	if not map then workspace.Gravity = 196.2 continue end
 	local cc = map:FindFirstChild('CoinContainer')
-	if not cc then h.PlatformStand, workspace.Gravity = false, 196.2 continue end
+	if not cc then workspace.Gravity = 196.2 continue end
 	local coins = cc:GetChildren()
 	local p0 = hrp:GetPivot().Position
 	filter_coins(coins)
-	if #coins <= 0 or (coins[1].Position - p0).Magnitude > 400 then h.PlatformStand, workspace.Gravity = false, 196.2 continue end
+	if #coins <= 0 or (coins[1].Position - p0).Magnitude > 400 then continue end
 	sort(coins, sort_coins)
 	local coin = coins[1]
+	clear(coins)
 	local p1 = coin.Position
 	local diff = p1 + offset - p0
-	if diff.Magnitude <= 0.24 then clear(coins) h.PlatformStand, workspace.Gravity = false, 196.2 continue end
+	if diff.Magnitude <= 0.24 then continue end
 	local children = map:GetChildren()
 	for i = 1, #children do
 		local child = children[i]
@@ -150,7 +153,6 @@ while env.MF do
 	hrp:PivotTo(cf_new(pos) * cf_yxz(pi, select(2, cf_new(pos, p1).Rotation:ToEulerAnglesYXZ()), 0))
 	fti(hrp, coin, 1)
 	fti(hrp, coin, 0)
-	clear(coins)
 end
 
 starter_gui:SetCore('SendNotification', {Button1 = 'OK', Duration = 4, Title = 'MM2', Text = 'Auto farm script has been deactivated.'})
