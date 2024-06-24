@@ -6,7 +6,7 @@ env.MF = not env.MF and true or nil
 if not env.MF then return end
 
 local offset = Vector3.new(0, -2, 0)
-local speed = 22.14
+local speed = 20.14
 
 local cf_new = CFrame.new
 local cf_yxz = CFrame.fromEulerAnglesYXZ
