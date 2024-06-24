@@ -1,9 +1,14 @@
 -- source code
 
-if game.PlaceId ~= 142823291 then return end
+local place_id = 142823291
+if game.PlaceId ~= place_id then return end
+local code = `loadstring(game:HttpGet('https://raw.githubusercontent.com/cavasatchik571/scripts/main/mm2/auto_mm2.lua', true))()`
 local env = (getgenv or function() end)() or _ENV or shared or _G
-env.MF = not env.MF and true or nil
-if not env.MF then return end
+if not env.MF_injected then (queueonteleport or queue_on_teleport)(code) end
+env.MF_injected = true
+local new_enabled = not env.MF and true or nil
+env.MF = new_enabled
+if not new_enabled then return end
 
 local offset = Vector3.new(0, -2, 0)
 local speed = 20.14
@@ -18,9 +23,12 @@ local ps = game:GetService('RunService').PreSimulation
 local remove = table.remove
 local rng = Random.new()
 local round = math.round
+local sleep = task.wait
 local sort = table.sort
 local starter_gui = game:GetService('StarterGui')
-local step = rng:NextNumber(4, 6)
+local step = 4
+local ts = game:GetService('TeleportService')
+local ts_ttpi = ts.TeleportToPlaceInstance
 local you = plrs.LocalPlayer
 local vec2_zero = Vector2.zero
 local vec3_zero = Vector3.zero
@@ -99,8 +107,7 @@ end
 local function sort_coins(a, b)
 	local ap, bp = a.Position or vec3_zero, b.Position or vec3_zero
 	local p0 = you.Character:GetPivot().Position
-	local score_a = -(ap - p0).Magnitude
-	local score_b = -(bp - p0).Magnitude
+	local score_a, score_b = -(ap - p0).Magnitude, -(bp - p0).Magnitude
 	local threat = get_threat()
 	if threat then
 		local p1 = threat.Character:GetPivot().Position
@@ -112,14 +119,22 @@ end
 
 -- logic
 
-starter_gui:SetCore('SendNotification', {Button1 = 'OK', Duration = 4, Title = 'MM2', Text = 'Auto farm script has been activated.'})
-local connection = you.Idled:Connect(function()
+local connection_0 = you.Idled:Connect(function()
 	if not env.MF then return end
 	pcall(vu_b1d, vu, vec2_zero)
 	ps:Wait()
 	pcall(vu_b1u, vu, vec2_zero)
 end)
 
+local connection_1 = you.ChildRemoved:Connect(function(child)
+	if not child:IsA('PlayerScripts') then return end
+	while true do
+		sleep(1)
+		pcall(ts_ttpi, ts, place_id, game.JobId, you)
+	end
+end)
+
+starter_gui:SetCore('SendNotification', {Button1 = 'OK', Duration = 4, Title = 'MM2', Text = 'Auto farm script has been activated.'})
 while env.MF do
 	local dt = ps:Wait()
 	step = rng:NextNumber(4, 6)
@@ -145,7 +160,8 @@ while env.MF do
 	local descendants = cc:GetDescendants()
 	for i = 1, #descendants do
 		local descendant = descendants[i]
-		if not descendant:IsA('ParticleEmitter') or descendant.Texture ~= 'rbxassetid://16885815956' or descendant.Parent:FindFirstChildWhichIsA('MeshPart').Transparency > 0 then continue end
+		if not descendant:IsA('ParticleEmitter') or descendant.Texture ~= 'rbxassetid://16885815956' or
+			descendant.Parent:FindFirstChildWhichIsA('MeshPart').Transparency > 0 then continue end
 		particle_emitter = descendant
 		break
 	end
@@ -153,8 +169,12 @@ while env.MF do
 	if particle_emitter then
 		hrp.CFrame = particle_emitter.Parent:GetPivot()
 		continue
-	elseif not bp:FindFirstChild('Knife') and not char:FindFirstChild('Knife') then
-		pcall(function() if you.PlayerGui.MainGUI.Game.CoinBags.Container.Coin.FullBagIcon.Visible then h.Health = 0 end end)
+	else
+		if bp:FindFirstChild('Knife') or char:FindFirstChild('Knife') then
+			pcall(function() if you.PlayerGui.MainGUI.Game.CoinBags.Container.Coin.FullBagIcon.Visible then hrp.CFrame = cf_new(0, 1000, 0) end end)
+		else
+			pcall(function() if you.PlayerGui.MainGUI.Game.CoinBags.Container.Coin.FullBagIcon.Visible then h.Health = 0 end end)
+		end
 	end
 	local coins = cc:GetChildren()
 	local p0 = hrp:GetPivot().Position
@@ -165,7 +185,7 @@ while env.MF do
 	clear(coins)
 	local p1 = coin.Position
 	local diff = p1 + offset - p0
-	local pos = p0 + diff.Unit * dt * (speed - rng:NextNumber(0, 4))
+	local pos = p0 + (diff.Magnitude == 0 and vec3_zero or diff.Unit) * dt * (speed - rng:NextNumber(0, 4))
 	h.PlatformStand, workspace.Gravity = true, 0
 	hrp.CFrame = cf_new(pos) * cf_yxz(pi, select(2, cf_new(pos, p1).Rotation:ToEulerAnglesYXZ()), 0)
 	fti(hrp, coin, 1)
@@ -173,6 +193,7 @@ while env.MF do
 end
 
 starter_gui:SetCore('SendNotification', {Button1 = 'OK', Duration = 4, Title = 'MM2', Text = 'Auto farm script has been deactivated.'})
-connection:Disconnect()
+connection_0:Disconnect()
+connection_1:Disconnect()
 if not get_is_alive(you) then return end
 you.Character:FindFirstChildOfClass('Humanoid').PlatformStand = false
