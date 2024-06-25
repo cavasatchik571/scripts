@@ -40,7 +40,6 @@ local min = math.min
 local name_tags = {}
 local other_mouse = {}
 local ray_new = Ray.new
-local ray_params = RaycastParams.new()
 local sleep = task.wait
 local smooth = Enum.SurfaceType.Smooth
 local smooth_plastic = Enum.Material.SmoothPlastic
@@ -102,6 +101,11 @@ name_tag_lbl.TextStrokeTransparency = 0
 name_tag_lbl.ZIndex = 4000
 name_tag_lbl.Parent = name_tag
 
+local ray_params = RaycastParams.new()
+ray_params.FilterType = Enum.RaycastFilterType.Include
+ray_params.IgnoreWater = true
+ray_params.RespectCanCollide = false
+
 local stroke = inst_new('UIStroke')
 stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 stroke.Color = colors_black
@@ -140,14 +144,10 @@ ui_btn.TextScaled = true
 ui_btn.TextStrokeColor3 = _4
 ui_btn.TextStrokeTransparency = 0
 ui_btn.ZIndex = 4000
-
-ray_params.FilterType = Enum.RaycastFilterType.Include
-ray_params.IgnoreWater = true
-ray_params.RespectCanCollide = false
 stroke:Clone().Parent = ui_btn
 ui.Parent = pcall(tostring, core_gui) and core_gui or you:WaitForChild('PlayerGui')
 
----4 w/💚
+---4💚
 
 local function change_mouse_properties(...)
 	clear(other_mouse)
@@ -199,12 +199,12 @@ end
 local function set(a: any, b: any, c: any) a[b] = c end
 local special_func_checks: {any} = {
 	function(e)
-		if not e.Parent or e.Name ~= 'GunDrop' then return false end
+		if not e.Parent or e.Name ~= 'GunDrop' then end
 		return true, sheriff_color, 0.24
 	end,
 	function(e)
 		local parent = e.Parent
-		if not parent or parent.Name ~= 'ThrowingKnife' then return false end
+		if not parent or parent.Name ~= 'ThrowingKnife' then end
 		local blade_pos: any = parent:WaitForChild('BladePosition').Position
 		local unit: any = 400 * parent:WaitForChild('Vector3Value').Value
 		local beam = create_beam(blade_pos, get_end_point(blade_pos, blade_pos + unit))
@@ -215,14 +215,14 @@ local special_func_checks: {any} = {
 	end,
 	function(e)
 		local parent = e.Parent
-		if not parent or parent.Name ~= 'Trap' then return false end
+		if not parent or parent.Name ~= 'Trap' then end
 		return true, murderer_color, 0.24
 	end,
 	function(e)
 		local parent = e.Parent
-		if not parent or parent.Name == 'Handle' then return false end
+		if not parent or parent.Name == 'Handle' then end
 		local effect = parent:FindFirstChildOfClass('ParticleEmitter')
-		if not effect or effect.Texture ~= 'rbxassetid://16885815956' then return false end
+		if not effect or effect.Texture ~= 'rbxassetid://16885815956' then end
 		return true, _4, 0.24
 	end
 }
@@ -230,19 +230,21 @@ local special_func_checks: {any} = {
 local function check_special(e)
 	for i = 1, #special_func_checks do
 		local succ, color, transparency = special_func_checks[i](e)
-		if succ then return succ, color, transparency end
+		if succ then return color, transparency end
 	end
-	return false
+	return
 end
 
 local function descendant_added_w(e)
+	local name = e.Name
+	if name == 'GunDisplay' or name == 'KnifeDisplay' then return e:Destroy() end
 	if e:IsA('BasePart') then
 		e.BackSurface, e.BottomSurface, e.FrontSurface, e.LeftSurface, e.RightSurface, e.TopSurface = smooth, smooth, smooth, smooth, smooth, smooth
 		e.Material, e.Reflectance = smooth_plastic, 0
 		local highlight = highlights[e]
 		if highlight then return end
-		local succ, color, transparency = check_special(e)
-		if not succ then
+		local color, transparency = check_special(e)
+		if not color then
 			sleep(0.004)
 			local char = e.Parent
 			if not char then return end
@@ -252,7 +254,7 @@ local function descendant_added_w(e)
 			if not h or h.Health <= 0 or h:GetState() == dead then return end
 		end
 		local new_highlight = highlight_prefab:Clone()
-		if succ then new_highlight.Color3, new_highlight.Name, new_highlight.Transparency = color, 'SpecialHighlight', transparency end
+		if color then new_highlight.Color3, new_highlight.Name, new_highlight.Transparency = color, 'SpecialHighlight', transparency end
 		highlights[e] = new_highlight
 		new_highlight.Parent = ui
 	elseif e:IsA('Beam') then
@@ -271,8 +273,6 @@ local function descendant_added_w(e)
 	elseif e:IsA('Attachment') or e:IsA('Constraint') or e:IsA('Explosion') or e:IsA('FloorWire') or e:IsA('ForceField') then
 		e.Visible = false
 	end
-	local name = e.Name
-	if name == 'GunDisplay' or name == 'KnifeDisplay' then e:Destroy() end
 end
 
 local function plr_added(plr)
@@ -357,11 +357,13 @@ local function scripted_shoot()
 	local other_plr = get_plr(your_hrp.Position, 740, (is_gun and 'Knife') or (is_knife and 'Gun') or nil)
 	if not other_plr then return end
 	local char = other_plr.Character
+	local hrp = char:FindFirstChildOfClass('Humanoid').RootPart
 	local list = {char}
-	local other_hrp = char:FindFirstChildOfClass('Humanoid').RootPart
-	local result = cam:GetPartsObscuringTarget(list)
+	local pos_list = {hrp.Position}
+	local result = cam:GetPartsObscuringTarget(pos_list, list)
 	local result_len = #result
 	clear(list)
+	clear(pos_list)
 	clear(result)
 	if result_len > 0 then return end
 	local apos = ui.AbsolutePosition
@@ -369,18 +371,18 @@ local function scripted_shoot()
 	local mb = (is_gun and 0) or (is_knife and 1) or 0
 	ui_btn.Interactable = false
 	if uis:GetLastInputType() == touch then
-		local x, y = target(other_hrp)
+		local x, y = target(hrp)
 		vim:SendTouchEvent(14, 0, x + cx, y + cy)
 		sleep(0.0204)
-		local x, y = target(other_hrp)
+		local x, y = target(hrp)
 		vim:SendTouchEvent(14, 2, x + cx, y + cy)
 	else
-		local x, y = target(other_hrp)
+		local x, y = target(hrp)
 		x += cx
 		y += cy
 		vim:SendMouseButtonEvent(x, y, mb, true, nil, 0)
 		sleep(0.0204)
-		local x, y = target(other_hrp)
+		local x, y = target(hrp)
 		x += cx
 		y += cy
 		vim:SendMouseButtonEvent(x, y, mb, false, nil, 0)
@@ -445,7 +447,6 @@ while true do
 		local stroke = lbl.Stroke
 		lbl.TextColor3, stroke.Color, stroke.Thickness = color, color, min(4, 100 / (hrp.Position - pos).Magnitude)
 	end
-
 	for adornee, highlight in next, highlights do
 		if typeof(adornee) ~= 'Instance' or not adornee:IsA('BasePart') then continue end
 		local parent = adornee.Parent
@@ -458,7 +459,6 @@ while true do
 		if not plr_tag then continue end
 		highlight.Color3 = plr_tag.Label.TextColor3
 	end
-
 	local bp = you:FindFirstChildOfClass('Backpack')
 	if not bp then ui_btn.Parent = nil continue end
 	local char = you.Character
