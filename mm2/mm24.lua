@@ -106,7 +106,7 @@ name_tag_lbl.Parent = name_tag
 local ray_params = RaycastParams.new()
 ray_params.FilterType = Enum.RaycastFilterType.Include
 ray_params.IgnoreWater = true
-ray_params.RespectCanCollide = false
+ray_params.RespectCanCollide = true
 
 local stroke = inst_new('UIStroke')
 stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
@@ -207,8 +207,8 @@ local special_func_checks: {any} = {
 		local parent = e.Parent
 		if not parent or parent.Name ~= 'ThrowingKnife' then return end
 		local blade_pos: any = parent:WaitForChild('BladePosition').Position
-		local unit: any = parent:WaitForChild('Vector3Value').Value
-		local beam = create_beam(blade_pos, get_end_point(blade_pos, blade_pos + 400 * unit) + 4 * unit)
+		local unit: any = 400 * parent:WaitForChild('Vector3Value').Value
+		local beam = create_beam(blade_pos, get_end_point(blade_pos, blade_pos + unit))
 		beam.Color3 = murderer_color
 		beam.Parent = parent
 		debris:AddItem(parent, 10)
@@ -265,7 +265,7 @@ local function descendant_added_w(e)
 		local beam = create_beam(a0.WorldPosition, a1.WorldPosition)
 		beam.Color3 = sheriff_color
 		beam.Parent = ui
-		debris:AddItem(beam, 0.64)
+		debris:AddItem(beam, 0.644)
 	elseif e:IsA('Decal') then
 		e.Transparency = 1
 	elseif e:IsA('Fire') or e:IsA('Highlight') or e:IsA('Light') or e:IsA('ParticleEmitter') or
@@ -337,7 +337,6 @@ local function target(hrp, cx, cy)
 		'Hit', cf_new(pos), 'Origin', cf_new(cam_pos, pos), 'Target', hrp,
 		'UnitRay', ray_new(cam_pos, (pos - cam_pos).Unit), 'X', x, 'Y', y
 	)
-
 	return x, y
 end
 
@@ -370,13 +369,14 @@ local function scripted_shoot()
 	local apos = ui.AbsolutePosition
 	local cx, cy = -apos.X, -apos.Y
 	local is_touch = uis:GetLastInputType() == touch
-	local mb = (is_gun and 0) or (is_knife and 1) or 0
 	ui_btn.Interactable = false
-	for _ = 1, 4 do
+	local id = rng:NextInteger(14, 10000)
+	local mb = (is_gun and 0) or (is_knife and 1) or 0
+	for _ = 1, 4 do 
 		if is_touch then
-			vim:SendTouchEvent(14, 0, target(hrp, cx, cy))
+			vim:SendTouchEvent(id, 0, target(hrp, cx, cy))
 			sleep(0.004)
-			vim:SendTouchEvent(14, 2, target(hrp, cx, cy))
+			vim:SendTouchEvent(id, 2, target(hrp, cx, cy))
 		else
 			local x, y = target(hrp, cx, cy)
 			vim:SendMouseButtonEvent(x, y, mb, true, nil, 0)
@@ -386,6 +386,7 @@ local function scripted_shoot()
 		end
 		sleep(0.004)
 	end
+	if is_touch then vim:SendTouchEvent(id, 2, -1, -1) else vim:SendMouseButtonEvent(-1, -1, mb, false, nil, 0) end
 	change_mouse_properties()
 	ui_btn.Interactable = true
 end
@@ -458,7 +459,6 @@ while true do
 		if not plr_tag then continue end
 		highlight.Color3 = plr_tag.Label.TextColor3
 	end
-
 	local bp = you:FindFirstChildOfClass('Backpack')
 	if not bp then ui_btn.Parent = nil continue end
 	local char = you.Character
