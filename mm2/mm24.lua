@@ -1,4 +1,6 @@
---!nolint
+	end
+end
+s--!nolint
 --!nonstrict
 
 local _4 = Color3.new(0, .4984, 0)
@@ -138,7 +140,7 @@ ui_btn.FontFace = ubuntu_font
 ui_btn.MaxVisibleGraphemes = 1
 ui_btn.Name = 'Interact'
 ui_btn.Position = udim2_fs(0.75, 0.75)
-ui_btn.Size = udim2_fs(0.14, 0.14)
+ui_btn.Size = udim2_fs(0.144, 0.144)
 ui_btn.SizeConstraint = Enum.SizeConstraint.RelativeYY
 ui_btn.Text = '4'
 ui_btn.TextColor3 = colors_white
@@ -188,7 +190,7 @@ local function get_plr(origin, dist, name)
 		if not h or h.Health <= 0 or h:GetState() == dead then continue end
 		local hrp = h.RootPart
 		if not hrp then continue end
-		if not name or not (bp:FindFirstChild(name) or char:FindFirstChild(name)) then continue end
+		if name and not (bp:FindFirstChild(name) or char:FindFirstChild(name)) then continue end
 		local new_dist = (hrp.Position - origin).Magnitude
 		if new_dist >= dist then continue end
 		dist, result = new_dist, element
@@ -207,8 +209,8 @@ local special_func_checks: {any} = {
 		local parent = e.Parent
 		if not parent or parent.Name ~= 'ThrowingKnife' then return end
 		local blade_pos: any = parent:WaitForChild('BladePosition').Position
-		local unit: any = 400 * parent:WaitForChild('Vector3Value').Value
-		local beam = create_beam(blade_pos, get_end_point(blade_pos, blade_pos + unit))
+		local unit: any = parent:WaitForChild('Vector3Value').Value
+		local beam = create_beam(blade_pos, get_end_point(blade_pos, blade_pos + 400 * unit) + 4 * unit)
 		beam.Color3 = murderer_color
 		beam.Parent = parent
 		debris:AddItem(parent, 10)
@@ -326,17 +328,18 @@ if did_exist then
 	pcall(set, rendering, 'QualityLevel', lowest_quality)
 end
 
-local function target(hrp)
+local function target(hrp, cx, cy)
 	local cam_pos = cam.CFrame.Position
 	local hrp_pos = hrp.Position
 	local pos = hrp_pos
 	local screen_point = cam:WorldToScreenPoint(pos)
-	local x, y = screen_point.X, screen_point.Y
+	local x, y = cx + screen_point.X, cy + screen_point.Y
 	ui_btn.Interactable = true
 	change_mouse_properties(
 		'Hit', cf_new(pos), 'Origin', cf_new(cam_pos, pos), 'Target', hrp,
 		'UnitRay', ray_new(cam_pos, (pos - cam_pos).Unit), 'X', x, 'Y', y
 	)
+
 	return x, y
 end
 
@@ -368,24 +371,21 @@ local function scripted_shoot()
 	if result_len > 0 then return end
 	local apos = ui.AbsolutePosition
 	local cx, cy = -apos.X, -apos.Y
+	local is_touch = uis:GetLastInputType() == touch
 	local mb = (is_gun and 0) or (is_knife and 1) or 0
 	ui_btn.Interactable = false
-	if uis:GetLastInputType() == touch then
-		local x, y = target(hrp)
-		vim:SendTouchEvent(14, 0, x + cx, y + cy)
-		sleep(0.0204)
-		local x, y = target(hrp)
-		vim:SendTouchEvent(14, 2, x + cx, y + cy)
-	else
-		local x, y = target(hrp)
-		x += cx
-		y += cy
-		vim:SendMouseButtonEvent(x, y, mb, true, nil, 0)
-		sleep(0.0204)
-		local x, y = target(hrp)
-		x += cx
-		y += cy
-		vim:SendMouseButtonEvent(x, y, mb, false, nil, 0)
+	for _ = 1, 14 do
+		if is_touch then
+			vim:SendTouchEvent(14, 0, target(hrp, cx, cy))
+			sleep()
+			vim:SendTouchEvent(14, 2, target(hrp, cx, cy))
+		else
+			local x, y = target(hrp, cx, cy)
+			vim:SendMouseButtonEvent(x, y, mb, true, nil, 0)
+			sleep()
+			local x, y = target(hrp, cx, cy)
+			vim:SendMouseButtonEvent(x, y, mb, false, nil, 0)
+		end
 	end
 	change_mouse_properties()
 	ui_btn.Interactable = true
@@ -404,9 +404,9 @@ local sg_sc = sg.SetCore
 local sg_scp = {Button1 = 'OK', Duration = 4, Icon = 'rbxassetid://7440784829', Text = 'Script activated', Title = 'MM24'}
 while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.04) end end
 clear(sg_scp)
-local new_jh = starter_player.CharacterJumpHeight * 1.14
-local new_jp = starter_player.CharacterJumpPower * 1.14
-local new_ws = starter_player.CharacterWalkSpeed * 1.14
+local new_jh = starter_player.CharacterJumpHeight * 1.044
+local new_jp = starter_player.CharacterJumpPower * 1.044
+local new_ws = starter_player.CharacterWalkSpeed * 1.144
 coroutine_resume(coroutine_create(function()
 	while true do
 		data = get_plr_data:InvokeServer() or data
@@ -467,7 +467,7 @@ while true do
 	if not h or h.Health <= 0 or h:GetState() == dead then ui_btn.Parent = nil continue end
 	local hrp = h.RootPart
 	if not hrp then ui_btn.Parent = nil continue end
-	if hrp and (hrp.AssemblyAngularVelocity.Magnitude >= 100 or hrp.AssemblyLinearVelocity.Magnitude >= 100) then
+	if hrp and (hrp.AssemblyAngularVelocity.Magnitude >= 240 or hrp.AssemblyLinearVelocity.Magnitude >= 240 or hrp.Position.Y <= -400) then
 		hrp.AssemblyAngularVelocity, hrp.AssemblyLinearVelocity, hrp.RotVelocity, hrp.Velocity = vec3_zero, vec3_zero, vec3_zero, vec3_zero
 		local map = workspace:FindFirstChild('Normal')
 		if map then
@@ -492,7 +492,7 @@ while true do
 	if knife then
 		local handle = knife:FindFirstChild('Handle')
 		if handle then
-			local other_plr = get_plr(hrp.Position, 4.4, nil)
+			local other_plr = get_plr(hrp.Position, 4.44, nil)
 			if other_plr then
 				local other_hrp = other_plr.Character:FindFirstChildOfClass('Humanoid').RootPart
 				fti(handle, other_hrp, 1)
