@@ -126,7 +126,7 @@ ui.Name = '4Gui'
 ui.ResetOnSpawn = false
 ui.ScreenInsets = Enum.ScreenInsets.None
 
-local ui_btnr = inst_new('TextButton')
+local ui_btn = inst_new('TextButton')
 ui_btn.Active = true
 ui_btn.AnchorPoint = vec2_new(0.5, 0.5)
 ui_btn.AutoButtonColor = false
@@ -138,7 +138,7 @@ ui_btn.BorderSizePixel = 4
 ui_btn.FontFace = ubuntu_font
 ui_btn.MaxVisibleGraphemes = 1
 ui_btn.Name = 'Interact'
-ui_btn.Position = udim2_fs(0.75, 0.75)
+ui_btn.Position = udim2_fs(0.725, 0.75)
 ui_btn.Size = udim2_fs(0.144, 0.144)
 ui_btn.SizeConstraint = Enum.SizeConstraint.RelativeYY
 ui_btn.Text = '4'
