@@ -40,9 +40,11 @@ local min = math.min
 local name_tags = {}
 local other_mouse = {}
 local ray_new = Ray.new
+local ray_params = RaycastParams.new()
 local sleep = task.wait
 local smooth = Enum.SurfaceType.Smooth
 local smooth_plastic = Enum.Material.SmoothPlastic
+local sort = table.sort
 local starter_player = game:GetService('StarterPlayer')
 local terrain = workspace.Terrain
 local touch = enum_uit.Touch
@@ -85,7 +87,7 @@ local name_tag_lbl = inst_new('TextLabel')
 name_tag_lbl.Active = false
 name_tag_lbl.BackgroundColor3 = colors_white
 name_tag_lbl.BackgroundTransparency = 1
-name_tag_lbl.BorderColor3 = _4
+name_tag_lbl.BorderColor3 = colors_black
 name_tag_lbl.BorderSizePixel = 4
 name_tag_lbl.FontFace = ubuntu_font
 name_tag_lbl.Interactable = false
@@ -138,47 +140,14 @@ ui_btn.TextScaled = true
 ui_btn.TextStrokeColor3 = _4
 ui_btn.TextStrokeTransparency = 0
 ui_btn.ZIndex = 4000
+
+ray_params.FilterType = Enum.RaycastFilterType.Include
+ray_params.IgnoreWater = true
+ray_params.RespectCanCollide = false
 stroke:Clone().Parent = ui_btn
 ui.Parent = pcall(tostring, core_gui) and core_gui or you:WaitForChild('PlayerGui')
 
----4💚
-
-local function create_beam(p0, p1): any
-	local new_highlight = highlight_prefab:Clone()
-	new_highlight.Adornee = terrain
-	new_highlight.CFrame = cf_new((p0 + p1) / 2, p0)
-	new_highlight.Size = vec3_new(0.24, 0.24, (p1 - p0).Magnitude)
-	return new_highlight
-end
-
-local function child_added_lighting(e) if e:IsA('PostEffect') then e.Enabled = false end end
-local function set(a: any, b: any, c: any) a[b] = c end
-local special_func_checks: {any} = {
-	function(e) return e.Parent and e.Name == 'GunDrop' end,
-	function(e)
-		local parent = e.Parent
-		if parent and parent.Name == 'ThrowingKnife' then
-			local blade_pos: any = parent:WaitForChild('BladePosition').Position
-			local unit: any = 400 * parent:WaitForChild('Vector3Value').Value
-			local beam = create_beam(blade_pos, blade_pos + unit)
-			beam.Color3 = murderer_color
-			beam.Parent = parent
-			debris:AddItem(parent, 10)
-			return true
-		end
-		return false
-	end,
-	function(e)
-		local parent = e.Parent
-		return parent and parent.Name == 'Trap' or false
-	end,
-	function(e)
-		local parent = e.Parent
-		if not parent or parent.Name == 'Handle' then return false end
-		local effect = parent:FindFirstChildOfClass('ParticleEmitter')
-		return effect and effect.Texture == 'rbxassetid://16885815956' or false
-	end
-}
+---4 w/💚
 
 local function change_mouse_properties(...)
 	clear(other_mouse)
@@ -187,8 +156,82 @@ local function change_mouse_properties(...)
 	clear(args)
 end
 
+local function child_added_lighting(e) if e:IsA('PostEffect') then e.Enabled = false end end
+local function create_beam(p0, p1): any
+	local new_highlight = highlight_prefab:Clone()
+	new_highlight.Adornee = terrain
+	new_highlight.CFrame = cf_new((p0 + p1) / 2, p0)
+	new_highlight.Size = vec3_new(0.24, 0.24, (p0 - p1).Magnitude)
+	return new_highlight
+end
+
+local function get_end_point(p0, p1)
+	local list = {workspace:FindFirstChild('Normal')}
+	ray_params.FilterDescendantsInstances = list
+	local ray_result = workspace:Raycast(p0, p1 - p0, ray_params)
+	clear(list)
+	return ray_result and ray_result.Position or p1
+end
+
+local function get_plr(origin, dist, name)
+	local list = plrs:GetPlayers()
+	local result
+	for i = 1, #list do
+		local element = list[i]
+		if not element or element == you then continue end
+		local bp = element:FindFirstChildOfClass('Backpack')
+		if not bp then continue end
+		local char = element.Character
+		if not char then continue end
+		local h = char:FindFirstChildOfClass('Humanoid')
+		if not h or h.Health <= 0 or h:GetState() == dead then continue end
+		local hrp = h.RootPart
+		if not hrp then continue end
+		if not name or not (bp:FindFirstChild(name) or char:FindFirstChild(name)) then continue end
+		local new_dist = (hrp.Position - origin).Magnitude
+		if new_dist >= dist then continue end
+		dist, result = new_dist, element
+	end
+	clear(list)
+	return result
+end
+
+local function set(a: any, b: any, c: any) a[b] = c end
+local special_func_checks: {any} = {
+	function(e)
+		if not e.Parent or e.Name ~= 'GunDrop' then return false end
+		return true, sheriff_color, 0.24
+	end,
+	function(e)
+		local parent = e.Parent
+		if not parent or parent.Name ~= 'ThrowingKnife' then return false end
+		local blade_pos: any = parent:WaitForChild('BladePosition').Position
+		local unit: any = 400 * parent:WaitForChild('Vector3Value').Value
+		local beam = create_beam(blade_pos, get_end_point(blade_pos, blade_pos + unit))
+		beam.Color3 = murderer_color
+		beam.Parent = parent
+		debris:AddItem(parent, 10)
+		return true, murderer_color, 0.24
+	end,
+	function(e)
+		local parent = e.Parent
+		if not parent or parent.Name ~= 'Trap' then return false end
+		return true, murderer_color, 0.24
+	end,
+	function(e)
+		local parent = e.Parent
+		if not parent or parent.Name == 'Handle' then return false end
+		local effect = parent:FindFirstChildOfClass('ParticleEmitter')
+		if not effect or effect.Texture ~= 'rbxassetid://16885815956' then return false end
+		return true, _4, 0.24
+	end
+}
+
 local function check_special(e)
-	for i = 1, #special_func_checks do if special_func_checks[i](e) then return true end end
+	for i = 1, #special_func_checks do
+		local succ, color, transparency = special_func_checks[i](e)
+		if succ then return succ, color, transparency end
+	end
 	return false
 end
 
@@ -196,8 +239,10 @@ local function descendant_added_w(e)
 	if e:IsA('BasePart') then
 		e.BackSurface, e.BottomSurface, e.FrontSurface, e.LeftSurface, e.RightSurface, e.TopSurface = smooth, smooth, smooth, smooth, smooth, smooth
 		e.Material, e.Reflectance = smooth_plastic, 0
-		local special = check_special(e)
-		if not special then
+		local highlight = highlights[e]
+		if highlight then return end
+		local succ, color, transparency = check_special(e)
+		if not succ then
 			sleep(0.004)
 			local char = e.Parent
 			if not char then return end
@@ -206,10 +251,8 @@ local function descendant_added_w(e)
 			local h = char:WaitForChild('Humanoid', 0.4)
 			if not h or h.Health <= 0 or h:GetState() == dead then return end
 		end
-		local highlight = highlights[e]
-		if highlight then return end
 		local new_highlight = highlight_prefab:Clone()
-		if special then new_highlight.Name, new_highlight.Transparency = 'SpecialHighlight', 0.24 end
+		if succ then new_highlight.Color3, new_highlight.Name, new_highlight.Transparency = color, 'SpecialHighlight', transparency end
 		highlights[e] = new_highlight
 		new_highlight.Parent = ui
 	elseif e:IsA('Beam') then
@@ -228,30 +271,8 @@ local function descendant_added_w(e)
 	elseif e:IsA('Attachment') or e:IsA('Constraint') or e:IsA('Explosion') or e:IsA('FloorWire') or e:IsA('ForceField') then
 		e.Visible = false
 	end
-end
-
-local function get_plr(origin, dist, mode)
-	local list = plrs:GetPlayers()
-	local name = (mode == 'Murderer' and 'Knife') or (mode == 'Sheriff' and 'Gun') or nil
-	local result
-	for i = 1, #list do
-		local element = list[i]
-		if not element or element == you then continue end
-		local bp = element:FindFirstChildOfClass('Backpack')
-		if not bp then continue end
-		local char = element.Character
-		if not char then continue end
-		local h = char:FindFirstChildOfClass('Humanoid')
-		if not h or h.Health <= 0 or h:GetState() == dead then continue end
-		local hrp = h.RootPart
-		if not hrp then continue end
-		if name and not bp:FindFirstChild(name) and not char:FindFirstChild(name) then continue end
-		local new_dist = (hrp.Position - origin).Magnitude
-		if new_dist >= dist then continue end
-		dist, result = new_dist, element
-	end
-	clear(list)
-	return result
+	local name = e.Name
+	if name == 'GunDisplay' or name == 'KnifeDisplay' then e:Destroy() end
 end
 
 local function plr_added(plr)
@@ -333,9 +354,16 @@ local function scripted_shoot()
 	local is_gun = name == 'Gun'
 	local is_knife = name == 'Knife'
 	if not is_gun and not is_knife then return end
-	local other_plr = get_plr(your_hrp.Position, 740, (is_gun and 'Murderer') or (is_knife and 'Sheriff') or nil)
+	local other_plr = get_plr(your_hrp.Position, 740, (is_gun and 'Knife') or (is_knife and 'Gun') or nil)
 	if not other_plr then return end
-	local other_hrp = other_plr.Character:FindFirstChildOfClass('Humanoid').RootPart
+	local char = other_plr.Character
+	local list = {char}
+	local other_hrp = char:FindFirstChildOfClass('Humanoid').RootPart
+	local result = cam:GetPartsObscuringTarget(list)
+	local result_len = #result
+	clear(list)
+	clear(result)
+	if result_len > 0 then return end
 	local apos = ui.AbsolutePosition
 	local cx, cy = -apos.X, -apos.Y
 	local mb = (is_gun and 0) or (is_knife and 1) or 0
@@ -431,12 +459,34 @@ while true do
 		highlight.Color3 = plr_tag.Label.TextColor3
 	end
 
+	local bp = you:FindFirstChildOfClass('Backpack')
+	if not bp then ui_btn.Parent = nil continue end
 	local char = you.Character
 	if not char then ui_btn.Parent = nil continue end
 	local h = char:FindFirstChildOfClass('Humanoid')
 	if not h or h.Health <= 0 or h:GetState() == dead then ui_btn.Parent = nil continue end
 	local hrp = h.RootPart
 	if not hrp then ui_btn.Parent = nil continue end
+	if hrp and (hrp.AssemblyAngularVelocity.Magnitude >= 100 or hrp.AssemblyLinearVelocity.Magnitude >= 100) then
+		hrp.AssemblyAngularVelocity, hrp.AssemblyLinearVelocity, hrp.RotVelocity, hrp.Velocity = vec3_zero, vec3_zero, vec3_zero, vec3_zero
+		local map = workspace:FindFirstChild('Normal')
+		if map then
+			local is_gun = bp:FindFirstChild('Gun') or char:FindFirstChild('Gun')
+			local is_knife = bp:FindFirstChild('Knife') or char:FindFirstChild('Knife')
+			local other_plr = get_plr(hrp.Position, 740, (is_gun and 'Knife') or (is_knife and 'Gun') or nil)
+			local spawns = map:FindFirstChild('Spawns')
+			if other_plr and spawns then
+				local list = spawns:GetChildren()
+				local pos = other_plr.Character:FindFirstChildOfClass('Humanoid').RootPart.Position
+				sort(list, function(a, b) return (a.Position - pos).Magnitude > (b.Position - pos).Magnitude end)
+				local best_spawn = list[1]
+				if best_spawn then
+					hrp.CFrame = best_spawn.CFrame
+					clear(list)
+				end
+			end
+		end
+	end
 	local knife = char:FindFirstChild('Knife')
 	ui_btn.Parent = (char:FindFirstChild('Gun') or knife) and ui or nil
 	if knife then
