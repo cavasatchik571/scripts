@@ -1,6 +1,4 @@
-	end
-end
-s--!nolint
+--!nolint
 --!nonstrict
 
 local _4 = Color3.new(0, .4984, 0)
@@ -140,7 +138,7 @@ ui_btn.FontFace = ubuntu_font
 ui_btn.MaxVisibleGraphemes = 1
 ui_btn.Name = 'Interact'
 ui_btn.Position = udim2_fs(0.75, 0.75)
-ui_btn.Size = udim2_fs(0.144, 0.144)
+ui_btn.Size = udim2_fs(0.14, 0.14)
 ui_btn.SizeConstraint = Enum.SizeConstraint.RelativeYY
 ui_btn.Text = '4'
 ui_btn.TextColor3 = colors_white
@@ -459,6 +457,7 @@ while true do
 		if not plr_tag then continue end
 		highlight.Color3 = plr_tag.Label.TextColor3
 	end
+
 	local bp = you:FindFirstChildOfClass('Backpack')
 	if not bp then ui_btn.Parent = nil continue end
 	local char = you.Character
@@ -487,6 +486,7 @@ while true do
 			end
 		end
 	end
+
 	local knife = char:FindFirstChild('Knife')
 	ui_btn.Parent = (char:FindFirstChild('Gun') or knife) and ui or nil
 	if knife then
