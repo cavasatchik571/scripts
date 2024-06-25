@@ -265,7 +265,7 @@ local function descendant_added_w(e)
 		local beam = create_beam(a0.WorldPosition, a1.WorldPosition)
 		beam.Color3 = sheriff_color
 		beam.Parent = ui
-		debris:AddItem(beam, 0.644)
+		debris:AddItem(beam, 0.64)
 	elseif e:IsA('Decal') then
 		e.Transparency = 1
 	elseif e:IsA('Fire') or e:IsA('Highlight') or e:IsA('Light') or e:IsA('ParticleEmitter') or
@@ -372,18 +372,19 @@ local function scripted_shoot()
 	local is_touch = uis:GetLastInputType() == touch
 	local mb = (is_gun and 0) or (is_knife and 1) or 0
 	ui_btn.Interactable = false
-	for _ = 1, 14 do
+	for _ = 1, 4 do
 		if is_touch then
 			vim:SendTouchEvent(14, 0, target(hrp, cx, cy))
-			sleep()
+			sleep(0.004)
 			vim:SendTouchEvent(14, 2, target(hrp, cx, cy))
 		else
 			local x, y = target(hrp, cx, cy)
 			vim:SendMouseButtonEvent(x, y, mb, true, nil, 0)
-			sleep()
+			sleep(0.004)
 			local x, y = target(hrp, cx, cy)
 			vim:SendMouseButtonEvent(x, y, mb, false, nil, 0)
 		end
+		sleep(0.004)
 	end
 	change_mouse_properties()
 	ui_btn.Interactable = true
@@ -402,8 +403,8 @@ local sg_sc = sg.SetCore
 local sg_scp = {Button1 = 'OK', Duration = 4, Icon = 'rbxassetid://7440784829', Text = 'Script activated', Title = 'MM24'}
 while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.04) end end
 clear(sg_scp)
-local new_jh = starter_player.CharacterJumpHeight * 1.044
-local new_jp = starter_player.CharacterJumpPower * 1.044
+local new_jh = starter_player.CharacterJumpHeight * 1.04
+local new_jp = starter_player.CharacterJumpPower * 1.04
 local new_ws = starter_player.CharacterWalkSpeed * 1.144
 coroutine_resume(coroutine_create(function()
 	while true do
@@ -486,7 +487,6 @@ while true do
 			end
 		end
 	end
-
 	local knife = char:FindFirstChild('Knife')
 	ui_btn.Parent = (char:FindFirstChild('Gun') or knife) and ui or nil
 	if knife then
