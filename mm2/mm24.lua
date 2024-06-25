@@ -28,6 +28,8 @@ local coroutine_resume = coroutine.resume
 local data = {}
 local dead = Enum.HumanoidStateType.Dead
 local debris = game:GetService('Debris')
+local defer = task.defer
+local destroy = game.Destroy
 local enum_uit = Enum.UserInputType
 local get_plr_data = game:GetService('ReplicatedStorage'):WaitForChild('Remotes'):WaitForChild('Extras'):WaitForChild('GetPlayerData')
 local gs = game:GetService('GuiService')
@@ -135,8 +137,8 @@ ui_btn.BorderSizePixel = 4
 ui_btn.FontFace = ubuntu_font
 ui_btn.MaxVisibleGraphemes = 1
 ui_btn.Name = 'Interact'
-ui_btn.Position = udim2_fs(0.75, 0.725)
-ui_btn.Size = udim2_fs(0.144, 0.144)
+ui_btn.Position = udim2_fs(0.75, 0.75)
+ui_btn.Size = udim2_fs(0.14, 0.14)
 ui_btn.SizeConstraint = Enum.SizeConstraint.RelativeYY
 ui_btn.Text = '4'
 ui_btn.TextColor3 = colors_white
@@ -174,8 +176,7 @@ local function get_end_point(p0, p1)
 end
 
 local function get_plr(origin, dist, name)
-	local list = plrs:GetPlayers()
-	local result
+	local list, result = plrs:GetPlayers(), nil
 	for i = 1, #list do
 		local element = list[i]
 		if not element or element == you then continue end
@@ -199,12 +200,12 @@ end
 local function set(a: any, b: any, c: any) a[b] = c end
 local special_func_checks: {any} = {
 	function(e)
-		if not e.Parent or e.Name ~= 'GunDrop' then end
+		if not e.Parent or e.Name ~= 'GunDrop' then return end
 		return true, sheriff_color, 0.24
 	end,
 	function(e)
 		local parent = e.Parent
-		if not parent or parent.Name ~= 'ThrowingKnife' then end
+		if not parent or parent.Name ~= 'ThrowingKnife' then return end
 		local blade_pos: any = parent:WaitForChild('BladePosition').Position
 		local unit: any = 400 * parent:WaitForChild('Vector3Value').Value
 		local beam = create_beam(blade_pos, get_end_point(blade_pos, blade_pos + unit))
@@ -215,14 +216,14 @@ local special_func_checks: {any} = {
 	end,
 	function(e)
 		local parent = e.Parent
-		if not parent or parent.Name ~= 'Trap' then end
+		if not parent or parent.Name ~= 'Trap' then return end
 		return true, murderer_color, 0.24
 	end,
 	function(e)
 		local parent = e.Parent
-		if not parent or parent.Name == 'Handle' then end
+		if not parent or parent.Name == 'Handle' then return end
 		local effect = parent:FindFirstChildOfClass('ParticleEmitter')
-		if not effect or effect.Texture ~= 'rbxassetid://16885815956' then end
+		if not effect or effect.Texture ~= 'rbxassetid://16885815956' then return end
 		return true, _4, 0.24
 	end
 }
@@ -237,7 +238,7 @@ end
 
 local function descendant_added_w(e)
 	local name = e.Name
-	if name == 'GunDisplay' or name == 'KnifeDisplay' then return e:Destroy() end
+	if name == 'GunDisplay' or name == 'KnifeDisplay' then return defer(destroy, e) end
 	if e:IsA('BasePart') then
 		e.BackSurface, e.BottomSurface, e.FrontSurface, e.LeftSurface, e.RightSurface, e.TopSurface = smooth, smooth, smooth, smooth, smooth, smooth
 		e.Material, e.Reflectance = smooth_plastic, 0
@@ -336,7 +337,6 @@ local function target(hrp)
 		'Hit', cf_new(pos), 'Origin', cf_new(cam_pos, pos), 'Target', hrp,
 		'UnitRay', ray_new(cam_pos, (pos - cam_pos).Unit), 'X', x, 'Y', y
 	)
-
 	return x, y
 end
 
