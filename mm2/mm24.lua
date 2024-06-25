@@ -42,6 +42,7 @@ local min = math.min
 local name_tags = {}
 local other_mouse = {}
 local ray_new = Ray.new
+local rng = Random.new()
 local sleep = task.wait
 local smooth = Enum.SurfaceType.Smooth
 local smooth_plastic = Enum.Material.SmoothPlastic
@@ -125,7 +126,7 @@ ui.Name = '4Gui'
 ui.ResetOnSpawn = false
 ui.ScreenInsets = Enum.ScreenInsets.None
 
-local ui_btn = inst_new('TextButton')
+local ui_btnr = inst_new('TextButton')
 ui_btn.Active = true
 ui_btn.AnchorPoint = vec2_new(0.5, 0.5)
 ui_btn.AutoButtonColor = false
@@ -138,7 +139,7 @@ ui_btn.FontFace = ubuntu_font
 ui_btn.MaxVisibleGraphemes = 1
 ui_btn.Name = 'Interact'
 ui_btn.Position = udim2_fs(0.75, 0.75)
-ui_btn.Size = udim2_fs(0.14, 0.14)
+ui_btn.Size = udim2_fs(0.144, 0.144)
 ui_btn.SizeConstraint = Enum.SizeConstraint.RelativeYY
 ui_btn.Text = '4'
 ui_btn.TextColor3 = colors_white
@@ -368,10 +369,9 @@ local function scripted_shoot()
 	if result_len > 0 then return end
 	local apos = ui.AbsolutePosition
 	local cx, cy = -apos.X, -apos.Y
+	local id, mb = rng:NextInteger(14, 44), (is_gun and 0) or (is_knife and 1) or 0
 	local is_touch = uis:GetLastInputType() == touch
 	ui_btn.Interactable = false
-	local id = rng:NextInteger(14, 10000)
-	local mb = (is_gun and 0) or (is_knife and 1) or 0
 	for _ = 1, 4 do 
 		if is_touch then
 			vim:SendTouchEvent(id, 0, target(hrp, cx, cy))
@@ -404,8 +404,8 @@ local sg_sc = sg.SetCore
 local sg_scp = {Button1 = 'OK', Duration = 4, Icon = 'rbxassetid://7440784829', Text = 'Script activated', Title = 'MM24'}
 while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.04) end end
 clear(sg_scp)
-local new_jh = starter_player.CharacterJumpHeight * 1.04
-local new_jp = starter_player.CharacterJumpPower * 1.04
+local new_jh = starter_player.CharacterJumpHeight * 1.044
+local new_jp = starter_player.CharacterJumpPower * 1.044
 local new_ws = starter_player.CharacterWalkSpeed * 1.144
 coroutine_resume(coroutine_create(function()
 	while true do
