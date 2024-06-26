@@ -197,7 +197,7 @@ while env.MF do
 	local p1 = coin.Position
 	local diff = p1 + offset - p0
 	local dist = diff.Magnitude
-	if dist > 1400 then
+	if dist > 666 then
 		hrp.CFrame = coin.CFrame
 	else
 		local pos = p0 + (diff.Magnitude == 0 and vec3_zero or diff.Unit) * dt * (speed - rng:NextNumber(0, 4))
