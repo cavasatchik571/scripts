@@ -171,8 +171,17 @@ while env.MF do
 		continue
 	else
 		if bp:FindFirstChild('Knife') or char:FindFirstChild('Knife') then
-			pcall(function() if you.PlayerGui.MainGUI.Game.CoinBags.Container.Coin.Full.Visible then hrp.CFrame = cf_new(0, 1000, 0) end end)
-			pcall(function() if you.PlayerGui.MainGUI.Lobby.Dock.CoinBags.Container.Coin.Full.Visible then hrp.CFrame = cf_new(0, 1000, 0) end end)
+			local function tp_to_safe_zone()
+				local init = hrp:GetAttribute('SafeCFrame')
+				if not init then
+					init = hrp.CFrame + vec3_new(0, 200, 0)
+					hrp:SetAttribute('SafeCFrame', init)
+				end
+				hrp.CFrame = init
+			end
+
+			pcall(function() if you.PlayerGui.MainGUI.Game.CoinBags.Container.Coin.Full.Visible then tp_to_safe_zone() end end)
+			pcall(function() if you.PlayerGui.MainGUI.Lobby.Dock.CoinBags.Container.Coin.Full.Visible then tp_to_safe_zone() end end)
 		else
 			pcall(function() if you.PlayerGui.MainGUI.Game.CoinBags.Container.Coin.Full.Visible then h.Health = 0 end end)
 			pcall(function() if you.PlayerGui.MainGUI.Lobby.Dock.CoinBags.Container.Coin.Full.Visible then h.Health = 0 end end)
@@ -187,9 +196,14 @@ while env.MF do
 	clear(coins)
 	local p1 = coin.Position
 	local diff = p1 + offset - p0
-	local pos = p0 + (diff.Magnitude == 0 and vec3_zero or diff.Unit) * dt * (speed - rng:NextNumber(0, 4))
+	local dist = diff.Magnitude
+	if dist > 1400 then
+		hrp.CFrame = coin.CFrame
+	else
+		local pos = p0 + (diff.Magnitude == 0 and vec3_zero or diff.Unit) * dt * (speed - rng:NextNumber(0, 4))
+		hrp.CFrame = cf_new(pos) * cf_yxz(pi, select(2, cf_new(pos, p1).Rotation:ToEulerAnglesYXZ()), 0)
+	end
 	h.PlatformStand, workspace.Gravity = true, 0
-	hrp.CFrame = cf_new(pos) * cf_yxz(pi, select(2, cf_new(pos, p1).Rotation:ToEulerAnglesYXZ()), 0)
 	fti(hrp, coin, 1)
 	fti(hrp, coin, 0)
 end
