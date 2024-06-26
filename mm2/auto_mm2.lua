@@ -171,9 +171,11 @@ while env.MF do
 		continue
 	else
 		if bp:FindFirstChild('Knife') or char:FindFirstChild('Knife') then
-			pcall(function() if you.PlayerGui.MainGUI.Game.CoinBags.Container.Coin.FullBagIcon.Visible then hrp.CFrame = cf_new(0, 1000, 0) end end)
+			pcall(function() if you.PlayerGui.MainGUI.Game.CoinBags.Container.Coin.Full.Visible then hrp.CFrame = cf_new(0, 1000, 0) end end)
+			pcall(function() if you.PlayerGui.MainGUI.Lobby.Dock.CoinBags.Container.Coin.Full.Visible then hrp.CFrame = cf_new(0, 1000, 0) end end)
 		else
-			pcall(function() if you.PlayerGui.MainGUI.Game.CoinBags.Container.Coin.FullBagIcon.Visible then h.Health = 0 end end)
+			pcall(function() if you.PlayerGui.MainGUI.Game.CoinBags.Container.Coin.Full.Visible then h.Health = 0 end end)
+			pcall(function() if you.PlayerGui.MainGUI.Lobby.Dock.CoinBags.Container.Coin.Full.Visible then h.Health = 0 end end)
 		end
 	end
 	local coins = cc:GetChildren()
