@@ -168,19 +168,7 @@ while true do
 	local cc = map:FindFirstChild('CoinContainer')
 	if not cc then continue end
 	local hrp = h.RootPart
-	if you:GetAttribute('4') == _4 then
-		if you:FindFirstChildOfClass('Backpack'):FindFirstChild('Knife') or char:FindFirstChild('Knife') then
-			local init = hrp:GetAttribute('SafeCFrame')
-			if not init then
-				init = hrp.CFrame + vec3_new(0, 240, 0)
-				hrp:SetAttribute('SafeCFrame', init)
-			end
-			hrp.CFrame = init
-		else
-			h.Health = 0
-		end
-		continue
-	end
+	if you:GetAttribute('4') == _4 then continue end
 	if check >= 40 then
 		check = 0
 		local descendants = your_gui:GetDescendants()
@@ -202,7 +190,19 @@ while true do
 	else
 		check += 1
 	end
-	if you:GetAttribute('4') == _4 then continue end
+	if you:GetAttribute('4') == _4 then
+		if you:FindFirstChildOfClass('Backpack'):FindFirstChild('Knife') or char:FindFirstChild('Knife') then
+			local init = hrp:GetAttribute('SafeCFrame')
+			if not init then
+				init = hrp.CFrame + vec3_new(0, 240, 0)
+				hrp:SetAttribute('SafeCFrame', init)
+			end
+			hrp.CFrame = init
+		else
+			h.Health = 0
+		end
+		continue
+	end
 	local plr = near_plr()
 	if not plr or not is_alive(plr) then continue end
 	local list = cc:GetChildren()
