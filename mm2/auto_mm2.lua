@@ -22,10 +22,10 @@ if not env.afk4_switch then
 	qot('loadstring(game:HttpGet(\'https://raw.githubusercontent.com/cavasatchik571/scripts/main/mm2/auto_mm2.lua\', true))()')
 end
 local all = Enum.CoreGuiType.All
-local ceil = math.ceil
 local check = 0
 local cf_new = CFrame.new
 local dead = Enum.HumanoidStateType.Dead
+local floor = math.floor
 local lighting = game:GetService('Lighting')
 local min = math.min
 local remove = table.remove
@@ -49,7 +49,7 @@ local nearest_plr_pos, point_of_interest = vec3_zero, vec3_zero
 
 local offset_pos, speed, speed_lb, speed_ub = vec3_new(0, -2, 0), 20.14, -4, 0
 
----4 with/💚
+---4 w/💚
 
 local function clear_velocity(inst)
 	local children = inst:GetChildren()
@@ -109,8 +109,8 @@ local function remove_all_except(inst, ...)
 end
 
 local function sort_coins(a, b)
-	local a_score = -(point_of_interest - a.Position).Magnitude + ceil((nearest_plr_pos - a.Position).Magnitude / 5) * 5
-	local b_score = -(point_of_interest - b.Position).Magnitude + ceil((nearest_plr_pos - b.Position).Magnitude / 5) * 5
+	local a_score = -(point_of_interest - a.Position).Magnitude + floor(((nearest_plr_pos - a.Position).Magnitude + 0.75) / 6) * 6
+	local b_score = -(point_of_interest - b.Position).Magnitude + floor(((nearest_plr_pos - b.Position).Magnitude + 0.75) / 6) * 6
 	return a_score > b_score
 end
 
@@ -221,7 +221,7 @@ while env.afk4 do
 	local p1 = list[1]:GetPivot().Position
 	local diff = p1 + offset_pos - p0
 	local dist = diff.Magnitude
-	if dist <= 0.2444 then
+	if dist <= 0.24 then
 		continue
 	elseif dist >= 444 then
 		hrp.CFrame = cf_new(offset_pos + p1, p1)
