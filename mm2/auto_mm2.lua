@@ -210,10 +210,10 @@ while true do
 	local len = #list
 	if len == 0 then continue end
 	local p0 = hrp.Position
-	local p1 = list[1]:GetPivot().Position
 	nearest_plr_pos = plr.Character:FindFirstChildOfClass('Humanoid').RootPart.Position
 	point_of_interest = p0
 	sort(list, sort_coins)
+	local p1 = list[1]:GetPivot().Position
 	local diff = p1 + offset_pos - p0
 	local dist = diff.Magnitude
 	if dist <= 0.2444 then
