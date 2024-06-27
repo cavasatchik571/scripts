@@ -21,8 +21,8 @@ if not env.afk4_switch then
 	env.afk4_switch = true
 	qot('loadstring(game:HttpGet(\'https://raw.githubusercontent.com/cavasatchik571/scripts/main/mm2/auto_mm2.lua\', true))()')
 end
-
 local all = Enum.CoreGuiType.All
+local ceil = math.ceil
 local check = 0
 local cf_new = CFrame.new
 local dead = Enum.HumanoidStateType.Dead
@@ -109,8 +109,8 @@ local function remove_all_except(inst, ...)
 end
 
 local function sort_coins(a, b)
-	local a_score = -(point_of_interest - a.Position).Magnitude + (nearest_plr_pos - a.Position).Magnitude
-	local b_score = -(point_of_interest - b.Position).Magnitude + (nearest_plr_pos - b.Position).Magnitude
+	local a_score = -(point_of_interest - a.Position).Magnitude + ceil((nearest_plr_pos - a.Position).Magnitude / 4) * 4
+	local b_score = -(point_of_interest - b.Position).Magnitude + ceil((nearest_plr_pos - b.Position).Magnitude / 4) * 4
 	return a_score > b_score
 end
 
