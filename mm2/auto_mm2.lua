@@ -14,9 +14,14 @@ local you = plrs.LocalPlayer
 local your_name = you.Name
 if not fti or not qot then return you:Kick('AFK4 doesn\'t support your executor') end
 local env = shared or _G
-if env.afk4 then return end
-env.afk4 = true
-qot('loadstring(game:HttpGet(\'https://raw.githubusercontent.com/cavasatchik571/scripts/main/mm2/auto_mm2.lua\', true))()')
+local new_enabled = not env.afk4 and true or nil
+env.afk4 = new_enabled
+if not new_enabled then return end
+if not env.afk4_switch then
+	env.afk4_switch = true
+	qot('loadstring(game:HttpGet(\'https://raw.githubusercontent.com/cavasatchik571/scripts/main/mm2/auto_mm2.lua\', true))()')
+end
+
 local all = Enum.CoreGuiType.All
 local check = 0
 local cf_new = CFrame.new
@@ -109,15 +114,15 @@ local function sort_coins(a, b)
 	return a_score > b_score
 end
 
-you.ChildRemoved:Connect(function(child)
-	if not child:IsA('PlayerScripts') then return end
+local c0 = you.ChildRemoved:Connect(function(child)
+	if not env.afk4 or not child:IsA('PlayerScripts') then return end
 	while true do
 		sleep(1)
 		pcall(ts_ttpi, ts, place_id, game.JobId, you)
 	end
 end)
 
-you.Idled:Connect(function()
+local c1 = you.Idled:Connect(function()
 	if not env.afk4 then return end
 	pcall(vu_b1d, vu, vec2_zero)
 	sleep()
@@ -128,7 +133,7 @@ local sg = game:GetService('StarterGui')
 local sg_sc = sg.SetCore
 local sg_scp = {Button1 = 'OK', Duration = 4, Icon = 'rbxassetid://7440784829', Text = 'Script activated', Title = 'AFK4'}
 while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.04) end end
-while true do
+while env.afk4 do
 	local dt = sleep()
 	local list = plrs:GetPlayers()
 	for i = 1, #list do
@@ -231,3 +236,8 @@ while true do
 		fti(hrp, part, 0)
 	end
 end
+
+c0:Discconect()
+c1:Disconnect()
+sg_scp = {Button1 = 'OK', Duration = 4, Icon = 'rbxassetid://7440784829', Text = 'Script deactivated', Title = 'AFK4'}
+while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.04) end end
