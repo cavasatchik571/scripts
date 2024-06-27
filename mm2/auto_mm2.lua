@@ -109,8 +109,8 @@ local function remove_all_except(inst, ...)
 end
 
 local function sort_coins(a, b)
-	local a_score = -(point_of_interest - a.Position).Magnitude + ceil((nearest_plr_pos - a.Position).Magnitude / 4) * 4
-	local b_score = -(point_of_interest - b.Position).Magnitude + ceil((nearest_plr_pos - b.Position).Magnitude / 4) * 4
+	local a_score = -(point_of_interest - a.Position).Magnitude + ceil((nearest_plr_pos - a.Position).Magnitude / 5) * 5
+	local b_score = -(point_of_interest - b.Position).Magnitude + ceil((nearest_plr_pos - b.Position).Magnitude / 5) * 5
 	return a_score > b_score
 end
 
@@ -223,7 +223,7 @@ while env.afk4 do
 	local dist = diff.Magnitude
 	if dist <= 0.2444 then
 		continue
-	elseif dist >= 666 then
+	elseif dist >= 444 then
 		hrp.CFrame = cf_new(offset_pos + p1, p1)
 	else
 		local pos = p0 + (dist == 0 and vec3_zero or diff.Unit) * (speed + rng:NextNumber(speed_lb, speed_ub)) * dt
