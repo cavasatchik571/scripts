@@ -152,7 +152,7 @@ ui_btn.ZIndex = 4000
 stroke:Clone().Parent = ui_btn
 ui.Parent = pcall(tostring, core_gui) and core_gui or you:WaitForChild('PlayerGui')
 
----4
+---4💚
 
 local function child_added_lighting(e) if e:IsA('PostEffect') then e.Enabled = false end end
 local function create_beam(p0, p1): any
@@ -375,6 +375,14 @@ end
 local function scripted_shoot()
 	if not shoot_enabled then return end
 	local char, your_tool_name = obtain_ctn()
+	cast_points[1] = get_vulnerable_spot(char)
+	ignore_list[1], ignore_list[2] = char, you.Character
+	local result = cam:GetPartsObscuringTarget(cast_points, ignore_list)
+	local result_len = #result
+	clear(cast_points)
+	clear(ignore_list)
+	clear(list)
+	if result_len > 0 then return end
 	shoot_enabled = false
 	if uis:GetLastInputType() == touch then
 		vim:SendTouchEvent(24, 0, calculate_pos(get_vulnerable_spot(char)))
@@ -479,6 +487,7 @@ while true do
 		local stroke = lbl.Stroke
 		lbl.TextColor3, stroke.Color, stroke.Thickness = color, color, min(4, 100 / (hrp.Position - pos).Magnitude)
 	end
+
 	local bp = you:FindFirstChildOfClass('Backpack')
 	if not bp then ui_btn.Parent = nil continue end
 	local char = you.Character
@@ -507,6 +516,7 @@ while true do
 			end
 		end
 	end
+
 	local knife = char:FindFirstChild('Knife')
 	ui_btn.Parent = (char:FindFirstChild('Gun') or knife) and ui or nil
 	if knife then
