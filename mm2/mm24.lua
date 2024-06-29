@@ -1,5 +1,4 @@
---!nolint
---!nonstrict
+--!strict
 
 local _4 = Color3.new(0, .4984, 0)
 
@@ -42,7 +41,6 @@ local min = math.min
 local name_tags = {}
 local other_mouse = {}
 local ray_new = Ray.new
-local rng = Random.new()
 local sleep = task.wait
 local smooth = Enum.SurfaceType.Smooth
 local smooth_plastic = Enum.Material.SmoothPlastic
@@ -138,8 +136,8 @@ ui_btn.BorderSizePixel = 4
 ui_btn.FontFace = ubuntu_font
 ui_btn.MaxVisibleGraphemes = 1
 ui_btn.Name = 'Interact'
-ui_btn.Position = udim2_fs(0.725, 0.75)
-ui_btn.Size = udim2_fs(0.144, 0.144)
+ui_btn.Position = udim2_fs(0.7, 0.734)
+ui_btn.Size = udim2_fs(0.174, 0.174)
 ui_btn.SizeConstraint = Enum.SizeConstraint.RelativeYY
 ui_btn.Text = '4'
 ui_btn.TextColor3 = colors_white
@@ -177,7 +175,9 @@ local function get_end_point(p0, p1)
 end
 
 local function get_plr(origin, dist, name)
-	local list, result = plrs:GetPlayers(), nil
+	local list = plrs:GetPlayers()
+	local dist_with_tool, dist_without = dist, dist
+	local result_with_tool, result_without = nil, nil
 	for i = 1, #list do
 		local element = list[i]
 		if not element or element == you then continue end
@@ -189,13 +189,17 @@ local function get_plr(origin, dist, name)
 		if not h or h.Health <= 0 or h:GetState() == dead then continue end
 		local hrp = h.RootPart
 		if not hrp then continue end
-		if name and not (bp:FindFirstChild(name) or char:FindFirstChild(name)) then continue end
 		local new_dist = (hrp.Position - origin).Magnitude
-		if new_dist >= dist then continue end
-		dist, result = new_dist, element
+		if name and (bp:FindFirstChild(name) or char:FindFirstChild(name)) then
+			if new_dist >= dist_with_tool then continue end
+			dist_with_tool, result_with_tool = new_dist, element
+		else
+			if new_dist >= dist_without then continue end
+			dist_without, result_without = new_dist, element
+		end
 	end
 	clear(list)
-	return result
+	return result_with_tool or result_without
 end
 
 local function set(a: any, b: any, c: any) a[b] = c end
@@ -239,7 +243,7 @@ end
 
 local function descendant_added_w(e)
 	local name = e.Name
-	if name == 'GunDisplay' or name == 'KnifeDisplay' then return defer(destroy, e) end
+	if name == 'GunDisplay' or name == 'KnifeDisplay' then defer(destroy, e) return end
 	if e:IsA('BasePart') then
 		e.BackSurface, e.BottomSurface, e.FrontSurface, e.LeftSurface, e.RightSurface, e.TopSurface = smooth, smooth, smooth, smooth, smooth, smooth
 		e.Material, e.Reflectance = smooth_plastic, 0
@@ -327,17 +331,29 @@ if did_exist then
 	pcall(set, rendering, 'QualityLevel', lowest_quality)
 end
 
-local function target(hrp, cx, cy)
+local function get_vulnerable_spot(char)
+	local cast_points, ignore_list, len, sum, children = {}, {char, you.Character}, 0, vec3_zero, char:GetChildren()
+	for i = 1, #children do
+		local child = children[i]
+		if not child:IsA('BasePart') then continue end
+		local pos = child.Position
+		cast_points[1] = pos
+		if #cam:GetPartsObscuringTarget(cast_points, ignore_list) > 0 then continue end
+		len += 1
+		sum += pos
+	end
+	return if len > 0 then sum / len else char:FindFirstChildOfClass('Humanoid').RootPart.Position
+end
+
+local function set_mouse_to(pos, cx, cy)
 	local cam_pos = cam.CFrame.Position
-	local hrp_pos = hrp.Position
-	local pos = hrp_pos
 	local screen_point = cam:WorldToScreenPoint(pos)
-	local x, y = cx + screen_point.X, cy + screen_point.Y
-	ui_btn.Interactable = true
+	local x, y = screen_point.X + cx, screen_point.Y + cy
 	change_mouse_properties(
-		'Hit', cf_new(pos), 'Origin', cf_new(cam_pos, pos), 'Target', hrp,
+		'Hit', cf_new(pos), 'Origin', cf_new(cam_pos, pos),
 		'UnitRay', ray_new(cam_pos, (pos - cam_pos).Unit), 'X', x, 'Y', y
 	)
+
 	return x, y
 end
 
@@ -357,34 +373,22 @@ local function scripted_shoot()
 	if not is_gun and not is_knife then return end
 	local other_plr = get_plr(your_hrp.Position, 740, (is_gun and 'Knife') or (is_knife and 'Gun') or nil)
 	if not other_plr then return end
-	local char = other_plr.Character
-	local hrp = char:FindFirstChildOfClass('Humanoid').RootPart
-	local list = {char}
-	local pos_list = {hrp.Position}
-	local result = cam:GetPartsObscuringTarget(pos_list, list)
-	local result_len = #result
-	clear(list)
-	clear(pos_list)
-	clear(result)
-	if result_len > 0 then return end
 	local apos = ui.AbsolutePosition
+	local char = other_plr.Character
 	local cx, cy = -apos.X, -apos.Y
-	local id, mb = rng:NextInteger(14, 44), (is_gun and 0) or (is_knife and 1) or 0
+	local id, mb = 24, (is_gun and 0) or (is_knife and 1) or 0
 	local is_touch = uis:GetLastInputType() == touch
 	ui_btn.Interactable = false
 	for _ = 1, 4 do 
 		if is_touch then
-			vim:SendTouchEvent(id, 0, target(hrp, cx, cy))
-			sleep(0.004)
-			vim:SendTouchEvent(id, 2, target(hrp, cx, cy))
+			vim:SendTouchEvent(id, 0, set_mouse_to(get_vulnerable_spot(char), cx, cy))
+			vim:SendTouchEvent(id, 2, set_mouse_to(get_vulnerable_spot(char), cx, cy))
 		else
-			local x, y = target(hrp, cx, cy)
+			local x, y = set_mouse_to(get_vulnerable_spot(char), cx, cy)
 			vim:SendMouseButtonEvent(x, y, mb, true, nil, 0)
-			sleep(0.004)
-			local x, y = target(hrp, cx, cy)
+			local x, y = set_mouse_to(get_vulnerable_spot(char), cx, cy)
 			vim:SendMouseButtonEvent(x, y, mb, false, nil, 0)
 		end
-		sleep(0.004)
 	end
 	if is_touch then vim:SendTouchEvent(id, 2, -1, -1) else vim:SendMouseButtonEvent(-1, -1, mb, false, nil, 0) end
 	change_mouse_properties()
@@ -420,6 +424,24 @@ coroutine_resume(coroutine_create(function()
 	end
 end))
 
+coroutine_resume(coroutine_create(function()
+	while true do
+		sleep(0.144)
+		for adornee, highlight in next, highlights do
+			if typeof(adornee) ~= 'Instance' or not adornee:IsA('BasePart') then continue end
+			local parent = adornee.Parent
+			if not parent or not highlight.Parent then continue end
+			highlight.Adornee = adornee
+			highlight.Size = adornee.Size * (highlight.Name == 'SpecialHighlight' and 2 or 1)
+			local plr = plrs:GetPlayerFromCharacter(parent)
+			if not plr then continue end
+			local plr_tag = name_tags[plr]
+			if not plr_tag then continue end
+			highlight.Color3 = plr_tag.Label.TextColor3
+		end
+	end
+end))
+
 while true do
 	sleep()
 	local pos = workspace.CurrentCamera.CFrame.Position
@@ -446,18 +468,6 @@ while true do
 		end
 		local stroke = lbl.Stroke
 		lbl.TextColor3, stroke.Color, stroke.Thickness = color, color, min(4, 100 / (hrp.Position - pos).Magnitude)
-	end
-	for adornee, highlight in next, highlights do
-		if typeof(adornee) ~= 'Instance' or not adornee:IsA('BasePart') then continue end
-		local parent = adornee.Parent
-		if not parent or not highlight.Parent then continue end
-		highlight.Adornee = adornee
-		highlight.Size = adornee.Size * (highlight.Name == 'SpecialHighlight' and 2 or 1)
-		local plr = plrs:GetPlayerFromCharacter(parent)
-		if not plr then continue end
-		local plr_tag = name_tags[plr]
-		if not plr_tag then continue end
-		highlight.Color3 = plr_tag.Label.TextColor3
 	end
 	local bp = you:FindFirstChildOfClass('Backpack')
 	if not bp then ui_btn.Parent = nil continue end
