@@ -512,7 +512,7 @@ while true do
 	if knife then
 		local handle = knife:FindFirstChild('Handle')
 		if handle then
-			local other_plr = get_plr(hrp.Position, 4.444, nil)
+			local other_plr = get_plr(hrp.Position, 5.444, nil)
 			if other_plr then
 				local other_hrp = other_plr.Character:FindFirstChildOfClass('Humanoid').RootPart
 				fti(handle, other_hrp, 1)
