@@ -17,6 +17,7 @@ local env = (getgenv or function() end)() or shared or _G
 if env.mm24 then return end
 env.mm24 = true
 local cam = workspace.CurrentCamera
+local cast_points = {}
 local cf_new = CFrame.new
 local clear = table.clear
 local color3_from_rgb = Color3.fromRGB
@@ -34,6 +35,7 @@ local enum_uit = Enum.UserInputType
 local get_plr_data = game:GetService('ReplicatedStorage'):WaitForChild('Remotes'):WaitForChild('Extras'):WaitForChild('GetPlayerData')
 local gs = game:GetService('GuiService')
 local highlights = {}
+local ignore_list = {}
 local inst_new = Instance.new
 local key_code = Enum.KeyCode
 local keyboard = enum_uit.Keyboard
@@ -334,17 +336,21 @@ local function calculate_pos(pos)
 end
 
 local function get_vulnerable_spot(char)
-	local cast_points, ignore_list, len, sum, children = {}, {char, you.Character}, 0, vec3_zero, char:GetChildren()
+	local amount, sum, children = 0, vec3_zero, char:GetChildren()
+	ignore_list[1], ignore_list[2] = char, you.Character
 	for i = 1, #children do
 		local child = children[i]
 		if not child:IsA('BasePart') then continue end
 		local pos = child.Position
 		cast_points[1] = pos
 		if #cam:GetPartsObscuringTarget(cast_points, ignore_list) > 0 then continue end
-		len += 1
+		amount += 1
 		sum += pos
 	end
-	return if len > 0 then sum / len else char:FindFirstChildOfClass('Humanoid').RootPart.Position
+	clear(cast_points)
+	clear(children)
+	clear(ignore_list)
+	return if amount > 0 then sum / amount else char:FindFirstChildOfClass('Humanoid').RootPart.Position
 end
 
 local function obtain_ctn()
@@ -371,14 +377,17 @@ local function scripted_shoot()
 	shoot_enabled = false
 	if uis:GetLastInputType() == touch then
 		vim:SendTouchEvent(24, 0, calculate_pos(get_vulnerable_spot(char)))
+		sleep(0.014)
 		vim:SendTouchEvent(24, 2, calculate_pos(get_vulnerable_spot(char)))
 	else
 		local mb = your_tool_name == 'Knife' and 1 or 0
 		local x, y = calculate_pos(get_vulnerable_spot(char))
 		vim:SendMouseButtonEvent(x, y, mb, true, nil, 0)
+		sleep(0.014)
 		local x, y = calculate_pos(get_vulnerable_spot(char))
 		vim:SendMouseButtonEvent(x, y, mb, false, nil, 0)
 	end
+	sleep(0.24)
 	shoot_enabled = true
 end
 
@@ -400,6 +409,7 @@ old_func = hmm(game, '__index', nc(function(self, key)
 		if not val then return old_func(self, key) end
 		return val
 	end
+
 	return old_func(self, key)
 end))
 
