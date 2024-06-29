@@ -41,6 +41,7 @@ local key_code = Enum.KeyCode
 local keyboard = enum_uit.Keyboard
 local lighting = game:GetService('Lighting')
 local min = math.min
+local mouse = you:GetMouse()
 local name_tags = {}
 local ray_new = Ray.new
 local shoot_enabled = true
@@ -399,18 +400,18 @@ end)
 
 local old_func
 old_func = hmm(game, '__index', nc(function(self, key)
-	if key == 'ClassName' then return old_func(self, key) end
-	if self.ClassName == 'PlayerMouse' then
-		printidentity('1')
+	if self == mouse then
 		if key ~= 'X' and key ~= 'Y' then return old_func(self, key) end
 		local char, _ = obtain_ctn()
-		printidentity('2')
 		if not char then return old_func(self, key) end
-		local x, y = calculate_pos(get_vulnerable_spot(char))
+		print(1)
+		local pos = get_vulnerable_spot(char)
+		print(2)
+		local x, y = calculate_pos()
+		print(3)
 		local val = (key == 'X' and x) or (key == 'Y' and y) or nil
-		printidentity('3')
+		print(4)
 		if not val then return old_func(self, key) end
-		printidentity('4')
 		return val
 	end
 
