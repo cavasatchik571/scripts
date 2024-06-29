@@ -41,7 +41,6 @@ local key_code = Enum.KeyCode
 local keyboard = enum_uit.Keyboard
 local lighting = game:GetService('Lighting')
 local min = math.min
-local mouse = you:GetMouse()
 local name_tags = {}
 local ray_new = Ray.new
 local shoot_enabled = true
@@ -400,13 +399,18 @@ end)
 
 local old_func
 old_func = hmm(game, '__index', nc(function(self, key)
-	if self == mouse then
+	if key == 'ClassName' then return old_func(self, key) end
+	if self.ClassName == 'PlayerMouse' then
+		printidentity('1')
 		if key ~= 'X' and key ~= 'Y' then return old_func(self, key) end
 		local char, _ = obtain_ctn()
+		printidentity('2')
 		if not char then return old_func(self, key) end
 		local x, y = calculate_pos(get_vulnerable_spot(char))
 		local val = (key == 'X' and x) or (key == 'Y' and y) or nil
+		printidentity('3')
 		if not val then return old_func(self, key) end
+		printidentity('4')
 		return val
 	end
 
@@ -419,8 +423,8 @@ local sg_sc = sg.SetCore
 local sg_scp = {Button1 = 'OK', Duration = 4, Icon = 'rbxassetid://7440784829', Text = 'Script activated', Title = 'MM24'}
 while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.04) end end
 clear(sg_scp)
-local new_jh = starter_player.CharacterJumpHeight * 1.044
-local new_jp = starter_player.CharacterJumpPower * 1.044
+local new_jh = starter_player.CharacterJumpHeight * 1.064
+local new_jp = starter_player.CharacterJumpPower * 1.064
 local new_ws = starter_player.CharacterWalkSpeed * 1.144
 coroutine_resume(coroutine_create(function()
 	while true do
