@@ -1,4 +1,5 @@
---!strict
+--!nolint
+--!nonstrict
 
 local _4 = Color3.new(0, .4984, 0)
 
@@ -34,13 +35,14 @@ local get_plr_data = game:GetService('ReplicatedStorage'):WaitForChild('Remotes'
 local gs = game:GetService('GuiService')
 local highlights = {}
 local inst_new = Instance.new
-local key_code = Enum.KeyCode.Four
+local key_code = Enum.KeyCode
 local keyboard = enum_uit.Keyboard
 local lighting = game:GetService('Lighting')
 local min = math.min
+local mouse = you:GetMouse()
 local name_tags = {}
-local other_mouse = {}
 local ray_new = Ray.new
+local shoot_enabled = true
 local sleep = task.wait
 local smooth = Enum.SurfaceType.Smooth
 local smooth_plastic = Enum.Material.SmoothPlastic
@@ -148,14 +150,7 @@ ui_btn.ZIndex = 4000
 stroke:Clone().Parent = ui_btn
 ui.Parent = pcall(tostring, core_gui) and core_gui or you:WaitForChild('PlayerGui')
 
----4💚
-
-local function change_mouse_properties(...)
-	clear(other_mouse)
-	local args = {...}
-	for i = 1, #args, 2 do other_mouse[args[i]] = args[i + 1] end
-	clear(args)
-end
+---4
 
 local function child_added_lighting(e) if e:IsA('PostEffect') then e.Enabled = false end end
 local function create_beam(p0, p1): any
@@ -331,6 +326,13 @@ if did_exist then
 	pcall(set, rendering, 'QualityLevel', lowest_quality)
 end
 
+local function calculate_pos(pos)
+	local screen_point = cam:WorldToScreenPoint(pos)
+	local apos = ui.AbsolutePosition
+	local cx, cy = -apos.X, -apos.Y
+	return screen_point.X + cx, screen_point.Y + cy
+end
+
 local function get_vulnerable_spot(char)
 	local cast_points, ignore_list, len, sum, children = {}, {char, you.Character}, 0, vec3_zero, char:GetChildren()
 	for i = 1, #children do
@@ -345,63 +347,62 @@ local function get_vulnerable_spot(char)
 	return if len > 0 then sum / len else char:FindFirstChildOfClass('Humanoid').RootPart.Position
 end
 
-local function set_mouse_to(pos, cx, cy)
-	local cam_pos = cam.CFrame.Position
-	local screen_point = cam:WorldToScreenPoint(pos)
-	local x, y = screen_point.X + cx, screen_point.Y + cy
-	change_mouse_properties(
-		'Hit', cf_new(pos), 'Origin', cf_new(cam_pos, pos),
-		'UnitRay', ray_new(cam_pos, (pos - cam_pos).Unit), 'X', x, 'Y', y
-	)
-
-	return x, y
-end
-
-local function scripted_shoot()
-	if not ui_btn.Interactable then return end
+local function obtain_ctn()
 	local your_char = you.Character
-	if not your_char then return end
+	if not your_char then return nil, '' end
 	local your_h = your_char:FindFirstChildOfClass('Humanoid')
-	if not your_h or your_h.Health <= 0 or your_h:GetState() == dead then return end
+	if not your_h or your_h.Health <= 0 or your_h:GetState() == dead then return nil, '' end
 	local your_hrp = your_h.RootPart
-	if not your_hrp then return end
+	if not your_hrp then return nil, '' end
 	local your_tool = your_char:FindFirstChildOfClass('Tool')
-	if not your_tool then return end
+	if not your_tool then return nil, '' end
 	local name = your_tool.Name
 	local is_gun = name == 'Gun'
 	local is_knife = name == 'Knife'
-	if not is_gun and not is_knife then return end
+	if not is_gun and not is_knife then return nil, name end
 	local other_plr = get_plr(your_hrp.Position, 740, (is_gun and 'Knife') or (is_knife and 'Gun') or nil)
-	if not other_plr then return end
-	local apos = ui.AbsolutePosition
-	local char = other_plr.Character
-	local cx, cy = -apos.X, -apos.Y
-	local id, mb = 24, (is_gun and 0) or (is_knife and 1) or 0
-	local is_touch = uis:GetLastInputType() == touch
-	ui_btn.Interactable = false
-	for _ = 1, 4 do 
-		if is_touch then
-			vim:SendTouchEvent(id, 0, set_mouse_to(get_vulnerable_spot(char), cx, cy))
-			vim:SendTouchEvent(id, 2, set_mouse_to(get_vulnerable_spot(char), cx, cy))
-		else
-			local x, y = set_mouse_to(get_vulnerable_spot(char), cx, cy)
-			vim:SendMouseButtonEvent(x, y, mb, true, nil, 0)
-			local x, y = set_mouse_to(get_vulnerable_spot(char), cx, cy)
-			vim:SendMouseButtonEvent(x, y, mb, false, nil, 0)
-		end
+	if not other_plr then return nil, name end
+	return other_plr.Character, name
+end
+
+local function scripted_shoot()
+	if not shoot_enabled then return end
+	local char, your_tool_name = obtain_ctn()
+	shoot_enabled = false
+	if uis:GetLastInputType() == touch then
+		vim:SendTouchEvent(24, 0, calculate_pos(get_vulnerable_spot(char)))
+		vim:SendTouchEvent(24, 2, calculate_pos(get_vulnerable_spot(char)))
+	else
+		local mb = your_tool_name == 'Knife' and 1 or 0
+		local x, y = calculate_pos(get_vulnerable_spot(char))
+		vim:SendMouseButtonEvent(x, y, mb, true, nil, 0)
+		local x, y = calculate_pos(get_vulnerable_spot(char))
+		vim:SendMouseButtonEvent(x, y, mb, false, nil, 0)
 	end
-	if is_touch then vim:SendTouchEvent(id, 2, -1, -1) else vim:SendMouseButtonEvent(-1, -1, mb, false, nil, 0) end
-	change_mouse_properties()
-	ui_btn.Interactable = true
+	shoot_enabled = true
 end
 
 uis.InputBegan:Connect(function(input, gpe)
-	if gpe or gs.MenuIsOpen or input.KeyCode ~= key_code or input.UserInputType ~= keyboard or uis:GetFocusedTextBox() then return end
+	if gpe or gs.MenuIsOpen or input.UserInputType ~= keyboard or uis:GetFocusedTextBox() then return end
+	local key = input.KeyCode
+	if key ~= key_code.Four and key ~= key_code.R then return end
 	scripted_shoot()
 end)
 
 local old_func
-old_func = hmm(game, '__index', nc(function(self, key) return self == you:GetMouse() and other_mouse[key] or old_func(self, key) end))
+old_func = hmm(game, '__index', nc(function(self, key)
+	if self == mouse then
+		if key ~= 'X' and key ~= 'Y' then return old_func(self, key) end
+		local char, _ = obtain_ctn()
+		if not char then return old_func(self, key) end
+		local x, y = calculate_pos(get_vulnerable_spot(char))
+		local val = (key == 'X' and x) or (key == 'Y' and y) or nil
+		if not val then return old_func(self, key) end
+		return val
+	end
+	return old_func(self, key)
+end))
+
 ui_btn.Activated:Connect(scripted_shoot)
 local sg = game:GetService('StarterGui')
 local sg_sc = sg.SetCore
@@ -431,8 +432,7 @@ coroutine_resume(coroutine_create(function()
 			if typeof(adornee) ~= 'Instance' or not adornee:IsA('BasePart') then continue end
 			local parent = adornee.Parent
 			if not parent or not highlight.Parent then continue end
-			highlight.Adornee = adornee
-			highlight.Size = adornee.Size * (highlight.Name == 'SpecialHighlight' and 2 or 1)
+			highlight.Adornee, highlight.Size = adornee, adornee.Size * (highlight.Name == 'SpecialHighlight' and 2 or 1)
 			local plr = plrs:GetPlayerFromCharacter(parent)
 			if not plr then continue end
 			local plr_tag = name_tags[plr]
@@ -502,7 +502,7 @@ while true do
 	if knife then
 		local handle = knife:FindFirstChild('Handle')
 		if handle then
-			local other_plr = get_plr(hrp.Position, 4.44, nil)
+			local other_plr = get_plr(hrp.Position, 4.444, nil)
 			if other_plr then
 				local other_hrp = other_plr.Character:FindFirstChildOfClass('Humanoid').RootPart
 				fti(handle, other_hrp, 1)
