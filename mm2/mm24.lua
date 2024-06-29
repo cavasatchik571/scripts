@@ -140,7 +140,7 @@ ui_btn.BorderSizePixel = 4
 ui_btn.FontFace = ubuntu_font
 ui_btn.MaxVisibleGraphemes = 1
 ui_btn.Name = 'Interact'
-ui_btn.Position = udim2_fs(0.7, 0.734)
+ui_btn.Position = udim2_fs(0.714, 0.744)
 ui_btn.Size = udim2_fs(0.174, 0.174)
 ui_btn.SizeConstraint = Enum.SizeConstraint.RelativeYY
 ui_btn.Text = '4'
@@ -312,7 +312,10 @@ plrs.PlayerRemoving:Connect(function(plr)
 	plr_tag:Destroy()
 end)
 
+local apos = ui.AbsolutePosition
+local cx, cy = -apos.X, -apos.Y
 local list = plrs:GetPlayers()
+local old_func
 for i = 1, #list do plr_added(list[i]) end
 clear(list)
 local did_exist, rendering_stuff = pcall(settings)
@@ -330,8 +333,6 @@ end
 
 local function calculate_pos(pos)
 	local screen_point = cam:WorldToScreenPoint(pos)
-	local apos = ui.AbsolutePosition
-	local cx, cy = -apos.X, -apos.Y
 	return screen_point.X + cx, screen_point.Y + cy
 end
 
@@ -391,6 +392,7 @@ local function scripted_shoot()
 	shoot_enabled = true
 end
 
+ui_btn.Activated:Connect(scripted_shoot)
 uis.InputBegan:Connect(function(input, gpe)
 	if gpe or gs.MenuIsOpen or input.UserInputType ~= keyboard or uis:GetFocusedTextBox() then return end
 	local key = input.KeyCode
@@ -398,19 +400,13 @@ uis.InputBegan:Connect(function(input, gpe)
 	scripted_shoot()
 end)
 
-local old_func
 old_func = hmm(game, '__index', nc(function(self, key)
 	if self == mouse then
 		if key ~= 'X' and key ~= 'Y' then return old_func(self, key) end
 		local char, _ = obtain_ctn()
 		if not char then return old_func(self, key) end
-		print(1)
-		local pos = get_vulnerable_spot(char)
-		print(2)
-		local x, y = calculate_pos()
-		print(3)
+		local x, y = calculate_pos(get_vulnerable_spot(char))
 		local val = (key == 'X' and x) or (key == 'Y' and y) or nil
-		print(4)
 		if not val then return old_func(self, key) end
 		return val
 	end
@@ -418,7 +414,6 @@ old_func = hmm(game, '__index', nc(function(self, key)
 	return old_func(self, key)
 end))
 
-ui_btn.Activated:Connect(scripted_shoot)
 local sg = game:GetService('StarterGui')
 local sg_sc = sg.SetCore
 local sg_scp = {Button1 = 'OK', Duration = 4, Icon = 'rbxassetid://7440784829', Text = 'Script activated', Title = 'MM24'}
