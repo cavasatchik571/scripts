@@ -84,7 +84,7 @@ name_tag.LightInfluence = 0
 name_tag.MaxDistance = 740
 name_tag.Name = 'NameTag'
 name_tag.ResetOnSpawn = false
-name_tag.Size = udim2_fs(6, 1.44)
+name_tag.Size = udim2_fs(6, 1.444)
 name_tag.StudsOffsetWorldSpace = vec3_new(0, 1.94, 0)
 
 local name_tag_lbl = inst_new('TextLabel')
@@ -152,7 +152,7 @@ ui_btn.ZIndex = 4000
 stroke:Clone().Parent = ui_btn
 ui.Parent = pcall(tostring, core_gui) and core_gui or you:WaitForChild('PlayerGui')
 
----4💚
+---4
 
 local function child_added_lighting(e) if e:IsA('PostEffect') then e.Enabled = false end end
 local function create_beam(p0, p1): any
@@ -172,9 +172,7 @@ local function get_end_point(p0, p1)
 end
 
 local function get_plr(origin, dist, name)
-	local list = plrs:GetPlayers()
-	local dist_with_tool, dist_without = dist, dist
-	local result_with_tool, result_without = nil, nil
+	local result, list = nil, plrs:GetPlayers()
 	for i = 1, #list do
 		local element = list[i]
 		if not element or element == you then continue end
@@ -187,16 +185,12 @@ local function get_plr(origin, dist, name)
 		local hrp = h.RootPart
 		if not hrp then continue end
 		local new_dist = (hrp.Position - origin).Magnitude
-		if name and (bp:FindFirstChild(name) or char:FindFirstChild(name)) then
-			if new_dist >= dist_with_tool then continue end
-			dist_with_tool, result_with_tool = new_dist, element
-		else
-			if new_dist >= dist_without then continue end
-			dist_without, result_without = new_dist, element
-		end
+		if name and not (bp:FindFirstChild(name) or char:FindFirstChild(name)) then continue end
+		if new_dist >= dist then continue end
+		dist, result = new_dist, element
 	end
 	clear(list)
-	return result_with_tool or result_without
+	return result
 end
 
 local function set(a: any, b: any, c: any) a[b] = c end
@@ -209,7 +203,7 @@ local special_func_checks: {any} = {
 		local parent = e.Parent
 		if not parent or parent.Name ~= 'ThrowingKnife' then return end
 		local blade_pos: any = parent:WaitForChild('BladePosition').Position
-		local unit: any = 400 * parent:WaitForChild('Vector3Value').Value
+		local unit = 400 * parent:WaitForChild('Vector3Value').Value
 		local beam = create_beam(blade_pos, get_end_point(blade_pos, blade_pos + unit))
 		beam.Color3 = murderer_color
 		beam.Parent = parent
@@ -337,7 +331,7 @@ local function calculate_pos(pos)
 end
 
 local function get_vulnerable_spot(char)
-	local amount, sum, children = 0, vec3_zero, char:GetChildren()
+	local amount, sum: any, children = 0, vec3_zero, char:GetChildren()
 	ignore_list[1], ignore_list[2] = char, you.Character
 	for i = 1, #children do
 		local child = children[i]
@@ -348,6 +342,7 @@ local function get_vulnerable_spot(char)
 		amount += 1
 		sum += pos
 	end
+
 	clear(cast_points)
 	clear(children)
 	clear(ignore_list)
@@ -367,7 +362,8 @@ local function obtain_ctn()
 	local is_gun = name == 'Gun'
 	local is_knife = name == 'Knife'
 	if not is_gun and not is_knife then return nil, name end
-	local other_plr = get_plr(your_hrp.Position, 740, (is_gun and 'Knife') or (is_knife and 'Gun') or nil)
+	local pos = your_hrp.Position
+	local other_plr = get_plr(pos, 740, (is_gun and 'Knife') or (is_knife and 'Gun') or '') or get_plr(pos, 740, nil)
 	if not other_plr then return nil, name end
 	return other_plr.Character, name
 end
@@ -375,6 +371,7 @@ end
 local function scripted_shoot()
 	if not shoot_enabled then return end
 	local char, your_tool_name = obtain_ctn()
+	if not char then return end
 	cast_points[1] = get_vulnerable_spot(char)
 	ignore_list[1], ignore_list[2] = char, you.Character
 	local result = cam:GetPartsObscuringTarget(cast_points, ignore_list)
@@ -384,6 +381,7 @@ local function scripted_shoot()
 	clear(list)
 	if result_len > 0 then return end
 	shoot_enabled = false
+
 	if uis:GetLastInputType() == touch then
 		vim:SendTouchEvent(24, 0, calculate_pos(get_vulnerable_spot(char)))
 		sleep(0.014)
@@ -396,6 +394,7 @@ local function scripted_shoot()
 		local x, y = calculate_pos(get_vulnerable_spot(char))
 		vim:SendMouseButtonEvent(x, y, mb, false, nil, 0)
 	end
+
 	sleep(0.24)
 	shoot_enabled = true
 end
@@ -450,7 +449,8 @@ coroutine_resume(coroutine_create(function()
 			if typeof(adornee) ~= 'Instance' or not adornee:IsA('BasePart') then continue end
 			local parent = adornee.Parent
 			if not parent or not highlight.Parent then continue end
-			highlight.Adornee, highlight.Size = adornee, adornee.Size * (highlight.Name == 'SpecialHighlight' and 2 or 1)
+			highlight.Adornee = adornee
+			highlight.Size = adornee.Size * (highlight.Name == 'SpecialHighlight' and 2 or 1)
 			local plr = plrs:GetPlayerFromCharacter(parent)
 			if not plr then continue end
 			local plr_tag = name_tags[plr]
@@ -500,8 +500,8 @@ while true do
 		hrp.AssemblyAngularVelocity, hrp.AssemblyLinearVelocity, hrp.RotVelocity, hrp.Velocity = vec3_zero, vec3_zero, vec3_zero, vec3_zero
 		local map = workspace:FindFirstChild('Normal')
 		if map then
-			local is_gun = bp:FindFirstChild('Gun') or char:FindFirstChild('Gun')
-			local is_knife = bp:FindFirstChild('Knife') or char:FindFirstChild('Knife')
+			local is_gun = (bp:FindFirstChild('Gun') or char:FindFirstChild('Gun')) and true or false
+			local is_knife = (bp:FindFirstChild('Knife') or char:FindFirstChild('Knife')) and true or false
 			local other_plr = get_plr(hrp.Position, 740, (is_gun and 'Knife') or (is_knife and 'Gun') or nil)
 			local spawns = map:FindFirstChild('Spawns')
 			if other_plr and spawns then
