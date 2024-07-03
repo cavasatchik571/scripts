@@ -43,7 +43,8 @@ local lighting = game:GetService('Lighting')
 local min = math.min
 local mouse = you:GetMouse()
 local name_tags = {}
-local ray_new = Ray.new
+local rc_ft = Enum.RaycastFilterType
+local rcp_new = RaycastParams.new
 local shoot_enabled = true
 local sleep = task.wait
 local smooth = Enum.SurfaceType.Smooth
@@ -106,10 +107,15 @@ name_tag_lbl.TextStrokeTransparency = 0
 name_tag_lbl.ZIndex = 4000
 name_tag_lbl.Parent = name_tag
 
-local ray_params = RaycastParams.new()
-ray_params.FilterType = Enum.RaycastFilterType.Include
-ray_params.IgnoreWater = true
-ray_params.RespectCanCollide = true
+local rce_params = rcp_new()
+rce_params.FilterType = rc_ft.Exclude
+rce_params.IgnoreWater = true
+rce_params.RespectCanCollide = false
+
+local rci_params = rcp_new()
+rci_params.FilterType = rc_ft.Include
+rci_params.IgnoreWater = true
+rci_params.RespectCanCollide = false
 
 local stroke = inst_new('UIStroke')
 stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
@@ -165,10 +171,10 @@ end
 
 local function get_end_point(p0, p1)
 	local list = {workspace:FindFirstChild('Normal')}
-	ray_params.FilterDescendantsInstances = list
-	local ray_result = workspace:Raycast(p0, p1 - p0, ray_params)
+	rci_params.FilterDescendantsInstances = list
+	local result = workspace:Raycast(p0, p1 - p0, rci_params)
 	clear(list)
-	return ray_result and ray_result.Position or p1
+	return result and result.Position or p1
 end
 
 local function get_plr(origin, dist, name)
@@ -342,37 +348,38 @@ local function get_vulnerable_spot(char)
 		amount += 1
 		sum += pos
 	end
-
 	clear(cast_points)
 	clear(children)
 	clear(ignore_list)
 	return if amount > 0 then sum / amount else char:FindFirstChildOfClass('Humanoid').RootPart.Position
 end
 
-local function obtain_ctn()
+local function get_weapon(char)
+	local tool = char:FindFirstChild('Gun')
+	if tool then return tool, 'Gun' end
+	tool = char:FindFirstChild('Knife')
+	if tool then return tool, 'Knife' end
+	return nil, ''
+end
+
+local function obtain_tc(your_wn)
 	local your_char = you.Character
-	if not your_char then return nil, '' end
+	if not your_char then return nil end
 	local your_h = your_char:FindFirstChildOfClass('Humanoid')
-	if not your_h or your_h.Health <= 0 or your_h:GetState() == dead then return nil, '' end
+	if not your_h or your_h.Health <= 0 or your_h:GetState() == dead then return nil end
 	local your_hrp = your_h.RootPart
-	if not your_hrp then return nil, '' end
-	local your_tool = your_char:FindFirstChildOfClass('Tool')
-	if not your_tool then return nil, '' end
-	local name = your_tool.Name
-	local is_gun = name == 'Gun'
-	local is_knife = name == 'Knife'
-	if not is_gun and not is_knife then return nil, name end
+	if not your_hrp then return nil end
 	local pos = your_hrp.Position
-	local other_plr = get_plr(pos, 740, (is_gun and 'Knife') or (is_knife and 'Gun') or '') or get_plr(pos, 740, nil)
-	if not other_plr then return nil, name end
-	return other_plr.Character, name
+	local other_plr = get_plr(pos, 400, (your_wn == 'Gun' and 'Knife') or (your_wn == 'Knife' and 'Gun') or nil) or get_plr(pos, 400, nil)
+	if not other_plr then return nil end
+	return other_plr.Character
 end
 
 local function scripted_shoot()
 	if not shoot_enabled then return end
 	local char, your_tool_name = obtain_ctn()
 	if not char then return end
-	cast_points[1] = get_vulnerable_spot(char)
+	local pos = get_vulnerable_spot(char)
 	ignore_list[1], ignore_list[2] = char, you.Character
 	local result = cam:GetPartsObscuringTarget(cast_points, ignore_list)
 	local result_len = #result
@@ -381,20 +388,16 @@ local function scripted_shoot()
 	clear(list)
 	if result_len > 0 then return end
 	shoot_enabled = false
-
 	if uis:GetLastInputType() == touch then
 		vim:SendTouchEvent(24, 0, calculate_pos(get_vulnerable_spot(char)))
-		sleep()
 		vim:SendTouchEvent(24, 2, calculate_pos(get_vulnerable_spot(char)))
 	else
 		local mb = your_tool_name == 'Knife' and 1 or 0
 		local x, y = calculate_pos(get_vulnerable_spot(char))
 		vim:SendMouseButtonEvent(x, y, mb, true, nil, 0)
-		sleep()
 		local x, y = calculate_pos(get_vulnerable_spot(char))
 		vim:SendMouseButtonEvent(x, y, mb, false, nil, 0)
 	end
-
 	sleep(0.144)
 	shoot_enabled = true
 end
@@ -417,7 +420,6 @@ old_func = hmm(game, '__index', nc(function(self, key)
 		if not val then return old_func(self, key) end
 		return val
 	end
-
 	return old_func(self, key)
 end))
 
@@ -426,9 +428,6 @@ local sg_sc = sg.SetCore
 local sg_scp = {Button1 = 'OK', Duration = 4, Icon = 'rbxassetid://7440784829', Text = 'Script activated', Title = 'MM24'}
 while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.04) end end
 clear(sg_scp)
-local new_jh = starter_player.CharacterJumpHeight * 1.064
-local new_jp = starter_player.CharacterJumpPower * 1.064
-local new_ws = starter_player.CharacterWalkSpeed * 1.144
 coroutine_resume(coroutine_create(function()
 	while true do
 		data = get_plr_data:InvokeServer() or data
@@ -437,8 +436,14 @@ coroutine_resume(coroutine_create(function()
 		if not char then continue end
 		local h = char:FindFirstChildOfClass('Humanoid')
 		if not h or h.Health <= 0 or h:GetState() == dead then continue end
-		if h.UseJumpPower then if h.JumpPower ~= 0 then h.JumpPower = new_jp end else if h.JumpHeight ~= 0 then h.JumpHeight = new_jh end end
-		if h.WalkSpeed ~= 0 then h.WalkSpeed = new_ws end
+		if h.WalkSpeed ~= 0 then h.WalkSpeed = starter_player.CharacterWalkSpeed * 1.144 end
+		if h.UseJumpPower then
+			if h.JumpPower == 0 then continue end
+			h.JumpPower = starter_player.CharacterJumpPower * 1.064
+		else
+			if h.JumpHeight == 0 then continue end
+			h.JumpHeight = starter_player.CharacterJumpHeight * 1.064
+		end
 	end
 end))
 
@@ -487,7 +492,6 @@ while true do
 		local stroke = lbl.Stroke
 		lbl.TextColor3, stroke.Color, stroke.Thickness = color, color, min(4, 100 / (hrp.Position - pos).Magnitude)
 	end
-
 	local bp = you:FindFirstChildOfClass('Backpack')
 	if not bp then ui_btn.Parent = nil continue end
 	local char = you.Character
@@ -496,7 +500,7 @@ while true do
 	if not h or h.Health <= 0 or h:GetState() == dead then ui_btn.Parent = nil continue end
 	local hrp = h.RootPart
 	if not hrp then ui_btn.Parent = nil continue end
-	if hrp and (hrp.AssemblyAngularVelocity.Magnitude >= 240 or hrp.AssemblyLinearVelocity.Magnitude >= 240 or hrp.Position.Y <= -400) then
+	if hrp and (hrp.AssemblyAngularVelocity.Magnitude >= 264 or hrp.AssemblyLinearVelocity.Magnitude >= 264 or hrp.Position.Y < -444) then
 		hrp.AssemblyAngularVelocity, hrp.AssemblyLinearVelocity, hrp.RotVelocity, hrp.Velocity = vec3_zero, vec3_zero, vec3_zero, vec3_zero
 		local map = workspace:FindFirstChild('Normal')
 		if map then
@@ -516,7 +520,6 @@ while true do
 			end
 		end
 	end
-
 	local knife = char:FindFirstChild('Knife')
 	ui_btn.Parent = (char:FindFirstChild('Gun') or knife) and ui or nil
 	if knife then
