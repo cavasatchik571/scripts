@@ -384,18 +384,18 @@ local function scripted_shoot()
 
 	if uis:GetLastInputType() == touch then
 		vim:SendTouchEvent(24, 0, calculate_pos(get_vulnerable_spot(char)))
-		sleep(0.014)
+		sleep()
 		vim:SendTouchEvent(24, 2, calculate_pos(get_vulnerable_spot(char)))
 	else
 		local mb = your_tool_name == 'Knife' and 1 or 0
 		local x, y = calculate_pos(get_vulnerable_spot(char))
 		vim:SendMouseButtonEvent(x, y, mb, true, nil, 0)
-		sleep(0.014)
+		sleep()
 		local x, y = calculate_pos(get_vulnerable_spot(char))
 		vim:SendMouseButtonEvent(x, y, mb, false, nil, 0)
 	end
 
-	sleep(0.24)
+	sleep(0.144)
 	shoot_enabled = true
 end
 
