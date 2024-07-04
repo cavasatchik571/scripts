@@ -16,36 +16,47 @@ if not fti or not gncm or not hmm or not nc then return you:Kick('MM24 doesn\'t 
 local env = (getgenv or function() end)() or shared or _G
 if env.mm24 then return end
 env.mm24 = true
+
+local danger_speed = 304
+local danger_y_zone = -400
+local gun_line_lifetime = 0.644
+local hex_color_innocent = '#FFFFFF'
+local hex_color_murderer = '#FF0000'
+local hex_color_sheriff = '#0000FF'
+local line_thickness = 0.24
+local melee_hitbox_extender = 5.444
+local rc_dist = 400
+
 local cam = workspace.CurrentCamera
-local cast_points = {}
 local cf_new = CFrame.new
-local clear = table.clear
-local color3_from_rgb = Color3.fromRGB
-local colors_black = color3_from_rgb(0, 0, 0)
-local colors_white = color3_from_rgb(255, 255, 255)
+local color3_from_hex = Color3.fromHex
+local colors_black = color3_from_hex('000')
+local colors_innocent = color3_from_hex(hex_color_innocent)
+local colors_murderer = color3_from_hex(hex_color_murderer)
+local colors_sheriff = color3_from_hex(hex_color_sheriff)
+local colors_white = color3_from_hex('FFF')
 local core_gui = game:GetService('CoreGui')
 local coroutine_create = coroutine.create
 local coroutine_resume = coroutine.resume
+local clear = table.clear
 local data = {}
 local dead = Enum.HumanoidStateType.Dead
 local debris = game:GetService('Debris')
 local defer = task.defer
-local destroy = game.Destroy
+local enum_kc = Enum.KeyCode
+local enum_rfi = Enum.RaycastFilterType
 local enum_uit = Enum.UserInputType
 local get_plr_data = game:GetService('ReplicatedStorage'):WaitForChild('Remotes'):WaitForChild('Extras'):WaitForChild('GetPlayerData')
 local gs = game:GetService('GuiService')
 local highlights = {}
-local ignore_list = {}
 local inst_new = Instance.new
-local key_code = Enum.KeyCode
 local keyboard = enum_uit.Keyboard
 local lighting = game:GetService('Lighting')
 local min = math.min
 local mouse = you:GetMouse()
 local name_tags = {}
-local rc_ft = Enum.RaycastFilterType
 local rcp_new = RaycastParams.new
-local shoot_enabled = true
+local remove = table.clear
 local sleep = task.wait
 local smooth = Enum.SurfaceType.Smooth
 local smooth_plastic = Enum.Material.SmoothPlastic
@@ -59,12 +70,8 @@ local uis = game:GetService('UserInputService')
 local upper = string.upper
 local vec2_new = Vector2.new
 local vec3_new = Vector3.new
-local vec3_zero = Vector3.zero
 local vim = game:GetService('VirtualInputManager')
-
-local innocent_color = colors_white
-local murderer_color = color3_from_rgb(255, 0, 0)
-local sheriff_color = color3_from_rgb(0, 0, 255)
+local zero = Vector3.zero
 
 local highlight_prefab = inst_new('BoxHandleAdornment')
 highlight_prefab.AdornCullingMode = Enum.AdornCullingMode.Never
@@ -106,16 +113,6 @@ name_tag_lbl.TextStrokeColor3 = colors_black
 name_tag_lbl.TextStrokeTransparency = 0
 name_tag_lbl.ZIndex = 4000
 name_tag_lbl.Parent = name_tag
-
-local rce_params = rcp_new()
-rce_params.FilterType = rc_ft.Exclude
-rce_params.IgnoreWater = true
-rce_params.RespectCanCollide = false
-
-local rci_params = rcp_new()
-rci_params.FilterType = rc_ft.Include
-rci_params.IgnoreWater = true
-rci_params.RespectCanCollide = false
 
 local stroke = inst_new('UIStroke')
 stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
@@ -160,66 +157,46 @@ ui.Parent = pcall(tostring, core_gui) and core_gui or you:WaitForChild('PlayerGu
 
 ---4
 
-local function child_added_lighting(e) if e:IsA('PostEffect') then e.Enabled = false end end
-local function create_beam(p0, p1): any
+local apos = ui.AbsolutePosition
+local cx, cy = -apos.X, -apos.Y
+local rcp_exclude = rcp_new() do rcp_exclude.FilterType, rcp_exclude.IgnoreWater, rcp_exclude.RespectCanCollide = enum_rfi.Exclude, true, false end
+local set = function(a, b, c) a[b] = c end
+local shooting_enabled = true
+
+local function create_line(p0, p1)
 	local new_highlight = highlight_prefab:Clone()
 	new_highlight.Adornee = terrain
 	new_highlight.CFrame = cf_new((p0 + p1) / 2, p0)
-	new_highlight.Size = vec3_new(0.24, 0.24, (p0 - p1).Magnitude)
+	new_highlight.Size = vec3_new(line_thickness, line_thickness, (p0 - p1).Magnitude)
 	return new_highlight
 end
 
 local function get_end_point(p0, p1)
-	local list = {workspace:FindFirstChild('Normal')}
-	rci_params.FilterDescendantsInstances = list
-	local result = workspace:Raycast(p0, p1 - p0, rci_params)
-	clear(list)
-	return result and result.Position or p1
+	rcp_exclude.FilterDescendantsInstances = {}
+	local result = workspace:Raycast(p0, p1 - p0, rcp_exclude)
+	return if result then result.Position else p1
 end
 
-local function get_plr(origin, dist, name)
-	local result, list = nil, plrs:GetPlayers()
-	for i = 1, #list do
-		local element = list[i]
-		if not element or element == you then continue end
-		local bp = element:FindFirstChildOfClass('Backpack')
-		if not bp then continue end
-		local char = element.Character
-		if not char then continue end
-		local h = char:FindFirstChildOfClass('Humanoid')
-		if not h or h.Health <= 0 or h:GetState() == dead then continue end
-		local hrp = h.RootPart
-		if not hrp then continue end
-		local new_dist = (hrp.Position - origin).Magnitude
-		if name and not (bp:FindFirstChild(name) or char:FindFirstChild(name)) then continue end
-		if new_dist >= dist then continue end
-		dist, result = new_dist, element
-	end
-	clear(list)
-	return result
-end
-
-local function set(a: any, b: any, c: any) a[b] = c end
-local special_func_checks: {any} = {
+local special_func_checks = {
 	function(e)
 		if not e.Parent or e.Name ~= 'GunDrop' then return end
-		return true, sheriff_color, 0.24
+		return true, colors_sheriff, 0.24
 	end,
 	function(e)
 		local parent = e.Parent
 		if not parent or parent.Name ~= 'ThrowingKnife' then return end
-		local blade_pos: any = parent:WaitForChild('BladePosition').Position
+		local blade_pos = parent:WaitForChild('BladePosition').Position
 		local unit = 400 * parent:WaitForChild('Vector3Value').Value
-		local beam = create_beam(blade_pos, get_end_point(blade_pos, blade_pos + unit))
-		beam.Color3 = murderer_color
-		beam.Parent = parent
+		local line = create_line(blade_pos, get_end_point(blade_pos, blade_pos + unit))
+		line.Color3 = colors_murderer
+		line.Parent = parent
 		debris:AddItem(parent, 10)
-		return true, murderer_color, 0.24
+		return true, colors_murderer, 0.24
 	end,
 	function(e)
 		local parent = e.Parent
 		if not parent or parent.Name ~= 'Trap' then return end
-		return true, murderer_color, 0.24
+		return true, colors_murderer, 0.24
 	end,
 	function(e)
 		local parent = e.Parent
@@ -235,46 +212,55 @@ local function check_special(e)
 		local succ, color, transparency = special_func_checks[i](e)
 		if succ then return color, transparency end
 	end
-	return
+end
+
+local function child_added_lighting(e)
+	if not e:IsA('PostEffect') then return end
+	e.Enabled = false
 end
 
 local function descendant_added_w(e)
 	local name = e.Name
-	if name == 'GunDisplay' or name == 'KnifeDisplay' then defer(destroy, e) return end
-	if e:IsA('BasePart') then
+	if name == 'GunDisplay' or name == 'KnifeDisplay' then defer(game.Destroy, e) return end
+	if e:IsA('Attachment') or e:IsA('Constraint') or e:IsA('Explosion') or e:IsA('FloorWire') or e:IsA('ForceField') then
+		e.Visible = false
+	elseif e:IsA('BasePart') then
 		e.BackSurface, e.BottomSurface, e.FrontSurface, e.LeftSurface, e.RightSurface, e.TopSurface = smooth, smooth, smooth, smooth, smooth, smooth
 		e.Material, e.Reflectance = smooth_plastic, 0
 		local highlight = highlights[e]
 		if highlight then return end
 		local color, transparency = check_special(e)
-		if not color then
-			sleep(0.004)
-			local char = e.Parent
-			if not char then return end
-			local plr = plrs:FindFirstChild(char.Name)
-			if not plr or plr == you then return end
-			local h = char:WaitForChild('Humanoid', 0.4)
-			if not h or h.Health <= 0 or h:GetState() == dead then return end
-		end
+		if not color then return end
 		local new_highlight = highlight_prefab:Clone()
-		if color then new_highlight.Color3, new_highlight.Name, new_highlight.Transparency = color, 'SpecialHighlight', transparency end
+		new_highlight.Color3, new_highlight.Name, new_highlight.Transparency = color, 'SpecialHighlight', transparency
 		highlights[e] = new_highlight
 		new_highlight.Parent = ui
 	elseif e:IsA('Beam') then
 		e.Enabled = false
 		local a0, a1 = e.Attachment0, e.Attachment1
 		if not a0 or not a1 then return end
-		local beam = create_beam(a0.WorldPosition, a1.WorldPosition)
-		beam.Color3 = sheriff_color
-		beam.Parent = ui
-		debris:AddItem(beam, 0.644)
+		local line = create_line(a0.WorldPosition, a1.WorldPosition)
+		line.Color3 = colors_sheriff
+		line.Parent = ui
+		debris:AddItem(line, gun_line_lifetime)
 	elseif e:IsA('Decal') then
 		e.Transparency = 1
 	elseif e:IsA('Fire') or e:IsA('Highlight') or e:IsA('Light') or e:IsA('ParticleEmitter') or
 		e:IsA('PostEffect') or e:IsA('Smoke') or e:IsA('Sparkles') or e:IsA('Trail') then
 		e.Enabled = false
-	elseif e:IsA('Attachment') or e:IsA('Constraint') or e:IsA('Explosion') or e:IsA('FloorWire') or e:IsA('ForceField') then
-		e.Visible = false
+	elseif e:IsA('Humanoid') then
+		local char = e.Parent
+		if not plrs:GetPlayerFromCharacter(char) then return end
+		local function child_added(child)
+			if highlights[child] then return end
+			local new_highlight = highlight_prefab:Clone()
+			highlights[child] = new_highlight
+			new_highlight.Parent = ui
+		end
+		char.ChildAdded:Connect(child_added)
+		local children = char:GetChildren()
+		for i = 1, #children do child_added(children[i]) end
+		clear(children)
 	end
 end
 
@@ -312,8 +298,6 @@ plrs.PlayerRemoving:Connect(function(plr)
 	plr_tag:Destroy()
 end)
 
-local apos = ui.AbsolutePosition
-local cx, cy = -apos.X, -apos.Y
 local list = plrs:GetPlayers()
 local old_func
 for i = 1, #list do plr_added(list[i]) end
@@ -331,96 +315,121 @@ if did_exist then
 	pcall(set, rendering, 'QualityLevel', lowest_quality)
 end
 
-local function calculate_pos(pos)
-	local screen_point = cam:WorldToScreenPoint(pos)
-	return screen_point.X + cx, screen_point.Y + cy
-end
-
-local function get_vulnerable_spot(char)
-	local amount, sum: any, children = 0, vec3_zero, char:GetChildren()
-	ignore_list[1], ignore_list[2] = char, you.Character
+local function closest_reachable_spot(holder, origin)
+	local children, dist, ignore_list, result = holder:GetChildren(), rc_dist, {you.Character}, nil
+	rcp_exclude.FilterDescendantsInstances = ignore_list
 	for i = 1, #children do
 		local child = children[i]
 		if not child:IsA('BasePart') then continue end
 		local pos = child.Position
-		cast_points[1] = pos
-		if #cam:GetPartsObscuringTarget(cast_points, ignore_list) > 0 then continue end
-		amount += 1
-		sum += pos
+		local rr = workspace:Raycast(origin, (pos - origin).Unit * rc_dist, rcp_exclude)
+		if not rr or not holder:IsAncestorOf(rr.Instance) then continue end
+		local new_dist = (origin - pos).Magnitude
+		if new_dist >= dist then continue end
+		dist, result = new_dist, pos
 	end
-	clear(cast_points)
 	clear(children)
-	clear(ignore_list)
-	return if amount > 0 then sum / amount else char:FindFirstChildOfClass('Humanoid').RootPart.Position
+	ignore_list[1] = nil
+	return result
+end
+
+local function is_alive(plr)
+	if not plr or not plr:FindFirstChild('Backpack') then return false end
+	local char = plr.Character
+	if not char then return false end
+	local h = char:FindFirstChild('Humanoid')
+	if not h or h.Health <= 0 or h:GetState() == dead or not h.RootPart then return false end
+	return true
+end
+
+local function get_chars()
+	local list = plrs:GetPlayers()
+	for i = 1, #list do
+		local element = list[i]
+		if not is_alive(element) then remove(list, i) continue end
+		list[i] = element.Character
+	end
+	return list
 end
 
 local function get_weapon(char)
 	local tool = char:FindFirstChild('Gun')
-	if tool then return tool, 'Gun' end
+	if tool and tool:FindFirstChild('Handle') then return tool end
 	tool = char:FindFirstChild('Knife')
-	if tool then return tool, 'Knife' end
-	return nil, ''
+	if tool and tool:FindFirstChild('Handle') then return tool end
 end
 
-local function obtain_tc(your_wn)
-	local your_char = you.Character
-	if not your_char then return nil end
-	local your_h = your_char:FindFirstChildOfClass('Humanoid')
-	if not your_h or your_h.Health <= 0 or your_h:GetState() == dead then return nil end
-	local your_hrp = your_h.RootPart
-	if not your_hrp then return nil end
-	local pos = your_hrp.Position
-	local other_plr = get_plr(pos, 400, (your_wn == 'Gun' and 'Knife') or (your_wn == 'Knife' and 'Gun') or nil) or get_plr(pos, 400, nil)
-	if not other_plr then return nil end
-	return other_plr.Character
+local function nearest_reachable_threat(origin, dist, has, reachable)
+	local list, result, result_pos = get_chars(), nil, nil
+	for i = 1, #list do
+		local element = list[i]
+		if element == you then continue end
+		local char = element.Character
+		if has and not (element.Backpack:FindFirstChild(has) or char:FindFirstChild(has)) then continue end
+		local pos = if reachable then closest_reachable_spot(char, origin) else char.Humanoid.RootPart.Position
+		if not pos then continue end
+		local new_dist = (origin - pos).Magnitude
+		if new_dist > dist then continue end
+		dist, result, result_pos = new_dist, char, pos
+	end
+	clear(list)
+	return result_pos, result
+end
+
+local function get_threat_coordinates(weapon)
+	if not weapon then return end
+	local name, origin, pos =  weapon.Name, weapon.Handle.Position, nil
+	if name == 'Gun' then
+		pos = nearest_reachable_threat(origin, rc_dist, 'Knife', true)
+	elseif name == 'Knife' then
+		pos = nearest_reachable_threat(origin, rc_dist, 'Gun', true) or nearest_reachable_threat(origin, rc_dist, nil, true)
+	end
+	if not pos then return end
+	local screen_point = cam:WorldToScreenPoint(pos)
+	return screen_point.X + cx, screen_point.Y + cy
 end
 
 local function scripted_shoot()
-	if not shoot_enabled then return end
-	local char, your_tool_name = obtain_ctn()
-	if not char then return end
-	local pos = get_vulnerable_spot(char)
-	ignore_list[1], ignore_list[2] = char, you.Character
-	local result = cam:GetPartsObscuringTarget(cast_points, ignore_list)
-	local result_len = #result
-	clear(cast_points)
-	clear(ignore_list)
-	clear(list)
-	if result_len > 0 then return end
+	if not shooting_enabled or not is_alive(you) then return end
+	local weapon = get_weapon(you.Character)
+	if not weapon then return end
 	shoot_enabled = false
 	if uis:GetLastInputType() == touch then
-		vim:SendTouchEvent(24, 0, calculate_pos(get_vulnerable_spot(char)))
-		vim:SendTouchEvent(24, 2, calculate_pos(get_vulnerable_spot(char)))
+		local x, y = get_threat_coordinates(weapon)
+		if x then vim:SendTouchEvent(24, 0, x, y) end
+		local x, y = get_threat_coordinates(weapon)
+		if x then vim:SendTouchEvent(24, 2, x, y) else vim:SendTouchEvent(24, 2, -1, -1) end
 	else
-		local mb = your_tool_name == 'Knife' and 1 or 0
-		local x, y = calculate_pos(get_vulnerable_spot(char))
-		vim:SendMouseButtonEvent(x, y, mb, true, nil, 0)
-		local x, y = calculate_pos(get_vulnerable_spot(char))
-		vim:SendMouseButtonEvent(x, y, mb, false, nil, 0)
+		local mb = weapon.Name == 'Knife' and 1 or 0
+		local x, y = get_threat_coordinates(weapon)
+		if x then vim:SendMouseButtonEvent(x, y, mb, true, nil, 0) end
+		local x, y = get_threat_coordinates(weapon)
+		if x then vim:SendMouseButtonEvent(x, y, mb, false, nil, 0) else vim:SendMouseButtonEvent(-1, -1, mb, false, nil, 0) end
 	end
 	sleep(0.144)
-	shoot_enabled = true
+	shooting_enabled = true
 end
 
 ui_btn.Activated:Connect(scripted_shoot)
 uis.InputBegan:Connect(function(input, gpe)
 	if gpe or gs.MenuIsOpen or input.UserInputType ~= keyboard or uis:GetFocusedTextBox() then return end
 	local key = input.KeyCode
-	if key ~= key_code.Four and key ~= key_code.R then return end
+	if key ~= enum_kc.Four and key ~= enum_kc.R then return end
 	scripted_shoot()
 end)
 
-old_func = hmm(game, '__index', nc(function(self, key)
+local old_hmm_index
+old_hmm_index = hmm(game, '__index', nc(function(self, key)
 	if self == mouse then
-		if key ~= 'X' and key ~= 'Y' then return old_func(self, key) end
-		local char, _ = obtain_ctn()
-		if not char then return old_func(self, key) end
-		local x, y = calculate_pos(get_vulnerable_spot(char))
-		local val = (key == 'X' and x) or (key == 'Y' and y) or nil
-		if not val then return old_func(self, key) end
+		if key ~= 'X' and key ~= 'Y' then return old_hmm_index(self, key) end
+		local x, y = get_threat_coordinates(get_weapon(you.Character))
+		if not x then return old_hmm_index(self, key) end
+		local val = if key == 'X' then x elseif key == 'Y' then y else nil
+		if not val then return old_hmm_index(self, key) end
 		return val
 	end
-	return old_func(self, key)
+
+	return old_hmm_index(self, key)
 end))
 
 local sg = game:GetService('StarterGui')
@@ -434,9 +443,12 @@ coroutine_resume(coroutine_create(function()
 		sleep(1.44)
 		local char = you.Character
 		if not char then continue end
-		local h = char:FindFirstChildOfClass('Humanoid')
+		local h = char:FindFirstChild('Humanoid')
 		if not h or h.Health <= 0 or h:GetState() == dead then continue end
-		if h.WalkSpeed ~= 0 then h.WalkSpeed = starter_player.CharacterWalkSpeed * 1.144 end
+		if h.WalkSpeed ~= 0 then
+			h.WalkSpeed = starter_player.CharacterWalkSpeed * 1.144
+		end
+
 		if h.UseJumpPower then
 			if h.JumpPower == 0 then continue end
 			h.JumpPower = starter_player.CharacterJumpPower * 1.064
@@ -467,70 +479,65 @@ end))
 
 while true do
 	sleep()
-	local pos = workspace.CurrentCamera.CFrame.Position
+	local pos = cam.CFrame.Position
 	for plr, plr_tag in next, name_tags do
 		if not plr_tag or not plr then continue end
-		local bp = plr:FindFirstChildOfClass('Backpack')
+		local bp = plr:FindFirstChild('Backpack')
 		if not bp then plr_tag.Adornee, plr_tag.Enabled = nil, false continue end
 		local char = plr.Character
 		if not char then plr_tag.Adornee, plr_tag.Enabled = nil, false continue end
-		local h = char:FindFirstChildOfClass('Humanoid')
+		local h = char:FindFirstChild('Humanoid')
 		if not h or h.Health <= 0 or h:GetState() == dead then plr_tag.Adornee, plr_tag.Enabled = nil, false continue end
 		local hrp = h.RootPart
 		if not hrp then plr_tag.Adornee, plr_tag.Enabled = nil, false continue end
-		local color = innocent_color
+		local color = colors_innocent
 		local lbl = plr_tag.Label
 		local role = upper((data[plr.Name] or data).Role or '')
 		plr_tag.Adornee, plr_tag.Enabled = hrp, true
 		if bp:FindFirstChild('Knife') or char:FindFirstChild('Knife') or
 			role == 'FREEZER' or role == 'INFECTED' or role == 'MURDERER' or role == 'ZOMBIE' then
-			color = murderer_color
+			color = colors_murderer
 		elseif bp:FindFirstChild('Gun') or char:FindFirstChild('Gun') or
 			role == 'HERO' or role == 'RUNNER' or role == 'SHERIFF' or role == 'SURVIVOR' then
-			color = sheriff_color
+			color = colors_sheriff
 		end
 		local stroke = lbl.Stroke
 		lbl.TextColor3, stroke.Color, stroke.Thickness = color, color, min(4, 100 / (hrp.Position - pos).Magnitude)
 	end
-	local bp = you:FindFirstChildOfClass('Backpack')
-	if not bp then ui_btn.Parent = nil continue end
+
+	if not is_alive(you) then ui_btn.Parent = nil continue end
 	local char = you.Character
-	if not char then ui_btn.Parent = nil continue end
-	local h = char:FindFirstChildOfClass('Humanoid')
-	if not h or h.Health <= 0 or h:GetState() == dead then ui_btn.Parent = nil continue end
-	local hrp = h.RootPart
-	if not hrp then ui_btn.Parent = nil continue end
-	if hrp and (hrp.AssemblyAngularVelocity.Magnitude >= 264 or hrp.AssemblyLinearVelocity.Magnitude >= 264 or hrp.Position.Y < -444) then
-		hrp.AssemblyAngularVelocity, hrp.AssemblyLinearVelocity, hrp.RotVelocity, hrp.Velocity = vec3_zero, vec3_zero, vec3_zero, vec3_zero
+	local bp = you.Backpack
+	local hrp = char.Humanoid.RootPart
+	local pos = hrp.Position
+	if hrp and (hrp.AssemblyAngularVelocity.Magnitude >= danger_speed or
+		hrp.AssemblyLinearVelocity.Magnitude >= danger_speed or pos.Position.Y < danger_y_zone) then
+		hrp.AssemblyAngularVelocity, hrp.AssemblyLinearVelocity, hrp.RotVelocity, hrp.Velocity = zero, zero, zero, zero
 		local map = workspace:FindFirstChild('Normal')
 		if map then
-			local is_gun = (bp:FindFirstChild('Gun') or char:FindFirstChild('Gun')) and true or false
-			local is_knife = (bp:FindFirstChild('Knife') or char:FindFirstChild('Knife')) and true or false
-			local other_plr = get_plr(hrp.Position, 740, (is_gun and 'Knife') or (is_knife and 'Gun') or nil)
+			local gun = bp:FindFirstChild('Gun') or char:FindFirstChild('Gun')
+			local knife = bp:FindFirstChild('Knife') or char:FindFirstChild('Knife')
+			local other_plr = nearest_reachable_threat(pos, rc_dist, (gun and 'Knife') or (knife and 'Gun') or nil, false)
 			local spawns = map:FindFirstChild('Spawns')
 			if other_plr and spawns then
 				local list = spawns:GetChildren()
-				local pos = other_plr.Character:FindFirstChildOfClass('Humanoid').RootPart.Position
+				local pos = other_plr.Character:FindFirstChild('Humanoid').RootPart.Position
 				sort(list, function(a, b) return (a.Position - pos).Magnitude > (b.Position - pos).Magnitude end)
 				local best_spawn = list[1]
-				if best_spawn then
-					hrp.CFrame = best_spawn.CFrame
-					clear(list)
-				end
+				if best_spawn then hrp.CFrame = best_spawn.CFrame end
+				clear(list)
 			end
 		end
 	end
-	local knife = char:FindFirstChild('Knife')
-	ui_btn.Parent = (char:FindFirstChild('Gun') or knife) and ui or nil
-	if knife then
-		local handle = knife:FindFirstChild('Handle')
-		if handle then
-			local other_plr = get_plr(hrp.Position, 5.444, nil)
-			if other_plr then
-				local other_hrp = other_plr.Character:FindFirstChildOfClass('Humanoid').RootPart
-				fti(handle, other_hrp, 1)
-				fti(handle, other_hrp, 0)
-			end
-		end
-	end
+
+	local equipped_knife = char:FindFirstChild('Knife')
+	ui_btn.Parent = (char:FindFirstChild('Gun') or equipped_knife) and ui or nil
+	if not equipped_knife then continue end
+	local handle = equipped_knife:FindFirstChild('Handle')
+	if not handle then continue end
+	local _, other_char = nearest_reachable_threat(handle.Position, melee_hitbox_extender, nil, false)
+	if not other_char then continue end
+	local other_hrp = other_char.Humanoid.RootPart
+	fti(handle, other_hrp, 1)
+	fti(handle, other_hrp, 0)
 end
