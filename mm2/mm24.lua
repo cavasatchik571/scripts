@@ -250,7 +250,8 @@ local function descendant_added_w(e)
 		e.Enabled = false
 	elseif e:IsA('Humanoid') then
 		local char = e.Parent
-		if not plrs:GetPlayerFromCharacter(char) then return end
+		local plr = plrs:GetPlayerFromCharacter(char)
+		if not plr or plr == you then return end
 		local function child_added(child)
 			if highlights[child] then return end
 			local new_highlight = highlight_prefab:Clone()
@@ -428,7 +429,6 @@ old_hmm_index = hmm(game, '__index', nc(function(self, key)
 		if not val then return old_hmm_index(self, key) end
 		return val
 	end
-
 	return old_hmm_index(self, key)
 end))
 
@@ -511,7 +511,7 @@ while true do
 	local hrp = char.Humanoid.RootPart
 	local pos = hrp.Position
 	if hrp and (hrp.AssemblyAngularVelocity.Magnitude >= danger_speed or
-		hrp.AssemblyLinearVelocity.Magnitude >= danger_speed or pos.Position.Y < danger_y_zone) then
+		hrp.AssemblyLinearVelocity.Magnitude >= danger_speed or pos.Y < danger_y_zone) then
 		hrp.AssemblyAngularVelocity, hrp.AssemblyLinearVelocity, hrp.RotVelocity, hrp.Velocity = zero, zero, zero, zero
 		local map = workspace:FindFirstChild('Normal')
 		if map then
