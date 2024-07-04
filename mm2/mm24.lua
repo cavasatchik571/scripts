@@ -24,7 +24,7 @@ local hex_color_innocent = '#FFFFFF'
 local hex_color_murderer = '#FF0000'
 local hex_color_sheriff = '#0000FF'
 local line_thickness = 0.24
-local melee_hitbox_extender = 5.444
+local melee_hitbox_extender = 5.44
 local rc_dist = 400
 
 local cam = workspace.CurrentCamera
@@ -155,7 +155,7 @@ ui_btn.ZIndex = 4000
 stroke:Clone().Parent = ui_btn
 ui.Parent = pcall(tostring, core_gui) and core_gui or you:WaitForChild('PlayerGui')
 
----4💚
+---4
 
 local apos = ui.AbsolutePosition
 local cx, cy = -apos.X, -apos.Y
@@ -448,7 +448,6 @@ coroutine_resume(coroutine_create(function()
 		if h.WalkSpeed ~= 0 then
 			h.WalkSpeed = starter_player.CharacterWalkSpeed * 1.144
 		end
-
 		if h.UseJumpPower then
 			if h.JumpPower == 0 then continue end
 			h.JumpPower = starter_player.CharacterJumpPower * 1.064
@@ -481,15 +480,7 @@ while true do
 	sleep()
 	local pos = cam.CFrame.Position
 	for plr, plr_tag in next, name_tags do
-		if not plr_tag or not plr then continue end
-		local bp = plr:FindFirstChild('Backpack')
-		if not bp then plr_tag.Adornee, plr_tag.Enabled = nil, false continue end
-		local char = plr.Character
-		if not char then plr_tag.Adornee, plr_tag.Enabled = nil, false continue end
-		local h = char:FindFirstChild('Humanoid')
-		if not h or h.Health <= 0 or h:GetState() == dead then plr_tag.Adornee, plr_tag.Enabled = nil, false continue end
-		local hrp = h.RootPart
-		if not hrp then plr_tag.Adornee, plr_tag.Enabled = nil, false continue end
+		if not is_alive(plr) then plr_tag.Adornee, plr_tag.Enabled = nil, false continue end
 		local color = colors_innocent
 		local lbl = plr_tag.Label
 		local role = upper((data[plr.Name] or data).Role or '')
@@ -501,10 +492,10 @@ while true do
 			role == 'HERO' or role == 'RUNNER' or role == 'SHERIFF' or role == 'SURVIVOR' then
 			color = colors_sheriff
 		end
+		local pos = plr.Character.Humanoid.RootPart
 		local stroke = lbl.Stroke
 		lbl.TextColor3, stroke.Color, stroke.Thickness = color, color, min(4, 100 / (hrp.Position - pos).Magnitude)
 	end
-
 	if not is_alive(you) then ui_btn.Parent = nil continue end
 	local char = you.Character
 	local bp = you.Backpack
@@ -529,7 +520,6 @@ while true do
 			end
 		end
 	end
-
 	local equipped_knife = char:FindFirstChild('Knife')
 	ui_btn.Parent = (char:FindFirstChild('Gun') or equipped_knife) and ui or nil
 	if not equipped_knife then continue end
