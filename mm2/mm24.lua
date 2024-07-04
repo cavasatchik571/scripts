@@ -24,7 +24,7 @@ local hex_color_innocent = '#FFFFFF'
 local hex_color_murderer = '#FF0000'
 local hex_color_sheriff = '#0000FF'
 local line_thickness = 0.24
-local melee_hitbox_extender = 5.44
+local melee_hitbox_extender = 5.444
 local rc_dist = 400
 
 local cam = workspace.CurrentCamera
@@ -74,11 +74,11 @@ local vim = game:GetService('VirtualInputManager')
 local zero = Vector3.zero
 
 local highlight_prefab = inst_new('BoxHandleAdornment')
-highlight_prefab.AdornCullingMode = Enum.AdornCullingMode.Never
+highlight_prefab.AdornCullingMode = Enum.AdornCullingMode.Automatic
 highlight_prefab.AlwaysOnTop = true
 highlight_prefab.Color3 = _4
 highlight_prefab.Name = 'Highlight'
-highlight_prefab.Transparency = 0.644
+highlight_prefab.Transparency = 0.7
 highlight_prefab.ZIndex = 4
 
 local name_tag = inst_new('BillboardGui')
@@ -226,7 +226,7 @@ local function descendant_added_w(e)
 		e.Visible = false
 	elseif e:IsA('BasePart') then
 		e.BackSurface, e.BottomSurface, e.FrontSurface, e.LeftSurface, e.RightSurface, e.TopSurface = smooth, smooth, smooth, smooth, smooth, smooth
-		e.Material, e.Reflectance = smooth_plastic, 0
+		e.CastShadow, e.Material, e.Reflectance = false, smooth_plastic, 0
 		local highlight = highlights[e]
 		if highlight then return end
 		local color, transparency = check_special(e)
@@ -270,7 +270,10 @@ local function plr_added(plr)
 	local plr_tag = name_tags[plr]
 	if plr_tag then return end
 	plr_tag = name_tag:Clone()
-	plr_tag.Label.Text = plr.Name
+	local lbl = plr_tag.Label
+	local stroke = lbl.Stroke
+	lbl.Text = plr.Name
+	lbl.Changed:Connect(function(prop) if prop == 'AbsoluteSize' then stroke.Thickness = min(4, lbl.AbsoluteSize.Y * 0.1) end end)
 	name_tags[plr] = plr_tag
 	plr_tag.Parent = ui
 end
@@ -319,6 +322,7 @@ end
 local function closest_reachable_spot(holder, origin)
 	local children, dist, ignore_list, result = holder:GetChildren(), rc_dist, {you.Character}, nil
 	rcp_exclude.FilterDescendantsInstances = ignore_list
+
 	for i = 1, #children do
 		local child = children[i]
 		if not child:IsA('BasePart') then continue end
@@ -329,6 +333,7 @@ local function closest_reachable_spot(holder, origin)
 		if new_dist >= dist then continue end
 		dist, result = new_dist, pos
 	end
+
 	clear(children)
 	ignore_list[1] = nil
 	return result
@@ -445,9 +450,7 @@ coroutine_resume(coroutine_create(function()
 		if not char then continue end
 		local h = char:FindFirstChild('Humanoid')
 		if not h or h.Health <= 0 or h:GetState() == dead then continue end
-		if h.WalkSpeed ~= 0 then
-			h.WalkSpeed = starter_player.CharacterWalkSpeed * 1.144
-		end
+		if h.WalkSpeed ~= 0 then h.WalkSpeed = starter_player.CharacterWalkSpeed * 1.144 end
 		if h.UseJumpPower then
 			if h.JumpPower == 0 then continue end
 			h.JumpPower = starter_player.CharacterJumpPower * 1.064
@@ -478,24 +481,20 @@ end))
 
 while true do
 	sleep()
-	local pos = cam.CFrame.Position
 	for plr, plr_tag in next, name_tags do
 		if not is_alive(plr) then plr_tag.Adornee, plr_tag.Enabled = nil, false continue end
 		local color = colors_innocent
 		local lbl = plr_tag.Label
 		local role = upper((data[plr.Name] or data).Role or '')
-		plr_tag.Adornee, plr_tag.Enabled = hrp, true
-		if bp:FindFirstChild('Knife') or char:FindFirstChild('Knife') or
-			role == 'FREEZER' or role == 'INFECTED' or role == 'MURDERER' or role == 'ZOMBIE' then
+		plr_tag.Adornee, plr_tag.Enabled = plr.Character.Humanoid.RootPart, true
+		if role == 'FREEZER' or role == 'INFECTED' or role == 'MURDERER' or role == 'ZOMBIE' then
 			color = colors_murderer
-		elseif bp:FindFirstChild('Gun') or char:FindFirstChild('Gun') or
-			role == 'HERO' or role == 'RUNNER' or role == 'SHERIFF' or role == 'SURVIVOR' then
+		elseif role == 'HERO' or role == 'RUNNER' or role == 'SHERIFF' or role == 'SURVIVOR' then
 			color = colors_sheriff
 		end
-		local pos = plr.Character.Humanoid.RootPart
-		local stroke = lbl.Stroke
-		lbl.TextColor3, stroke.Color, stroke.Thickness = color, color, min(4, 100 / (hrp.Position - pos).Magnitude)
+		lbl.TextColor3, lbl.Stroke.Color = color, color
 	end
+
 	if not is_alive(you) then ui_btn.Parent = nil continue end
 	local char = you.Character
 	local bp = you.Backpack
@@ -520,6 +519,7 @@ while true do
 			end
 		end
 	end
+
 	local equipped_knife = char:FindFirstChild('Knife')
 	ui_btn.Parent = (char:FindFirstChild('Gun') or equipped_knife) and ui or nil
 	if not equipped_knife then continue end
