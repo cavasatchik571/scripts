@@ -24,7 +24,7 @@ local hex_color_innocent = '#FFFFFF'
 local hex_color_murderer = '#FF0000'
 local hex_color_sheriff = '#0000FF'
 local line_thickness = 0.24
-local melee_hitbox_extender = 5.444
+local melee_hitbox_extender = 5.44
 local rc_dist = 400
 
 local cam = workspace.CurrentCamera
@@ -348,12 +348,11 @@ local function is_alive(plr)
 	return true
 end
 
-local function get_chars()
+local function get_alive_plrs()
 	local list = plrs:GetPlayers()
 	for i = 1, #list do
 		local element = list[i]
 		if not is_alive(element) then remove(list, i) continue end
-		list[i] = element.Character
 	end
 	return list
 end
@@ -366,7 +365,7 @@ local function get_weapon(char)
 end
 
 local function nearest_reachable_threat(origin, dist, has, reachable)
-	local list, result, result_pos = get_chars(), nil, nil
+	local list, result, result_pos = get_alive_plrs(), nil, nil
 	for i = 1, #list do
 		local element = list[i]
 		if element == you then continue end
@@ -434,6 +433,7 @@ old_hmm_index = hmm(game, '__index', nc(function(self, key)
 		if not val then return old_hmm_index(self, key) end
 		return val
 	end
+
 	return old_hmm_index(self, key)
 end))
 
