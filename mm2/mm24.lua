@@ -155,7 +155,7 @@ ui_btn.ZIndex = 4000
 stroke:Clone().Parent = ui_btn
 ui.Parent = pcall(tostring, core_gui) and core_gui or you:WaitForChild('PlayerGui')
 
----4
+---4💚
 
 local apos = ui.AbsolutePosition
 local cx, cy = -apos.X, -apos.Y
