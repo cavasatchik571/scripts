@@ -5,6 +5,8 @@ local _4 = Color3.new(0, .4984, 0)
 
 -- by @Vov4ik4124
 
+wait(0.4)
+if not game:IsLoaded() then game.Loaded:Wait() end
 local place_id = game.PlaceId
 if place_id ~= 142823291 then return end
 local fti = firetouchinterest or fire_touch_interest
@@ -46,18 +48,16 @@ local vu = game:GetService('VirtualUser')
 local vu_b1d = vu.Button1Down
 local vu_b1u = vu.Button1Up
 local nearest_plr_pos, point_of_interest = vec3_zero, vec3_zero
-
 local offset_pos, speed, speed_lb, speed_ub = vec3_new(0, -2, 0), 20.14, -4, 0
 
----4 w/💚
+---4 u
 
 local function clear_velocity(inst)
 	local children = inst:GetChildren()
 	for i = 1, #children do
 		local child = children[i]
 		if not child:IsA('BasePart') then continue end
-		child.AssemblyAngularVelocity = vec3_zero
-		child.AssemblyLinearVelocity = vec3_zero
+		child.AssemblyAngularVelocity, child.AssemblyLinearVelocity = vec3_zero, vec3_zero
 	end
 end
 
