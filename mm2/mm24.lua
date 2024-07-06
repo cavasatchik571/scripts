@@ -23,8 +23,8 @@ local gun_line_lifetime = 0.644
 local hex_color_innocent = '#FFFFFF'
 local hex_color_murderer = '#FF0000'
 local hex_color_sheriff = '#0000FF'
-local line_thickness = 0.24
-local melee_hitbox_extender = 5.44
+local line_thickness = 0.244
+local melee_hitbox_extender = 5.944
 local rc_dist = 400
 
 local cam = workspace.CurrentCamera
@@ -155,11 +155,12 @@ ui_btn.ZIndex = 4000
 stroke:Clone().Parent = ui_btn
 ui.Parent = pcall(tostring, core_gui) and core_gui or you:WaitForChild('PlayerGui')
 
----4
+---4 u
 
 local apos = ui.AbsolutePosition
 local cx, cy = -apos.X, -apos.Y
 local rcp_exclude = rcp_new() do rcp_exclude.FilterType, rcp_exclude.IgnoreWater, rcp_exclude.RespectCanCollide = enum_rfi.Exclude, true, false end
+local rcp_include = rcp_new() do rcp_exclude.FilterType, rcp_exclude.IgnoreWater, rcp_exclude.RespectCanCollide = enum_rfi.Include, true, false end
 local set = function(a, b, c) a[b] = c end
 local shooting_enabled = true
 
@@ -172,7 +173,6 @@ local function create_line(p0, p1)
 end
 
 local function get_end_point(p0, p1)
-	rcp_exclude.FilterDescendantsInstances = {}
 	local result = workspace:Raycast(p0, p1 - p0, rcp_exclude)
 	return if result then result.Position else p1
 end
@@ -221,7 +221,7 @@ end
 
 local function descendant_added_w(e)
 	local name = e.Name
-	if name == 'GunDisplay' or name == 'KnifeDisplay' then defer(game.Destroy, e) return end
+	if name == 'GunDisplay' or name == 'KnifeDisplay' then defer(e.Destroy, e) return end
 	if e:IsA('Attachment') or e:IsA('Constraint') or e:IsA('Explosion') or e:IsA('FloorWire') or e:IsA('ForceField') then
 		e.Visible = false
 	elseif e:IsA('BasePart') then
@@ -319,24 +319,21 @@ if did_exist then
 	pcall(set, rendering, 'QualityLevel', lowest_quality)
 end
 
-local function closest_reachable_spot(holder, origin)
-	local children, dist, ignore_list, result = holder:GetChildren(), rc_dist, {you.Character}, nil
-	rcp_exclude.FilterDescendantsInstances = ignore_list
-
+local function closest_reachable_spot(char, origin)
+	local amount, children, ignore_list, sum = 0, char:GetChildren(), {char, workspace.Normal}, zero
+	rcp_include.FilterDescendantsInstances = ignore_list
 	for i = 1, #children do
 		local child = children[i]
 		if not child:IsA('BasePart') then continue end
 		local pos = child.Position
-		local rr = workspace:Raycast(origin, (pos - origin).Unit * rc_dist, rcp_exclude)
-		if not rr or not holder:IsAncestorOf(rr.Instance) then continue end
-		local new_dist = (origin - pos).Magnitude
-		if new_dist >= dist then continue end
-		dist, result = new_dist, pos
+		local rr = workspace:Raycast(origin, (pos - origin).Unit * rc_dist, rcp_include)
+		if not rr or not char:IsAncestorOf(rr.Instance) then continue end
+		amount += 1
+		sum += pos
 	end
-
 	clear(children)
-	ignore_list[1] = nil
-	return result
+	clear(ignore_list)
+	return if amount > 0 then sum / amount else nil
 end
 
 local function is_alive(plr)
@@ -350,10 +347,7 @@ end
 
 local function get_alive_plrs()
 	local list = plrs:GetPlayers()
-	for i = 1, #list do
-		local element = list[i]
-		if not is_alive(element) then remove(list, i) continue end
-	end
+	for i = 1, #list do if not is_alive(list[i]) then remove(list, i) continue end end
 	return list
 end
 
@@ -364,7 +358,7 @@ local function get_weapon(char)
 	if tool and tool:FindFirstChild('Handle') then return tool end
 end
 
-local function nearest_reachable_threat(origin, dist, has, reachable)
+local function nearest_threat(origin, dist, has, reachable)
 	local list, result, result_pos = get_alive_plrs(), nil, nil
 	for i = 1, #list do
 		local element = list[i]
@@ -383,11 +377,11 @@ end
 
 local function get_threat_coordinates(weapon)
 	if not weapon then return end
-	local name, origin, pos =  weapon.Name, weapon.Handle.Position, nil
+	local name, origin, pos = weapon.Name, weapon.Handle.Position, nil
 	if name == 'Gun' then
-		pos = nearest_reachable_threat(origin, rc_dist, 'Knife', true)
+		pos = nearest_threat(origin, rc_dist, 'Knife', true)
 	elseif name == 'Knife' then
-		pos = nearest_reachable_threat(origin, rc_dist, 'Gun', true) or nearest_reachable_threat(origin, rc_dist, nil, true)
+		pos = nearest_threat(origin, rc_dist, 'Gun', true) or nearest_threat(origin, rc_dist, nil, true)
 	end
 	if not pos then return end
 	local screen_point = cam:WorldToScreenPoint(pos)
@@ -403,13 +397,13 @@ local function scripted_shoot()
 		local x, y = get_threat_coordinates(weapon)
 		if x then vim:SendTouchEvent(24, 0, x, y) end
 		local x, y = get_threat_coordinates(weapon)
-		if x then vim:SendTouchEvent(24, 2, x, y) else vim:SendTouchEvent(24, 2, -1, -1) end
+		defer(vim.SendTouchEvent, vim, 24, 2, x or -1, y or -1)
 	else
 		local mb = weapon.Name == 'Knife' and 1 or 0
 		local x, y = get_threat_coordinates(weapon)
 		if x then vim:SendMouseButtonEvent(x, y, mb, true, nil, 0) end
 		local x, y = get_threat_coordinates(weapon)
-		if x then vim:SendMouseButtonEvent(x, y, mb, false, nil, 0) else vim:SendMouseButtonEvent(-1, -1, mb, false, nil, 0) end
+		defer(vim.SendMouseButtonEvent, vim, x or -1, y or -1, mb, false, nil, 0)
 	end
 	sleep(0.144)
 	shooting_enabled = true
@@ -483,8 +477,7 @@ while true do
 	sleep()
 	for plr, plr_tag in next, name_tags do
 		if not is_alive(plr) then plr_tag.Adornee, plr_tag.Enabled = nil, false continue end
-		local color = colors_innocent
-		local lbl = plr_tag.Label
+		local color, lbl = colors_innocent, plr_tag.Label
 		local role = upper((data[plr.Name] or data).Role or '')
 		plr_tag.Adornee, plr_tag.Enabled = plr.Character.Humanoid.RootPart, true
 		if role == 'FREEZER' or role == 'INFECTED' or role == 'MURDERER' or role == 'ZOMBIE' then
@@ -494,20 +487,18 @@ while true do
 		end
 		lbl.TextColor3, lbl.Stroke.Color = color, color
 	end
-
 	if not is_alive(you) then ui_btn.Parent = nil continue end
-	local char = you.Character
-	local bp = you.Backpack
+	local bp, char = you.Backpack, you.Character
 	local hrp = char.Humanoid.RootPart
 	local pos = hrp.Position
-	if hrp and (hrp.AssemblyAngularVelocity.Magnitude >= danger_speed or
-		hrp.AssemblyLinearVelocity.Magnitude >= danger_speed or pos.Y < danger_y_zone) then
+	if hrp and (hrp.AssemblyAngularVelocity.Magnitude > danger_speed or
+		hrp.AssemblyLinearVelocity.Magnitude > danger_speed or pos.Y < danger_y_zone) then
 		hrp.AssemblyAngularVelocity, hrp.AssemblyLinearVelocity, hrp.RotVelocity, hrp.Velocity = zero, zero, zero, zero
 		local map = workspace:FindFirstChild('Normal')
 		if map then
 			local gun = bp:FindFirstChild('Gun') or char:FindFirstChild('Gun')
 			local knife = bp:FindFirstChild('Knife') or char:FindFirstChild('Knife')
-			local other_plr = nearest_reachable_threat(pos, rc_dist, (gun and 'Knife') or (knife and 'Gun') or nil, false)
+			local other_plr = nearest_threat(pos, rc_dist, (gun and 'Knife') or (knife and 'Gun') or nil, false)
 			local spawns = map:FindFirstChild('Spawns')
 			if other_plr and spawns then
 				local list = spawns:GetChildren()
@@ -519,13 +510,12 @@ while true do
 			end
 		end
 	end
-
 	local equipped_knife = char:FindFirstChild('Knife')
 	ui_btn.Parent = (char:FindFirstChild('Gun') or equipped_knife) and ui or nil
 	if not equipped_knife then continue end
 	local handle = equipped_knife:FindFirstChild('Handle')
 	if not handle then continue end
-	local _, other_char = nearest_reachable_threat(handle.Position, melee_hitbox_extender, nil, false)
+	local _, other_char = nearest_threat(handle.Position, melee_hitbox_extender, nil, false)
 	if not other_char then continue end
 	local other_hrp = other_char.Humanoid.RootPart
 	fti(handle, other_hrp, 1)
