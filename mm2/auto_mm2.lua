@@ -5,7 +5,7 @@ local _4 = Color3.new(0, .4984, 0)
 
 -- by @Vov4ik4124
 
-wait(0.4)
+wait(0.44)
 if not game:IsLoaded() then game.Loaded:Wait() end
 local place_id = game.PlaceId
 if place_id ~= 142823291 then return end
@@ -24,7 +24,7 @@ if not env.afk4_switch then
 	qot('loadstring(game:HttpGet(\'https://raw.githubusercontent.com/cavasatchik571/scripts/main/mm2/auto_mm2.lua\', true))()')
 end
 local all = Enum.CoreGuiType.All
-local check = 0
+local checks = 0
 local cf_new = CFrame.new
 local dead = Enum.HumanoidStateType.Dead
 local floor = math.floor
@@ -47,6 +47,7 @@ local vec3_zero = Vector3.zero
 local vu = game:GetService('VirtualUser')
 local vu_b1d = vu.Button1Down
 local vu_b1u = vu.Button1Up
+
 local nearest_plr_pos, point_of_interest = vec3_zero, vec3_zero
 local offset_pos, speed, speed_lb, speed_ub = vec3_new(0, -2, 0), 20.14, -4, 0
 
@@ -174,26 +175,15 @@ while env.afk4 do
 	if not cc then continue end
 	local hrp = h.RootPart
 	if you:GetAttribute('4') == _4 then continue end
-	if check >= 40 then
-		check = 0
-		local descendants = your_gui:GetDescendants()
-		for i = 1, #descendants do
-			local descendant = descendants[i]
-			if not descendant:IsA('TextLabel') or not descendant.Visible or not string_find(upper(descendant.Text), 'FULL') then continue end
-			local succ = true
-			while descendant ~= your_gui do
-				if descendant:IsA('GuiObject') and not descendant.Visible then
-					succ = false
-					break
-				end
-				descendant = descendant.Parent
-			end
-			if not succ then continue end
-			you:SetAttribute('4', _4)
-			break
+	if checks >= 10 then
+		checks = 0
+		local lbl = your_gui:FindFirstChild('FullBagNotification')
+		if lbl and not lbl:GetAttribute('A') then
+			lbl:SetAttribute('A', true)
+			lbl:GetPropertyChangedSignal('Visible'):Connect(function() if lbl.Visible then you:SetAttribute('4', _4) end end)
 		end
 	else
-		check += 1
+		checks += 1
 	end
 	if you:GetAttribute('4') == _4 then
 		if you:FindFirstChildOfClass('Backpack'):FindFirstChild('Knife') or char:FindFirstChild('Knife') then
@@ -221,7 +211,7 @@ while env.afk4 do
 	local p1 = list[1]:GetPivot().Position
 	local diff = p1 + offset_pos - p0
 	local dist = diff.Magnitude
-	if dist <= 0.24 then
+	if dist <= 0.244 then
 		continue
 	elseif dist >= 444 then
 		hrp.CFrame = cf_new(offset_pos + p1, p1)
