@@ -50,7 +50,7 @@ local vu_b1u = vu.Button1Up
 local nearest_plr_pos, point_of_interest = vec3_zero, vec3_zero
 local offset_pos, speed, speed_lb, speed_ub = vec3_new(0, -2, 0), 20.14, -4, 0
 
----4 u
+---4 u💚
 
 local function clear_velocity(inst)
 	local children = inst:GetChildren()
@@ -177,7 +177,7 @@ while env.afk4 do
 		continue
 	elseif checks >= 10 then
 		checks = 0
-		local lbl = your_gui:FindFirstChild('FullBagNotification', true)
+		local _, lbl = pcall(function() return your_gui.MainGUI.Lobby.Dock.CoinBags.Container.Coin.Full end)
 		if lbl and not lbl:GetAttribute('ABC') then
 			lbl:SetAttribute('ABC', true)
 			lbl:GetPropertyChangedSignal('Visible'):Connect(function()
