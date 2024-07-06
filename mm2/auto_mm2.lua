@@ -5,7 +5,7 @@ local _4 = Color3.new(0, .4984, 0)
 
 -- by @Vov4ik4124
 
-wait(0.44)
+wait(0.444)
 if not game:IsLoaded() then game.Loaded:Wait() end
 local place_id = game.PlaceId
 if place_id ~= 142823291 then return end
@@ -24,8 +24,8 @@ if not env.afk4_switch then
 	qot('loadstring(game:HttpGet(\'https://raw.githubusercontent.com/cavasatchik571/scripts/main/mm2/auto_mm2.lua\', true))()')
 end
 local all = Enum.CoreGuiType.All
-local checks = 0
 local cf_new = CFrame.new
+local checks = 0
 local dead = Enum.HumanoidStateType.Dead
 local floor = math.floor
 local lighting = game:GetService('Lighting')
@@ -83,7 +83,7 @@ local function is_alive(plr)
 end
 
 local function near_plr()
-	local dist = 10000
+	local dist = 444
 	local list = plrs:GetPlayers()
 	local pos = you.Character:FindFirstChildOfClass('Humanoid').RootPart.Position
 	local result
@@ -108,8 +108,8 @@ local function remove_all_except(inst, ...)
 end
 
 local function sort_coins(a, b)
-	local a_score = -(point_of_interest - a.Position).Magnitude + floor(((nearest_plr_pos - a.Position).Magnitude + 0.75) / 6) * 6
-	local b_score = -(point_of_interest - b.Position).Magnitude + floor(((nearest_plr_pos - b.Position).Magnitude + 0.75) / 6) * 6
+	local a_score = -(point_of_interest - a.Position).Magnitude + floor(((nearest_plr_pos - a.Position).Magnitude + 0.7) / 6) * 6
+	local b_score = -(point_of_interest - b.Position).Magnitude + floor(((nearest_plr_pos - b.Position).Magnitude + 0.7) / 6) * 6
 	return a_score > b_score
 end
 
@@ -132,7 +132,63 @@ local run = true
 local sg = game:GetService('StarterGui')
 local sg_sc = sg.SetCore
 local sg_scp = {Button1 = 'OK', Duration = 4, Icon = 'rbxassetid://7440784829', Text = 'Script activated', Title = 'AFK4'}
-while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.04) end end
+while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.044) end end
+local function full_bag_of(main_gui, t)
+	if not main_gui or not t then return false end
+	local descendants = main_gui:GetDescendants()
+	if not t then return false end
+	local ut = upper(tostring(t))
+	if ut == '' then return false end
+	for i = 1, #descendants do
+		if i % 140 == 0 then sleep() end
+		local descendant = descendants[i]
+		if not descendant or not descendant:IsA('TextLabel') or not descendant.Visible or
+			string_find(upper(descendant.Name), 'FULL') or not string_find(upper(descendant.Text), 'FULL') then continue end
+		local parent = descendant.Parent
+		if not parent or not string_find(upper(descendant.Name), ut) then continue end
+		while parent ~= main_gui do
+			if (parent:IsA('GuiObject') and not parent.Visible) or parent:IsA('LocalScript') then return false end
+			parent = parent.Parent
+		end
+		return true
+	end
+	return false
+end
+
+coroutine.resume(coroutine.create(function()
+	while run do
+		if not is_alive(you) or not workspace:FindFirstChild('Normal') then continue end
+		local char = you.Character
+		local h = char:FindFirstChildOfClass('Humanoid')
+		local hrp = h.RootPart
+		local your_gui = you:FindFirstChildOfClass('PlayerGui')
+		if not your_gui then continue end
+		if checks >= 10 then
+			checks = 0
+			local succ, lbl = pcall(full_bag_of, your_gui:FindFirstChild('MainGUI'))
+			if succ and not lbl:GetAttribute('ABC') then
+				you:SetAttribute('4', _4)
+				lbl:SetAttribute('ABC', true)
+				lbl:GetPropertyChangedSignal('Visible'):Connect(function()
+					if not lbl.Visible or not run then return end
+					if you:FindFirstChildOfClass('Backpack'):FindFirstChild('Knife') or char:FindFirstChild('Knife') then
+						local init = hrp:GetAttribute('SafeCFrame')
+						if not init then
+							init = hrp.CFrame + vec3_new(0, 240, 0)
+							hrp:SetAttribute('SafeCFrame', init)
+						end
+						hrp.CFrame = init
+					else
+						h.Health = 0
+					end
+				end)
+			end
+		else
+			checks += 1
+		end
+	end
+end))
+
 while env.afk4 do
 	local dt = sleep()
 	local list = plrs:GetPlayers()
@@ -159,8 +215,6 @@ while env.afk4 do
 	sound_service:ClearAllChildren()
 	starter_gui:SetCoreGuiEnabled(all, false)
 	if not is_alive(you) then continue end
-	local your_gui = you:FindFirstChildOfClass('PlayerGui')
-	if not your_gui then continue end
 	local char = you.Character
 	clear_velocity(char)
 	local h = char:FindFirstChildOfClass('Humanoid')
@@ -170,39 +224,14 @@ while env.afk4 do
 	if not map then you:SetAttribute('4', nil) continue end
 	remove_all_except(map, 'CoinContainer')
 	local cc = map:FindFirstChild('CoinContainer')
-	if not cc then continue end
-	local hrp = h.RootPart
-	if you:GetAttribute('4') == _4 then
-		checks = 0
-		continue
-	elseif checks >= 10 then
-		checks = 0
-		local succ, lbl = pcall(function() return your_gui.MainGUI.Lobby.Dock.CoinBags.Container.Coin.Full end)
-		if succ and not lbl:GetAttribute('ABC') then
-			lbl:SetAttribute('ABC', true)
-			lbl:GetPropertyChangedSignal('Visible'):Connect(function()
-				if not lbl.Visible or not run then return end
-				if you:FindFirstChildOfClass('Backpack'):FindFirstChild('Knife') or char:FindFirstChild('Knife') then
-					local init = hrp:GetAttribute('SafeCFrame')
-					if not init then
-						init = hrp.CFrame + vec3_new(0, 240, 0)
-						hrp:SetAttribute('SafeCFrame', init)
-					end
-					hrp.CFrame = init
-				else
-					h.Health = 0
-				end
-			end)
-		end
-	else
-		checks += 1
-	end
+	if not cc or you:GetAttribute('4') == _4 then continue end
 	local plr = near_plr()
 	if not plr or not is_alive(plr) then continue end
 	local list = cc:GetChildren()
 	filter_coins(list)
 	local len = #list
 	if len == 0 then continue end
+	local hrp = h.RootPart
 	local p0 = hrp.Position
 	nearest_plr_pos = plr.Character:FindFirstChildOfClass('Humanoid').RootPart.Position
 	point_of_interest = p0
@@ -210,7 +239,7 @@ while env.afk4 do
 	local p1 = list[1]:GetPivot().Position
 	local diff = p1 + offset_pos - p0
 	local dist = diff.Magnitude
-	if dist <= 0.244 then
+	if dist <= 0.24 then
 		continue
 	elseif dist >= 444 then
 		hrp.CFrame = cf_new(offset_pos + p1, p1)
@@ -230,4 +259,5 @@ c0:Disconnect()
 c1:Disconnect()
 run = false
 sg_scp = {Button1 = 'OK', Duration = 4, Icon = 'rbxassetid://7440784829', Text = 'Script deactivated', Title = 'AFK4'}
-while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.04) end end
+you:SetAttribute('4', nil)
+while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.044) end end
