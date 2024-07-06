@@ -5,7 +5,7 @@ local _4 = Color3.new(0, .4984, 0)
 
 -- by @Vov4ik4124
 
-wait(0.44)
+wait(0.4)
 if not game:IsLoaded() then game.Loaded:Wait() end
 local place_id = game.PlaceId
 if place_id ~= 142823291 then return end
@@ -47,11 +47,10 @@ local vec3_zero = Vector3.zero
 local vu = game:GetService('VirtualUser')
 local vu_b1d = vu.Button1Down
 local vu_b1u = vu.Button1Up
-
 local nearest_plr_pos, point_of_interest = vec3_zero, vec3_zero
 local offset_pos, speed, speed_lb, speed_ub = vec3_new(0, -2, 0), 20.14, -4, 0
 
----4 u
+---4
 
 local function clear_velocity(inst)
 	local children = inst:GetChildren()
@@ -93,8 +92,7 @@ local function near_plr()
 		if element == you or not is_alive(element) then continue end
 		local new_dist = (element.Character:FindFirstChildOfClass('Humanoid').RootPart.Position - pos).Magnitude
 		if new_dist >= dist then continue end
-		dist = new_dist
-		result = element
+		dist, result = new_dist, element
 	end
 	return result
 end
@@ -130,6 +128,7 @@ local c1 = you.Idled:Connect(function()
 	pcall(vu_b1u, vu, vec2_zero)
 end)
 
+local run = true
 local sg = game:GetService('StarterGui')
 local sg_sc = sg.SetCore
 local sg_scp = {Button1 = 'OK', Duration = 4, Icon = 'rbxassetid://7440784829', Text = 'Script activated', Title = 'AFK4'}
@@ -180,7 +179,7 @@ while env.afk4 do
 		local lbl = your_gui:FindFirstChild('FullBagNotification', true)
 		if lbl and not lbl:GetAttribute('ABC') then
 			lbl:SetAttribute('ABC', true)
-			lbl:GetPropertyChangedSignal('Visible'):Connect(function() if lbl.Visible then you:SetAttribute('4', _4) end end)
+			lbl:GetPropertyChangedSignal('Visible'):Connect(function() if lbl.Visible and run then you:SetAttribute('4', _4) end end)
 		end
 	else
 		checks += 1
@@ -211,7 +210,7 @@ while env.afk4 do
 	local p1 = list[1]:GetPivot().Position
 	local diff = p1 + offset_pos - p0
 	local dist = diff.Magnitude
-	if dist <= 0.244 then
+	if dist <= 0.24 then
 		continue
 	elseif dist >= 444 then
 		hrp.CFrame = cf_new(offset_pos + p1, p1)
@@ -229,5 +228,6 @@ end
 
 c0:Disconnect()
 c1:Disconnect()
+run = false
 sg_scp = {Button1 = 'OK', Duration = 4, Icon = 'rbxassetid://7440784829', Text = 'Script deactivated', Title = 'AFK4'}
 while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.04) end end
