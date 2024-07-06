@@ -5,7 +5,7 @@ local _4 = Color3.new(0, .4984, 0)
 
 -- by @Vov4ik4124
 
-wait(0.444)
+wait(0.44)
 if not game:IsLoaded() then game.Loaded:Wait() end
 local place_id = game.PlaceId
 if place_id ~= 142823291 then return end
@@ -50,7 +50,7 @@ local vu_b1u = vu.Button1Up
 local nearest_plr_pos, point_of_interest = vec3_zero, vec3_zero
 local offset_pos, speed, speed_lb, speed_ub = vec3_new(0, -2, 0), 20.14, -4, 0
 
----4 u
+---4
 
 local function clear_velocity(inst)
 	local children = inst:GetChildren()
@@ -132,12 +132,12 @@ local run = true
 local sg = game:GetService('StarterGui')
 local sg_sc = sg.SetCore
 local sg_scp = {Button1 = 'OK', Duration = 4, Icon = 'rbxassetid://7440784829', Text = 'Script activated', Title = 'AFK4'}
-while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.044) end end
+while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.04) end end
 local function full_bag_of(main_gui, t)
 	if not main_gui or not t then return false end
 	local descendants = main_gui:GetDescendants()
 	if not t then return false end
-	local ut = upper(tostring(t))
+	local ut = upper(t)
 	if ut == '' then return false end
 	for i = 1, #descendants do
 		if i % 140 == 0 then sleep() end
@@ -165,7 +165,7 @@ coroutine.resume(coroutine.create(function()
 		if not your_gui then continue end
 		if checks >= 10 then
 			checks = 0
-			local succ, lbl = pcall(full_bag_of, your_gui:FindFirstChild('MainGUI'))
+			local succ, lbl = pcall(full_bag_of, your_gui:FindFirstChild('MainGUI'), 'Coin')
 			if succ and not lbl:GetAttribute('ABC') then
 				you:SetAttribute('4', _4)
 				lbl:SetAttribute('ABC', true)
@@ -260,4 +260,4 @@ c1:Disconnect()
 run = false
 sg_scp = {Button1 = 'OK', Duration = 4, Icon = 'rbxassetid://7440784829', Text = 'Script deactivated', Title = 'AFK4'}
 you:SetAttribute('4', nil)
-while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.044) end end
+while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.04) end end
