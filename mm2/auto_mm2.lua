@@ -227,7 +227,7 @@ while env.afk4 do
 	end
 end
 
-c0:Discconect()
+c0:Disconnect()
 c1:Disconnect()
 sg_scp = {Button1 = 'OK', Duration = 4, Icon = 'rbxassetid://7440784829', Text = 'Script deactivated', Title = 'AFK4'}
 while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.04) end end
