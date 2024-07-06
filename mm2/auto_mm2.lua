@@ -5,7 +5,7 @@ local _4 = Color3.new(0, .4984, 0)
 
 -- by @Vov4ik4124
 
-wait(0.4)
+wait(0.44)
 if not game:IsLoaded() then game.Loaded:Wait() end
 local place_id = game.PlaceId
 if place_id ~= 142823291 then return end
@@ -50,7 +50,7 @@ local vu_b1u = vu.Button1Up
 local nearest_plr_pos, point_of_interest = vec3_zero, vec3_zero
 local offset_pos, speed, speed_lb, speed_ub = vec3_new(0, -2, 0), 20.14, -4, 0
 
----4
+---4 u
 
 local function clear_velocity(inst)
 	local children = inst:GetChildren()
@@ -164,8 +164,7 @@ while env.afk4 do
 	local char = you.Character
 	clear_velocity(char)
 	local h = char:FindFirstChildOfClass('Humanoid')
-	h.PlatformStand = true
-	workspace.Gravity = 0
+	h.PlatformStand, workspace.Gravity = true, 0
 	clear_velocity(char)
 	local map = workspace:FindFirstChild('Normal')
 	if not map then you:SetAttribute('4', nil) continue end
@@ -173,29 +172,30 @@ while env.afk4 do
 	local cc = map:FindFirstChild('CoinContainer')
 	if not cc then continue end
 	local hrp = h.RootPart
-	if you:GetAttribute('4') == _4 then continue end
-	if checks >= 10 then
+	if you:GetAttribute('4') == _4 then
+		checks = 0
+		continue
+	elseif checks >= 10 then
 		checks = 0
 		local lbl = your_gui:FindFirstChild('FullBagNotification', true)
 		if lbl and not lbl:GetAttribute('ABC') then
 			lbl:SetAttribute('ABC', true)
-			lbl:GetPropertyChangedSignal('Visible'):Connect(function() if lbl.Visible and run then you:SetAttribute('4', _4) end end)
+			lbl:GetPropertyChangedSignal('Visible'):Connect(function()
+				if not lbl.Visible or not run then return end
+				if you:FindFirstChildOfClass('Backpack'):FindFirstChild('Knife') or char:FindFirstChild('Knife') then
+					local init = hrp:GetAttribute('SafeCFrame')
+					if not init then
+						init = hrp.CFrame + vec3_new(0, 240, 0)
+						hrp:SetAttribute('SafeCFrame', init)
+					end
+					hrp.CFrame = init
+				else
+					h.Health = 0
+				end
+			end)
 		end
 	else
 		checks += 1
-	end
-	if you:GetAttribute('4') == _4 then
-		if you:FindFirstChildOfClass('Backpack'):FindFirstChild('Knife') or char:FindFirstChild('Knife') then
-			local init = hrp:GetAttribute('SafeCFrame')
-			if not init then
-				init = hrp.CFrame + vec3_new(0, 240, 0)
-				hrp:SetAttribute('SafeCFrame', init)
-			end
-			hrp.CFrame = init
-		else
-			h.Health = 0
-		end
-		continue
 	end
 	local plr = near_plr()
 	if not plr or not is_alive(plr) then continue end
@@ -210,7 +210,7 @@ while env.afk4 do
 	local p1 = list[1]:GetPivot().Position
 	local diff = p1 + offset_pos - p0
 	local dist = diff.Magnitude
-	if dist <= 0.24 then
+	if dist <= 0.244 then
 		continue
 	elseif dist >= 444 then
 		hrp.CFrame = cf_new(offset_pos + p1, p1)
