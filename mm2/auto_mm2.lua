@@ -177,9 +177,9 @@ while env.afk4 do
 	if you:GetAttribute('4') == _4 then continue end
 	if checks >= 10 then
 		checks = 0
-		local lbl = your_gui:FindFirstChild('FullBagNotification')
-		if lbl and not lbl:GetAttribute('A') then
-			lbl:SetAttribute('A', true)
+		local lbl = your_gui:FindFirstChild('FullBagNotification', true)
+		if lbl and not lbl:GetAttribute('ABC') then
+			lbl:SetAttribute('ABC', true)
 			lbl:GetPropertyChangedSignal('Visible'):Connect(function() if lbl.Visible then you:SetAttribute('4', _4) end end)
 		end
 	else
