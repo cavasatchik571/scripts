@@ -57,6 +57,7 @@ local mouse = you:GetMouse()
 local name_tags = {}
 local rcp_new = RaycastParams.new
 local remove = table.clear
+local rng = Random.new()
 local sleep = task.wait
 local smooth = Enum.SurfaceType.Smooth
 local smooth_plastic = Enum.Material.SmoothPlastic
@@ -155,7 +156,7 @@ ui_btn.ZIndex = 4000
 stroke:Clone().Parent = ui_btn
 ui.Parent = pcall(tostring, core_gui) and core_gui or you:WaitForChild('PlayerGui')
 
----4 u
+---4 💚 u
 
 local apos = ui.AbsolutePosition
 local cx, cy = -apos.X, -apos.Y
@@ -427,7 +428,6 @@ old_hmm_index = hmm(game, '__index', nc(function(self, key)
 		if not val then return old_hmm_index(self, key) end
 		return val
 	end
-
 	return old_hmm_index(self, key)
 end))
 
@@ -487,6 +487,7 @@ while true do
 		end
 		lbl.TextColor3, lbl.Stroke.Color = color, color
 	end
+
 	if not is_alive(you) then ui_btn.Parent = nil continue end
 	local bp, char = you.Backpack, you.Character
 	local hrp = char.Humanoid.RootPart
@@ -498,18 +499,27 @@ while true do
 		if map then
 			local gun = bp:FindFirstChild('Gun') or char:FindFirstChild('Gun')
 			local knife = bp:FindFirstChild('Knife') or char:FindFirstChild('Knife')
-			local other_plr = nearest_threat(pos, rc_dist, (gun and 'Knife') or (knife and 'Gun') or nil, false)
+			local other_plr = nearest_threat(pos, rc_dist, if gun then 'Knife' elseif knife then 'Gun' else nil, false)
 			local spawns = map:FindFirstChild('Spawns')
-			if other_plr and spawns then
+			if spawns then
 				local list = spawns:GetChildren()
-				local pos = other_plr.Character:FindFirstChild('Humanoid').RootPart.Position
-				sort(list, function(a, b) return (a.Position - pos).Magnitude > (b.Position - pos).Magnitude end)
-				local best_spawn = list[1]
-				if best_spawn then hrp.CFrame = best_spawn.CFrame end
-				clear(list)
+				local len = #list
+				if len > 0 then
+					if is_alive(other_plr) then
+						local pos = other_plr.Character.Humanoid.RootPart.Position
+						sort(list, function(a, b) return (a.Position - pos).Magnitude > (b.Position - pos).Magnitude end)
+						hrp.CFrame = list[1].CFrame
+						clear(list)
+					else
+						hrp.CFrame = list[rng:NextInteger(1, len)]
+					end
+				else
+					hrp.Anchored = true
+				end
 			end
 		end
 	end
+
 	local equipped_knife = char:FindFirstChild('Knife')
 	ui_btn.Parent = (char:FindFirstChild('Gun') or equipped_knife) and ui or nil
 	if not equipped_knife then continue end
