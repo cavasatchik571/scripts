@@ -16,7 +16,6 @@ if not fti or not gncm or not hmm or not nc then return you:Kick('MM24 doesn\'t 
 local env = (getgenv or function() end)() or shared or _G
 if env.mm24 then return end
 env.mm24 = true
-
 local danger_speed = 304
 local danger_y_zone = -400
 local gun_line_lifetime = 0.644
@@ -52,6 +51,7 @@ local highlights = {}
 local inst_new = Instance.new
 local keyboard = enum_uit.Keyboard
 local lighting = game:GetService('Lighting')
+local max = math.max
 local min = math.min
 local mouse = you:GetMouse()
 local name_tags = {}
@@ -156,7 +156,7 @@ ui_btn.ZIndex = 4000
 stroke:Clone().Parent = ui_btn
 ui.Parent = pcall(tostring, core_gui) and core_gui or you:WaitForChild('PlayerGui')
 
----4 💚 u
+---4💚
 
 local apos = ui.AbsolutePosition
 local cx, cy = -apos.X, -apos.Y
@@ -439,18 +439,18 @@ clear(sg_scp)
 coroutine_resume(coroutine_create(function()
 	while true do
 		data = get_plr_data:InvokeServer() or data
-		sleep(1.44)
+		sleep(1)
 		local char = you.Character
 		if not char then continue end
 		local h = char:FindFirstChild('Humanoid')
 		if not h or h.Health <= 0 or h:GetState() == dead then continue end
-		if h.WalkSpeed ~= 0 then h.WalkSpeed = starter_player.CharacterWalkSpeed * 1.144 end
+		if h.WalkSpeed ~= 0 then h.WalkSpeed = max(h.WalkSpeed, starter_player.CharacterWalkSpeed * 1.204) end
 		if h.UseJumpPower then
 			if h.JumpPower == 0 then continue end
-			h.JumpPower = starter_player.CharacterJumpPower * 1.064
+			h.JumpPower = max(h.JumpPower, starter_player.CharacterJumpPower * 1.104)
 		else
 			if h.JumpHeight == 0 then continue end
-			h.JumpHeight = starter_player.CharacterJumpHeight * 1.064
+			h.JumpHeight = max(h.JumpHeight, starter_player.CharacterJumpHeight * 1.104)
 		end
 	end
 end))
