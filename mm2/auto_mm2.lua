@@ -10,7 +10,7 @@ do
 end
 
 local sleep = task.wait
-sleep()
+sleep(4)
 local place_id = game.PlaceId
 if place_id ~= 142823291 then return end
 local fti = firetouchinterest or fire_touch_interest
@@ -243,7 +243,7 @@ while env.afk4 do
 	local dist = diff.Magnitude
 	if dist > 444 then
 		hrp.CFrame = cf_new(offset_pos + p1, p1)
-	elseif dist > 0.244 then
+	elseif dist > 0.24 then
 		local pos = p0 + (dist == 0 and vec3_zero or diff.Unit) * (speed + rng:NextNumber(speed_lb, speed_ub)) * dt
 		hrp.CFrame = cf_new(pos) * cf_new(offset_pos + p1, p1).Rotation
 	end
