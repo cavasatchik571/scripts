@@ -50,7 +50,7 @@ local vu_b1u = vu.Button1Up
 local nearest_plr_pos, point_of_interest = vec3_zero, vec3_zero
 local offset_pos, speed, speed_lb, speed_ub = vec3_new(0, -2, 0), 20.14, -4, 0
 
----4
+---4💚
 
 local function clear_velocity(inst)
 	local children = inst:GetChildren()
@@ -143,7 +143,7 @@ local function full_bag_of(main_gui, t)
 		if i % 140 == 0 then sleep() end
 		local descendant = descendants[i]
 		if not descendant or not descendant:IsA('TextLabel') or not descendant.Visible or
-			string_find(upper(descendant.Name), 'FULL') or not string_find(upper(descendant.Text), 'FULL') then continue end
+			not string_find(upper(descendant.Text), 'FULL') then continue end
 		local parent = descendant.Parent
 		if not parent or not string_find(upper(descendant.Name), ut) then continue end
 		while parent ~= main_gui do
