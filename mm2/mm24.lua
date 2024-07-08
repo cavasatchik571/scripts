@@ -321,20 +321,18 @@ if did_exist then
 end
 
 local function closest_reachable_spot(char, origin)
-	local amount, children, ignore_list, sum = 0, char:GetChildren(), {char, workspace.Normal}, zero
-	rcp_include.FilterDescendantsInstances = ignore_list
+	local children, len, sum = char:GetChildren(), 0, zero
 	for i = 1, #children do
 		local child = children[i]
 		if not child:IsA('BasePart') then continue end
 		local pos = child.Position
 		local rr = workspace:Raycast(origin, (pos - origin).Unit * rc_dist, rcp_include)
 		if not rr or not char:IsAncestorOf(rr.Instance) then continue end
-		amount += 1
+		len += 1
 		sum += pos
 	end
 	clear(children)
-	clear(ignore_list)
-	return if amount > 0 then sum / amount else nil
+	return if len > 0 then sum / len else nil
 end
 
 local function is_alive(plr)
@@ -366,7 +364,10 @@ local function nearest_threat(origin, dist, has, reachable)
 		if element == you then continue end
 		local char = element.Character
 		if has and not (element.Backpack:FindFirstChild(has) or char:FindFirstChild(has)) then continue end
+		local ignore_list = {char, workspace.Normal}
+		rcp_include.FilterDescendantsInstances = ignore_list
 		local pos = if reachable then closest_reachable_spot(char, origin) else char.Humanoid.RootPart.Position
+		clear(ignore_list)
 		if not pos then continue end
 		local new_dist = (origin - pos).Magnitude
 		if new_dist > dist then continue end
@@ -428,6 +429,7 @@ old_hmm_index = hmm(game, '__index', nc(function(self, key)
 		if not val then return old_hmm_index(self, key) end
 		return val
 	end
+
 	return old_hmm_index(self, key)
 end))
 
@@ -487,7 +489,6 @@ while true do
 		end
 		lbl.TextColor3, lbl.Stroke.Color = color, color
 	end
-
 	if not is_alive(you) then ui_btn.Parent = nil continue end
 	local bp, char = you.Backpack, you.Character
 	local hrp = char.Humanoid.RootPart
@@ -499,14 +500,14 @@ while true do
 		if map then
 			local gun = bp:FindFirstChild('Gun') or char:FindFirstChild('Gun')
 			local knife = bp:FindFirstChild('Knife') or char:FindFirstChild('Knife')
-			local other_plr = nearest_threat(pos, rc_dist, if gun then 'Knife' elseif knife then 'Gun' else nil, false)
 			local spawns = map:FindFirstChild('Spawns')
+			local _, other_char = nearest_threat(pos, rc_dist, if gun then 'Knife' elseif knife then 'Gun' else nil, false)
 			if spawns then
 				local list = spawns:GetChildren()
 				local len = #list
 				if len > 0 then
-					if is_alive(other_plr) then
-						local pos = other_plr.Character.Humanoid.RootPart.Position
+					if other_char then
+						local pos = other_char.Humanoid.RootPart.Position
 						sort(list, function(a, b) return (a.Position - pos).Magnitude > (b.Position - pos).Magnitude end)
 						hrp.CFrame = list[1].CFrame
 						clear(list)
@@ -519,7 +520,6 @@ while true do
 			end
 		end
 	end
-
 	local equipped_knife = char:FindFirstChild('Knife')
 	ui_btn.Parent = (char:FindFirstChild('Gun') or equipped_knife) and ui or nil
 	if not equipped_knife then continue end
