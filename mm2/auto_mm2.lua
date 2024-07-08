@@ -5,24 +5,24 @@ local _4 = Color3.new(0, .4984, 0)
 
 -- by @Vov4ik4124
 
-wait(0.44)
-if not game:IsLoaded() then game.Loaded:Wait() end
+do
+	(queueonteleport or queue_on_teleport)('loadstring(game:HttpGet(\'https://raw.githubusercontent.com/cavasatchik571/scripts/main/mm2/auto_mm2.lua\', true))()')
+end
+
+local sleep = task.wait
+sleep()
 local place_id = game.PlaceId
 if place_id ~= 142823291 then return end
 local fti = firetouchinterest or fire_touch_interest
 local plrs = game:GetService('Players')
-local qot = queueonteleport or queue_on_teleport
 local you = plrs.LocalPlayer
 local your_name = you.Name
-if not fti or not qot then return you:Kick('AFK4 doesn\'t support your executor') end
+if not fti then return you:Kick('AFK4 doesn\'t support your executor') end
 local env = shared or _G
 local new_enabled = not env.afk4 and true or nil
 env.afk4 = new_enabled
 if not new_enabled then return end
-if not env.afk4_switch then
-	env.afk4_switch = true
-	qot('loadstring(game:HttpGet(\'https://raw.githubusercontent.com/cavasatchik571/scripts/main/mm2/auto_mm2.lua\', true))()')
-end
+
 local all = Enum.CoreGuiType.All
 local cf_new = CFrame.new
 local checks = 0
@@ -32,7 +32,6 @@ local lighting = game:GetService('Lighting')
 local min = math.min
 local remove = table.remove
 local rng = Random.new()
-local sleep = task.wait
 local sort = table.sort
 local sound_service = game:GetService('SoundService')
 local starter_gui = game:GetService('StarterGui')
@@ -47,6 +46,7 @@ local vec3_zero = Vector3.zero
 local vu = game:GetService('VirtualUser')
 local vu_b1d = vu.Button1Down
 local vu_b1u = vu.Button1Up
+
 local nearest_plr_pos, point_of_interest = vec3_zero, vec3_zero
 local offset_pos, speed, speed_lb, speed_ub = vec3_new(0, -2, 0), 20.14, -4, 0
 
@@ -210,6 +210,7 @@ while env.afk4 do
 			child:Destroy()
 		end
 	end
+
 	remove_all_except(workspace, 'Camera', 'Normal', 'Terrain', unpack(list))
 	lighting:ClearAllChildren()
 	sound_service:ClearAllChildren()
@@ -227,23 +228,22 @@ while env.afk4 do
 	if not cc or you:GetAttribute('4') == _4 then continue end
 	local plr = near_plr()
 	if not plr or not is_alive(plr) then continue end
+
 	local list = cc:GetChildren()
-	filter_coins(list)
+	pcall(filter_coins, list)
 	local len = #list
 	if len == 0 then continue end
 	local hrp = h.RootPart
 	local p0 = hrp.Position
 	nearest_plr_pos = plr.Character:FindFirstChildOfClass('Humanoid').RootPart.Position
 	point_of_interest = p0
-	sort(list, sort_coins)
+	pcall(sort, list, sort_coins)
 	local p1 = list[1]:GetPivot().Position
 	local diff = p1 + offset_pos - p0
 	local dist = diff.Magnitude
-	if dist <= 0.24 then
-		continue
-	elseif dist >= 444 then
+	if dist > 444 then
 		hrp.CFrame = cf_new(offset_pos + p1, p1)
-	else
+	elseif dist > 0.244 then
 		local pos = p0 + (dist == 0 and vec3_zero or diff.Unit) * (speed + rng:NextNumber(speed_lb, speed_ub)) * dt
 		hrp.CFrame = cf_new(pos) * cf_new(offset_pos + p1, p1).Rotation
 	end
