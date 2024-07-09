@@ -66,7 +66,7 @@ local upper = string.upper
 local vec3_new = Vector3.new
 local vec3_zero = Vector3.zero
 local nearest_plr_pos, point_of_interest = vec3_zero, vec3_zero
-local offset_pos, speed, speed_lb, speed_ub = vec3_new(0, -0.44, 0), 20.14, -4, 0
+local offset_pos, speed, speed_lb, speed_ub = vec3_new(0, -1, 0), 20.14, -4, 0
 
 ---4
 
@@ -138,16 +138,15 @@ while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sl
 local function full_bag_of(main_gui, t)
 	if not main_gui or not t then return false end
 	local descendants = main_gui:GetDescendants()
-	if not t then return false end
-	local ut = upper(t)
+	local ut = upper(tostring(t))
 	if ut == '' then return false end
 	for i = 1, #descendants do
 		if i % 140 == 0 then sleep() end
 		local descendant = descendants[i]
-		if not descendant or not descendant:IsA('TextLabel') or not descendant.Visible or
-			not string_find(upper(descendant.Text), 'FULL') then continue end
+		if not descendant:IsA('TextLabel') or not descendant.Visible or
+			string_find(upper(descendant.Text), 'FULL', 1, false) ~= 1 then continue end
 		local parent = descendant.Parent
-		if not parent or not string_find(upper(descendant.Name), ut) then continue end
+		if not string_find(upper(parent.Name), ut) then continue end
 		local succ = true
 		while parent ~= main_gui do
 			if (parent:IsA('GuiObject') and not parent.Visible) or parent:IsA('LocalScript') then succ = false break end
@@ -209,6 +208,7 @@ while true do
 			child:Destroy()
 		end
 	end
+
 	remove_all_except(workspace, 'Camera', 'Normal', 'Terrain', unpack(list))
 	lighting:ClearAllChildren()
 	sound_service:ClearAllChildren()
@@ -240,7 +240,7 @@ while true do
 	local dist = diff.Magnitude
 	if dist > 444 then
 		hrp.CFrame = cf_new(offset_pos + p1, p1)
-	elseif dist > 0.244 then
+	elseif dist > 0.24 then
 		local pos = p0 + (dist == 0 and vec3_zero or diff.Unit) * (speed + rng:NextNumber(speed_lb, speed_ub)) * dt
 		hrp.CFrame = cf_new(pos) * cf_new(offset_pos + p1, p1).Rotation
 	end
