@@ -148,19 +148,20 @@ local function full_bag_of(main_gui, t)
 			not string_find(upper(descendant.Text), 'FULL') then continue end
 		local parent = descendant.Parent
 		if not parent or not string_find(upper(descendant.Name), ut) then continue end
+		local succ = true
 		while parent ~= main_gui do
-			if (parent:IsA('GuiObject') and not parent.Visible) or parent:IsA('LocalScript') then return false end
+			if (parent:IsA('GuiObject') and not parent.Visible) or parent:IsA('LocalScript') then succ = false break end
 			parent = parent.Parent
 		end
-		return true
+		if succ then return true end
 	end
 	return false
 end
 
 coroutine.resume(coroutine.create(function()
 	while true do
-		sleep(0.4)
-		if not is_alive(you) or not workspace:FindFirstChild('Normal') then continue end
+		sleep(0.04)
+		if you:GetAttribute('4') == _4 or not is_alive(you) or not workspace:FindFirstChild('Normal') then continue end
 		local char = you.Character
 		local h = char:FindFirstChildOfClass('Humanoid')
 		local hrp = h.RootPart
@@ -208,7 +209,6 @@ while true do
 			child:Destroy()
 		end
 	end
-
 	remove_all_except(workspace, 'Camera', 'Normal', 'Terrain', unpack(list))
 	lighting:ClearAllChildren()
 	sound_service:ClearAllChildren()
