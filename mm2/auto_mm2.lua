@@ -27,6 +27,7 @@ you.Idled:Connect(function()
 	vu:Button1Up(vec2_zero)
 end)
 
+local aqt = true
 local source_code = ''
 while true do
 	local succ, new_code = pcall(game.HttpGet, game, 'https://raw.githubusercontent.com/cavasatchik571/scripts/main/mm2/auto_mm2.lua', true)
@@ -38,7 +39,7 @@ while true do
 	end
 end
 
-you.OnTeleport:Once(function(state) if state.Value == 4 then qt(source_code) end end)
+you.OnTeleport:Connect(function() if aqt then aqt = false qt(source_code) end end)
 you.ChildRemoved:Connect(function(child)
 	if not child:IsA('PlayerScripts') then return end
 	while true do
@@ -64,9 +65,8 @@ local table_find = table.find
 local upper = string.upper
 local vec3_new = Vector3.new
 local vec3_zero = Vector3.zero
-
 local nearest_plr_pos, point_of_interest = vec3_zero, vec3_zero
-local offset_pos, speed, speed_lb, speed_ub = vec3_new(0, -0.4, 0), 20.14, -4, 0
+local offset_pos, speed, speed_lb, speed_ub = vec3_new(0, -0.44, 0), 20.14, -4, 0
 
 ---4
 
