@@ -79,7 +79,7 @@ highlight_prefab.AdornCullingMode = Enum.AdornCullingMode.Automatic
 highlight_prefab.AlwaysOnTop = true
 highlight_prefab.Color3 = _4
 highlight_prefab.Name = 'Highlight'
-highlight_prefab.Transparency = 0.7
+highlight_prefab.Transparency = 0.74
 highlight_prefab.ZIndex = 4
 
 local name_tag = inst_new('BillboardGui')
@@ -512,7 +512,7 @@ while true do
 						hrp.CFrame = list[1].CFrame
 						clear(list)
 					else
-						hrp.CFrame = list[rng:NextInteger(1, len)]
+						hrp.CFrame = list[rng:NextInteger(1, len)].CFrame
 					end
 				else
 					hrp.Anchored = true
