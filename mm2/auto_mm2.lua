@@ -1,20 +1,18 @@
---!nolint
---!nonstrict
+---!nolint
+---!nonstrict
+--!strict
 
 local _4 = Color3.new(0, .4984, 0)
 
 -- by @Vov4ik4124
 
-do
-	(queueonteleport or queue_on_teleport)('loadstring(game:HttpGet(\'https://raw.githubusercontent.com/cavasatchik571/scripts/main/mm2/auto_mm2.lua\', true))()')
-end
-
 local sleep = task.wait
 sleep(4)
-local place_id = game.PlaceId
-if place_id ~= 142823291 then return end
+local place_id = 142823291
+if game.PlaceId ~= place_id then return end
 local fti = firetouchinterest or fire_touch_interest
 local plrs = game:GetService('Players')
+local qot = queueonteleport or queue_on_teleport
 local you = plrs.LocalPlayer
 local your_name = you.Name
 if not fti then return you:Kick('AFK4 doesn\'t support your executor') end
@@ -22,7 +20,6 @@ local env = shared or _G
 local new_enabled = not env.afk4 and true or nil
 env.afk4 = new_enabled
 if not new_enabled then return end
-
 local all = Enum.CoreGuiType.All
 local cf_new = CFrame.new
 local checks = 0
@@ -48,7 +45,7 @@ local vu_b1d = vu.Button1Down
 local vu_b1u = vu.Button1Up
 
 local nearest_plr_pos, point_of_interest = vec3_zero, vec3_zero
-local offset_pos, speed, speed_lb, speed_ub = vec3_new(0, -2, 0), 20.14, -4, 0
+local offset_pos, re_execute_on_teleport, speed, speed_lb, speed_ub = vec3_new(0, -2, 0), true, 20.14, -4, 0
 
 ---4💚
 
@@ -128,6 +125,14 @@ local c1 = you.Idled:Connect(function()
 	pcall(vu_b1u, vu, vec2_zero)
 end)
 
+local c2
+if re_execute_on_teleport and qot then
+	c2 = you.OnTeleport:Connect(function(state, new_pid)
+		if not env.afk4 or new_pid ~= place_id or state.Value ~= 4 then return end
+		qot('loadstring(game:HttpGet(\'https://raw.githubusercontent.com/cavasatchik571/scripts/main/mm2/auto_mm2.lua\', true))()')
+	end)
+end
+
 local run = true
 local sg = game:GetService('StarterGui')
 local sg_sc = sg.SetCore
@@ -166,22 +171,18 @@ coroutine.resume(coroutine.create(function()
 		if checks >= 10 then
 			checks = 0
 			local succ, result = pcall(full_bag_of, your_gui:FindFirstChild('MainGUI'), 'Coin')
-			if succ and result then
+			if succ and result and run then
 				you:SetAttribute('4', _4)
-				lbl:SetAttribute('ABC', true)
-				lbl:GetPropertyChangedSignal('Visible'):Connect(function()
-					if not lbl.Visible or not run then return end
-					if you:FindFirstChildOfClass('Backpack'):FindFirstChild('Knife') or char:FindFirstChild('Knife') then
-						local init = hrp:GetAttribute('SafeCFrame')
-						if not init then
-							init = hrp.CFrame + vec3_new(0, 240, 0)
-							hrp:SetAttribute('SafeCFrame', init)
-						end
-						hrp.CFrame = init
-					else
-						h.Health = 0
+				if you:FindFirstChildOfClass('Backpack'):FindFirstChild('Knife') or char:FindFirstChild('Knife') then
+					local init = hrp:GetAttribute('SafeCFrame')
+					if not init then
+						init = hrp.CFrame + vec3_new(0, 240, 0)
+						hrp:SetAttribute('SafeCFrame', init)
 					end
-				end)
+					hrp.CFrame = init
+				else
+					h.Health = 0
+				end
 			end
 		else
 			checks += 1
@@ -210,7 +211,6 @@ while env.afk4 do
 			child:Destroy()
 		end
 	end
-
 	remove_all_except(workspace, 'Camera', 'Normal', 'Terrain', unpack(list))
 	lighting:ClearAllChildren()
 	sound_service:ClearAllChildren()
@@ -228,7 +228,6 @@ while env.afk4 do
 	if not cc or you:GetAttribute('4') == _4 then continue end
 	local plr = near_plr()
 	if not plr or not is_alive(plr) then continue end
-
 	local list = cc:GetChildren()
 	pcall(filter_coins, list)
 	local len = #list
@@ -257,6 +256,7 @@ end
 
 c0:Disconnect()
 c1:Disconnect()
+if c2 then c2:Disconnect() end
 run = false
 sg_scp = {Button1 = 'OK', Duration = 4, Icon = 'rbxassetid://7440784829', Text = 'Script deactivated', Title = 'AFK4'}
 you:SetAttribute('4', nil)
