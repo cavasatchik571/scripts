@@ -66,9 +66,9 @@ local vec3_new = Vector3.new
 local vec3_zero = Vector3.zero
 
 local nearest_plr_pos, point_of_interest = vec3_zero, vec3_zero
-local offset_pos, speed, speed_lb, speed_ub = vec3_new(0, -2, 0), 20.14, -4, 0
+local offset_pos, speed, speed_lb, speed_ub = vec3_new(0, -0.4, 0), 20.14, -4, 0
 
----4💚
+---4
 
 local function clear_velocity(inst)
 	local children = inst:GetChildren()
@@ -159,6 +159,7 @@ end
 
 coroutine.resume(coroutine.create(function()
 	while true do
+		sleep(0.4)
 		if not is_alive(you) or not workspace:FindFirstChild('Normal') then continue end
 		local char = you.Character
 		local h = char:FindFirstChildOfClass('Humanoid')
@@ -218,7 +219,6 @@ while true do
 	local h = char:FindFirstChildOfClass('Humanoid')
 	h.PlatformStand, workspace.Gravity = true, 0
 	clear_velocity(char)
-
 	local map = workspace:FindFirstChild('Normal')
 	if not map then you:SetAttribute('4', nil) continue end
 	remove_all_except(map, 'CoinContainer')
