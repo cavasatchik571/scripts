@@ -145,7 +145,7 @@ ui_btn.FontFace = ubuntu_font
 ui_btn.MaxVisibleGraphemes = 1
 ui_btn.Name = 'Interact'
 ui_btn.Position = udim2_fs(0.714, 0.744)
-ui_btn.Size = udim2_fs(0.174, 0.174)
+ui_btn.Size = udim2_fs(0.194, 0.194)
 ui_btn.SizeConstraint = Enum.SizeConstraint.RelativeYY
 ui_btn.Text = '4'
 ui_btn.TextColor3 = colors_white
@@ -446,13 +446,13 @@ coroutine_resume(coroutine_create(function()
 		if not char then continue end
 		local h = char:FindFirstChild('Humanoid')
 		if not h or h.Health <= 0 or h:GetState() == dead then continue end
-		if h.WalkSpeed ~= 0 then h.WalkSpeed = max(h.WalkSpeed, starter_player.CharacterWalkSpeed * 1.204) end
+		if h.WalkSpeed ~= 0 then h.WalkSpeed = max(h.WalkSpeed, starter_player.CharacterWalkSpeed * 1.344) end
 		if h.UseJumpPower then
 			if h.JumpPower == 0 then continue end
-			h.JumpPower = max(h.JumpPower, starter_player.CharacterJumpPower * 1.104)
+			h.JumpPower = max(h.JumpPower, starter_player.CharacterJumpPower * 1.194)
 		else
 			if h.JumpHeight == 0 then continue end
-			h.JumpHeight = max(h.JumpHeight, starter_player.CharacterJumpHeight * 1.104)
+			h.JumpHeight = max(h.JumpHeight, starter_player.CharacterJumpHeight * 1.194)
 		end
 	end
 end))
