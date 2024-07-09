@@ -165,8 +165,8 @@ coroutine.resume(coroutine.create(function()
 		if not your_gui then continue end
 		if checks >= 10 then
 			checks = 0
-			local succ, lbl = pcall(full_bag_of, your_gui:FindFirstChild('MainGUI'), 'Coin')
-			if succ and not lbl:GetAttribute('ABC') then
+			local succ, result = pcall(full_bag_of, your_gui:FindFirstChild('MainGUI'), 'Coin')
+			if succ and result then
 				you:SetAttribute('4', _4)
 				lbl:SetAttribute('ABC', true)
 				lbl:GetPropertyChangedSignal('Visible'):Connect(function()
