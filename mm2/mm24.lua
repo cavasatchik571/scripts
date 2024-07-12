@@ -93,7 +93,7 @@ name_tag.LightInfluence = 0
 name_tag.MaxDistance = 740
 name_tag.Name = 'NameTag'
 name_tag.ResetOnSpawn = false
-name_tag.Size = udim2_fs(6, 1.444)
+name_tag.Size = udim2_fs(6, 1.44)
 name_tag.StudsOffsetWorldSpace = vec3_new(0, 1.94, 0)
 
 local name_tag_lbl = inst_new('TextLabel')
@@ -160,8 +160,8 @@ ui.Parent = pcall(tostring, core_gui) and core_gui or you:WaitForChild('PlayerGu
 
 local apos = ui.AbsolutePosition
 local cx, cy = -apos.X, -apos.Y
-local rcp_exclude = rcp_new() do rcp_exclude.FilterType, rcp_exclude.IgnoreWater, rcp_exclude.RespectCanCollide = enum_rfi.Exclude, true, false end
-local rcp_include = rcp_new() do rcp_include.FilterType, rcp_include.IgnoreWater, rcp_include.RespectCanCollide = enum_rfi.Include, true, false end
+local rcp_exclude = rcp_new() do rcp_exclude.FilterType, rcp_exclude.IgnoreWater, rcp_exclude.RespectCanCollide = enum_rfi.Exclude, true, true end
+local rcp_include = rcp_new() do rcp_include.FilterType, rcp_include.IgnoreWater, rcp_include.RespectCanCollide = enum_rfi.Include, true, true end
 local set = function(a, b, c) a[b] = c end
 local shooting_enabled = true
 
@@ -321,18 +321,20 @@ if did_exist then
 end
 
 local function closest_reachable_spot(char, origin)
-	local children, len, sum = char:GetChildren(), 0, zero
+	local center, children, len, points = char.Humanoid.RootPart.Position, char:GetChildren(), 0, {}
 	for i = 1, #children do
 		local child = children[i]
 		if not child:IsA('BasePart') then continue end
-		local pos = child.Position
-		local rr = workspace:Raycast(origin, (pos - origin).Unit * rc_dist, rcp_include)
+		local rr = workspace:Raycast(origin, (child.Position - origin).Unit * rc_dist, rcp_include)
 		if not rr or not char:IsAncestorOf(rr.Instance) then continue end
 		len += 1
-		sum += pos
+		points[len] = rr.Position
 	end
 	clear(children)
-	return if len > 0 then sum / len else nil
+	if len > 0 then
+		sort(points, function(a, b) return (a - center).Magnitude < (b - center).Magnitude end)
+		return points[1]
+	end
 end
 
 local function is_alive(plr)
@@ -346,7 +348,7 @@ end
 
 local function get_alive_plrs()
 	local list = plrs:GetPlayers()
-	for i = 1, #list do if not is_alive(list[i]) then remove(list, i) continue end end
+	for i = 1, #list do local plr = list[i] if plr == you or not is_alive(plr) then remove(list, i) continue end end
 	return list
 end
 
@@ -359,20 +361,23 @@ end
 
 local function nearest_threat(origin, dist, has, reachable)
 	local list, result, result_pos = get_alive_plrs(), nil, nil
-	for i = 1, #list do
+	local ignore_list, il_len, len = {workspace.Normal}, 1, #list
+	for i = 1, len do
+		il_len += 1
+		ignore_list[il_len] = list[i].Character
+	end
+	rcp_include.FilterDescendantsInstances = ignore_list
+	for i = 1, len do
 		local element = list[i]
-		if element == you then continue end
 		local char = element.Character
 		if has and not (element.Backpack:FindFirstChild(has) or char:FindFirstChild(has)) then continue end
-		local ignore_list = {char, workspace.Normal}
-		rcp_include.FilterDescendantsInstances = ignore_list
 		local pos = if reachable then closest_reachable_spot(char, origin) else char.Humanoid.RootPart.Position
-		clear(ignore_list)
 		if not pos then continue end
 		local new_dist = (origin - pos).Magnitude
 		if new_dist > dist then continue end
 		dist, result, result_pos = new_dist, char, pos
 	end
+	clear(ignore_list)
 	clear(list)
 	return result_pos, result
 end
@@ -394,24 +399,32 @@ local function scripted_shoot()
 	if not shooting_enabled or not is_alive(you) then return end
 	local weapon = get_weapon(you.Character)
 	if not weapon then return end
-	shoot_enabled = false
+	local succ = false
 	if uis:GetLastInputType() == touch then
 		local x, y = get_threat_coordinates(weapon)
-		if x then vim:SendTouchEvent(24, 0, x, y) end
+		if x then
+			succ = true
+			vim:SendTouchEvent(24, 0, x, y)
+		end
 		local x, y = get_threat_coordinates(weapon)
 		defer(vim.SendTouchEvent, vim, 24, 2, x or -1, y or -1)
 	else
 		local mb = weapon.Name == 'Knife' and 1 or 0
 		local x, y = get_threat_coordinates(weapon)
-		if x then vim:SendMouseButtonEvent(x, y, mb, true, nil, 0) end
+		if x then
+			succ = true
+			vim:SendMouseButtonEvent(x, y, mb, true, nil, 0)
+		end
 		local x, y = get_threat_coordinates(weapon)
 		defer(vim.SendMouseButtonEvent, vim, x or -1, y or -1, mb, false, nil, 0)
 	end
-	sleep(0.144)
+	if not succ then return end
+	shoot_enabled = false
+	sleep(0.14)
 	shooting_enabled = true
 end
 
-ui_btn.Activated:Connect(scripted_shoot)
+ui_btn.MouseButton1Down:Connect(scripted_shoot)
 uis.InputBegan:Connect(function(input, gpe)
 	if gpe or gs.MenuIsOpen or input.UserInputType ~= keyboard or uis:GetFocusedTextBox() then return end
 	local key = input.KeyCode
@@ -429,7 +442,6 @@ old_hmm_index = hmm(game, '__index', nc(function(self, key)
 		if not val then return old_hmm_index(self, key) end
 		return val
 	end
-
 	return old_hmm_index(self, key)
 end))
 
@@ -446,26 +458,25 @@ coroutine_resume(coroutine_create(function()
 		if not char then continue end
 		local h = char:FindFirstChild('Humanoid')
 		if not h or h.Health <= 0 or h:GetState() == dead then continue end
-		if h.WalkSpeed ~= 0 then h.WalkSpeed = max(h.WalkSpeed, starter_player.CharacterWalkSpeed * 1.344) end
+		if h.WalkSpeed ~= 0 then h.WalkSpeed = max(h.WalkSpeed, starter_player.CharacterWalkSpeed * 1.304) end
 		if h.UseJumpPower then
 			if h.JumpPower == 0 then continue end
-			h.JumpPower = max(h.JumpPower, starter_player.CharacterJumpPower * 1.194)
+			h.JumpPower = max(h.JumpPower, starter_player.CharacterJumpPower * 1.164)
 		else
 			if h.JumpHeight == 0 then continue end
-			h.JumpHeight = max(h.JumpHeight, starter_player.CharacterJumpHeight * 1.194)
+			h.JumpHeight = max(h.JumpHeight, starter_player.CharacterJumpHeight * 1.164)
 		end
 	end
 end))
 
 coroutine_resume(coroutine_create(function()
 	while true do
-		sleep(0.144)
+		sleep(0.14)
 		for adornee, highlight in next, highlights do
 			if typeof(adornee) ~= 'Instance' or not adornee:IsA('BasePart') then continue end
 			local parent = adornee.Parent
 			if not parent or not highlight.Parent then continue end
-			highlight.Adornee = adornee
-			highlight.Size = adornee.Size * (highlight.Name == 'SpecialHighlight' and 2 or 1)
+			highlight.Adornee, highlight.Size = adornee, adornee.Size * (highlight.Name == 'SpecialHighlight' and 2 or 1)
 			local plr = plrs:GetPlayerFromCharacter(parent)
 			if not plr then continue end
 			local plr_tag = name_tags[plr]
@@ -479,8 +490,7 @@ while true do
 	sleep()
 	for plr, plr_tag in next, name_tags do
 		if not is_alive(plr) then plr_tag.Adornee, plr_tag.Enabled = nil, false continue end
-		local color, lbl = colors_innocent, plr_tag.Label
-		local role = upper((data[plr.Name] or data).Role or '')
+		local color, lbl, role = colors_innocent, plr_tag.Label, upper((data[plr.Name] or data).Role or '')
 		plr_tag.Adornee, plr_tag.Enabled = plr.Character.Humanoid.RootPart, true
 		if role == 'FREEZER' or role == 'INFECTED' or role == 'MURDERER' or role == 'ZOMBIE' then
 			color = colors_murderer
