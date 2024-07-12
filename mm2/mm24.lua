@@ -23,7 +23,7 @@ local hex_color_innocent = '#FFFFFF'
 local hex_color_murderer = '#FF0000'
 local hex_color_sheriff = '#0000FF'
 local line_thickness = 0.244
-local melee_hitbox_extender = 5.94
+local melee_hitbox_extender = 5.944
 local rc_dist = 400
 
 local cam = workspace.CurrentCamera
@@ -167,8 +167,8 @@ local set = function(a, b, c) a[b] = c end
 local shooting_enabled = true
 
 local function adjust_line(highlight, p0, p1)
-	new_highlight.CFrame = cf_new((p0 + p1) / 2, p0)
-	new_highlight.Size = vec3_new(line_thickness, line_thickness, (p0 - p1).Magnitude)
+	highlight.CFrame = cf_new((p0 + p1) / 2, p0)
+	highlight.Size = vec3_new(line_thickness, line_thickness, (p0 - p1).Magnitude)
 end
 
 local special_func_checks = {
@@ -475,7 +475,7 @@ end))
 
 coroutine_resume(coroutine_create(function()
 	while true do
-		sleep(0.14)
+		sleep(0.144)
 		for adornee, highlight in next, highlights do
 			if typeof(adornee) ~= 'Instance' or not adornee:IsA('BasePart') then continue end
 			local parent = adornee.Parent
