@@ -22,7 +22,7 @@ local gun_line_lifetime = 0.644
 local hex_color_innocent = '#FFFFFF'
 local hex_color_murderer = '#FF0000'
 local hex_color_sheriff = '#0000FF'
-local line_thickness = 0.244
+local line_thickness = 0.24
 local melee_hitbox_extender = 5.944
 local rc_dist = 400
 
@@ -157,7 +157,7 @@ ui_btn.ZIndex = 4000
 stroke:Clone().Parent = ui_btn
 ui.Parent = pcall(tostring, core_gui) and core_gui or you:WaitForChild('PlayerGui')
 
----4💚
+---4
 
 local apos = ui.AbsolutePosition
 local cx, cy = -apos.X, -apos.Y
@@ -179,18 +179,20 @@ local special_func_checks = {
 	function(e)
 		local parent = e.Parent
 		if not parent or parent.Name ~= 'ThrowingKnife' then return end
-		local blade = parent:WaitForChild('BladePosition')
-		local unit = 400 * parent:WaitForChild('Vector3Value').Value
 		local line = highlight_prefab:Clone()
-		line.Adornee = terrain
-		line.Color3 = colors_murderer
+		local p0 = parent:WaitForChild('BladePosition').Position
+		local unit = 400 * parent:WaitForChild('Vector3Value').Value
 		local connection
 		connection = ps:Connect(function()
 			if not line.Parent then return connection:Disconnect() end
-			local p0 = blade.Position
+			local list = {parent}
+			rcp_exclude.FilterDescendantsInstances = list
 			local result = workspace:Raycast(p0, unit, rcp_exclude)
+			clear(list)
 			adjust_line(line, p0, if result then result.Position else (p0 + unit))
 		end)
+		line.Adornee = terrain
+		line.Color3 = colors_murderer
 		line.Parent = parent
 		debris:AddItem(parent, 10)
 		return true, colors_murderer, 0.24
@@ -399,6 +401,7 @@ local function get_threat_coordinates(weapon)
 end
 
 local function scripted_shoot()
+	sleep()
 	if not shooting_enabled or not is_alive(you) then return end
 	local weapon = get_weapon(you.Character)
 	if not weapon then return end
@@ -445,7 +448,6 @@ old_hmm_index = hmm(game, '__index', nc(function(self, key)
 		if not val then return old_hmm_index(self, key) end
 		return val
 	end
-
 	return old_hmm_index(self, key)
 end))
 
@@ -475,7 +477,7 @@ end))
 
 coroutine_resume(coroutine_create(function()
 	while true do
-		sleep(0.144)
+		sleep(0.14)
 		for adornee, highlight in next, highlights do
 			if typeof(adornee) ~= 'Instance' or not adornee:IsA('BasePart') then continue end
 			local parent = adornee.Parent
@@ -506,7 +508,6 @@ while true do
 		lbl.TextColor3 = color
 		lbl.Stroke.Color = color
 	end
-
 	if not is_alive(you) then ui_btn.Parent = nil continue end
 	local bp = you.Backpack
 	local char = you.Character
@@ -539,7 +540,6 @@ while true do
 			end
 		end
 	end
-
 	local equipped_knife = char:FindFirstChild('Knife')
 	ui_btn.Parent = (char:FindFirstChild('Gun') or equipped_knife) and ui or nil
 	if not equipped_knife then continue end
