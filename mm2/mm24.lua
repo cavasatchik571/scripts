@@ -23,7 +23,7 @@ local hex_color_innocent = '#FFFFFF'
 local hex_color_murderer = '#FF0000'
 local hex_color_sheriff = '#0000FF'
 local line_thickness = 0.244
-local melee_hitbox_extender = 5.944
+local melee_hitbox_extender = 5.94
 local rc_dist = 400
 
 local cam = workspace.CurrentCamera
@@ -55,6 +55,7 @@ local max = math.max
 local min = math.min
 local mouse = you:GetMouse()
 local name_tags = {}
+local ps = game:GetService('RunService').PreSimulation
 local rcp_new = RaycastParams.new
 local remove = table.clear
 local rng = Random.new()
@@ -165,17 +166,9 @@ local rcp_include = rcp_new() do rcp_include.FilterType, rcp_include.IgnoreWater
 local set = function(a, b, c) a[b] = c end
 local shooting_enabled = true
 
-local function create_line(p0, p1)
-	local new_highlight = highlight_prefab:Clone()
-	new_highlight.Adornee = terrain
+local function adjust_line(highlight, p0, p1)
 	new_highlight.CFrame = cf_new((p0 + p1) / 2, p0)
 	new_highlight.Size = vec3_new(line_thickness, line_thickness, (p0 - p1).Magnitude)
-	return new_highlight
-end
-
-local function get_end_point(p0, p1)
-	local result = workspace:Raycast(p0, p1 - p0, rcp_exclude)
-	return if result then result.Position else p1
 end
 
 local special_func_checks = {
@@ -186,10 +179,18 @@ local special_func_checks = {
 	function(e)
 		local parent = e.Parent
 		if not parent or parent.Name ~= 'ThrowingKnife' then return end
-		local blade_pos = parent:WaitForChild('BladePosition').Position
+		local blade = parent:WaitForChild('BladePosition')
 		local unit = 400 * parent:WaitForChild('Vector3Value').Value
-		local line = create_line(blade_pos, get_end_point(blade_pos, blade_pos + unit))
+		local line = highlight_prefab:Clone()
+		line.Adornee = terrain
 		line.Color3 = colors_murderer
+		local connection
+		connection = ps:Connect(function()
+			if not line.Parent then return connection:Disconnect() end
+			local p0 = blade.Position
+			local result = workspace:Raycast(p0, unit, rcp_exclude)
+			adjust_line(line, p0, if result then result.Position else (p0 + unit))
+		end)
 		line.Parent = parent
 		debris:AddItem(parent, 10)
 		return true, colors_murderer, 0.24
@@ -240,7 +241,9 @@ local function descendant_added_w(e)
 		e.Enabled = false
 		local a0, a1 = e.Attachment0, e.Attachment1
 		if not a0 or not a1 then return end
-		local line = create_line(a0.WorldPosition, a1.WorldPosition)
+		local line = highlight_prefab:Clone()
+		adjust_line(line, a0.WorldPosition, a1.WorldPosition)
+		line.Adornee = terrain
 		line.Color3 = colors_sheriff
 		line.Parent = ui
 		debris:AddItem(line, gun_line_lifetime)
@@ -361,12 +364,12 @@ end
 
 local function nearest_threat(origin, dist, has, reachable)
 	local list, result, result_pos = get_alive_plrs(), nil, nil
-	local ignore_list, il_len, len = {workspace.Normal}, 1, #list
+	local c_list, c_len, len = {workspace.Normal}, 1, #list
 	for i = 1, len do
-		il_len += 1
-		ignore_list[il_len] = list[i].Character
+		c_len += 1
+		c_list[c_len] = list[i].Character
 	end
-	rcp_include.FilterDescendantsInstances = ignore_list
+	rcp_include.FilterDescendantsInstances = c_list
 	for i = 1, len do
 		local element = list[i]
 		local char = element.Character
@@ -377,7 +380,7 @@ local function nearest_threat(origin, dist, has, reachable)
 		if new_dist > dist then continue end
 		dist, result, result_pos = new_dist, char, pos
 	end
-	clear(ignore_list)
+	clear(c_list)
 	clear(list)
 	return result_pos, result
 end
@@ -442,6 +445,7 @@ old_hmm_index = hmm(game, '__index', nc(function(self, key)
 		if not val then return old_hmm_index(self, key) end
 		return val
 	end
+
 	return old_hmm_index(self, key)
 end))
 
@@ -476,7 +480,8 @@ coroutine_resume(coroutine_create(function()
 			if typeof(adornee) ~= 'Instance' or not adornee:IsA('BasePart') then continue end
 			local parent = adornee.Parent
 			if not parent or not highlight.Parent then continue end
-			highlight.Adornee, highlight.Size = adornee, adornee.Size * (highlight.Name == 'SpecialHighlight' and 2 or 1)
+			highlight.Adornee = adornee
+			highlight.Size = adornee.Size * (if highlight.Name == 'SpecialHighlight' then 1.5 else 1)
 			local plr = plrs:GetPlayerFromCharacter(parent)
 			if not plr then continue end
 			local plr_tag = name_tags[plr]
@@ -491,16 +496,20 @@ while true do
 	for plr, plr_tag in next, name_tags do
 		if not is_alive(plr) then plr_tag.Adornee, plr_tag.Enabled = nil, false continue end
 		local color, lbl, role = colors_innocent, plr_tag.Label, upper((data[plr.Name] or data).Role or '')
-		plr_tag.Adornee, plr_tag.Enabled = plr.Character.Humanoid.RootPart, true
+		plr_tag.Adornee = plr.Character.Humanoid.RootPart
+		plr_tag.Enabled = true
 		if role == 'FREEZER' or role == 'INFECTED' or role == 'MURDERER' or role == 'ZOMBIE' then
 			color = colors_murderer
 		elseif role == 'HERO' or role == 'RUNNER' or role == 'SHERIFF' or role == 'SURVIVOR' then
 			color = colors_sheriff
 		end
-		lbl.TextColor3, lbl.Stroke.Color = color, color
+		lbl.TextColor3 = color
+		lbl.Stroke.Color = color
 	end
+
 	if not is_alive(you) then ui_btn.Parent = nil continue end
-	local bp, char = you.Backpack, you.Character
+	local bp = you.Backpack
+	local char = you.Character
 	local hrp = char.Humanoid.RootPart
 	local pos = hrp.Position
 	if hrp and (hrp.AssemblyAngularVelocity.Magnitude > danger_speed or
@@ -530,6 +539,7 @@ while true do
 			end
 		end
 	end
+
 	local equipped_knife = char:FindFirstChild('Knife')
 	ui_btn.Parent = (char:FindFirstChild('Gun') or equipped_knife) and ui or nil
 	if not equipped_knife then continue end
