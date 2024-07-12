@@ -22,9 +22,19 @@ local gun_line_lifetime = 0.64
 local hex_color_innocent = '#FFFFFF'
 local hex_color_murderer = '#FF0000'
 local hex_color_sheriff = '#0000FF'
+local highlight_refresh_rate = 0.144
+local highlight_transparency = 0.75
+local ih_size_increase = 1.5
+local ih_transparency = 0.24
+local jump_boost = 1.164
 local line_thickness = 0.24
-local melee_hitbox_extender = 5.94
-local rc_dist = 400
+local long_range_dist = 400
+local melee_hitbox_extender = 6
+local name_tag_height_offset = 2
+local name_tag_refresh_rate = 1
+local name_tag_thickness = 4
+local scripted_shoot_cooldown = 0.144
+local speed_boost = 1.304
 
 local cam = workspace.CurrentCamera
 local cf_new = CFrame.new
@@ -57,7 +67,7 @@ local mouse = you:GetMouse()
 local name_tags = {}
 local ps = game:GetService('RunService').PreSimulation
 local rcp_new = RaycastParams.new
-local remove = table.clear
+local remove = table.remove
 local rng = Random.new()
 local sleep = task.wait
 local smooth = Enum.SurfaceType.Smooth
@@ -80,7 +90,7 @@ highlight_prefab.AdornCullingMode = Enum.AdornCullingMode.Automatic
 highlight_prefab.AlwaysOnTop = true
 highlight_prefab.Color3 = _4
 highlight_prefab.Name = 'Highlight'
-highlight_prefab.Transparency = 0.754
+highlight_prefab.Transparency = highlight_transparency
 highlight_prefab.ZIndex = 4
 
 local name_tag = inst_new('BillboardGui')
@@ -95,7 +105,7 @@ name_tag.MaxDistance = 740
 name_tag.Name = 'NameTag'
 name_tag.ResetOnSpawn = false
 name_tag.Size = udim2_fs(6, 1.444)
-name_tag.StudsOffsetWorldSpace = vec3_new(0, 1.94, 0)
+name_tag.StudsOffsetWorldSpace = vec3_new(0, name_tag_height_offset, 0)
 
 local name_tag_lbl = inst_new('TextLabel')
 name_tag_lbl.Active = false
@@ -157,7 +167,7 @@ ui_btn.ZIndex = 4000
 stroke:Clone().Parent = ui_btn
 ui.Parent = pcall(tostring, core_gui) and core_gui or you:WaitForChild('PlayerGui')
 
----4💚
+---4
 
 local apos = ui.AbsolutePosition
 local cx, cy = -apos.X, -apos.Y
@@ -174,40 +184,41 @@ end
 local special_func_checks = {
 	function(e)
 		if not e.Parent or e.Name ~= 'GunDrop' then return end
-		return true, colors_sheriff, 0.24
+		return colors_sheriff, ih_transparency
 	end,
 	function(e)
 		local parent = e.Parent
 		if not parent or parent.Name ~= 'ThrowingKnife' then return end
 		local line = highlight_prefab:Clone()
 		local p0 = parent:WaitForChild('BladePosition').Position
-		local unit = 400 * parent:WaitForChild('Vector3Value').Value
+		local unit = long_range_dist * parent:WaitForChild('Vector3Value').Value
 		local connection
 		connection = ps:Connect(function()
-			if not line.Parent then return connection:Disconnect() end
+			if not connection.Connected then return end
+			if not line or not line.Parent then return connection:Disconnect() end
 			local list = {parent}
 			rcp_exclude.FilterDescendantsInstances = list
 			local result = workspace:Raycast(p0, unit, rcp_exclude)
 			clear(list)
-			adjust_line(line, p0, if result then result.Position else (p0 + unit))
+			adjust_line(line, p0, if result then result.Position else p0 + unit)
 		end)
 		line.Adornee = terrain
 		line.Color3 = colors_murderer
 		line.Parent = parent
 		debris:AddItem(parent, 10)
-		return true, colors_murderer, 0.24
+		return colors_murderer, ih_transparency
 	end,
 	function(e)
 		local parent = e.Parent
 		if not parent or parent.Name ~= 'Trap' or not parent:FindFirstChild('Trigger') then return end
-		return true, colors_murderer, 0.24
+		return colors_murderer, ih_transparency
 	end,
 	function(e)
 		local parent = e.Parent
 		if not parent or parent.Name == 'Handle' then return end
 		local effect = parent:FindFirstChildOfClass('ParticleEmitter')
 		if not effect or effect.Texture ~= 'rbxassetid://16885815956' then return end
-		return true, _4, 0.24
+		return _4, ih_transparency
 	end
 }
 
@@ -279,7 +290,7 @@ local function plr_added(plr)
 	local lbl = plr_tag.Label
 	local stroke = lbl.Stroke
 	lbl.Text = plr.Name
-	lbl.Changed:Connect(function(prop) if prop == 'AbsoluteSize' then stroke.Thickness = min(4, lbl.AbsoluteSize.Y * 0.1) end end)
+	lbl.Changed:Connect(function(prop) if prop == 'AbsoluteSize' then stroke.Thickness = min(name_tag_thickness, lbl.AbsoluteSize.Y * 0.1) end end)
 	name_tags[plr] = plr_tag
 	plr_tag.Parent = ui
 end
@@ -314,7 +325,7 @@ for i = 1, #list do plr_added(list[i]) end
 clear(list)
 local did_exist, rendering_stuff = pcall(settings)
 local lowest_quality = Enum.QualityLevel.Level01
-lighting.FogColor, lighting.FogEnd, lighting.FogStart, lighting.GlobalShadows = colors_black, 9e9, 9e9, false
+lighting.FogColor, lighting.FogEnd, lighting.FogStart, lighting.GlobalShadows = colors_black, 1000000, 1000000, false
 terrain.WaterReflectance, terrain.WaterTransparency, terrain.WaterWaveSize, terrain.WaterWaveSpeed = 0, 0, 0, 0
 if did_exist then
 	local rendering = rendering_stuff.Rendering
@@ -330,7 +341,7 @@ local function closest_reachable_spot(char, origin)
 	for i = 1, #children do
 		local child = children[i]
 		if not child:IsA('BasePart') then continue end
-		local rr = workspace:Raycast(origin, (child.Position - origin).Unit * rc_dist, rcp_include)
+		local rr = workspace:Raycast(origin, (child.Position - origin).Unit * (long_range_dist + 4), rcp_include)
 		if not rr or not char:IsAncestorOf(rr.Instance) then continue end
 		len += 1
 		points[len] = rr.Position
@@ -391,9 +402,9 @@ local function get_threat_coordinates(weapon)
 	if not weapon then return end
 	local name, origin, pos = weapon.Name, weapon.Handle.Position, nil
 	if name == 'Gun' then
-		pos = nearest_threat(origin, rc_dist, 'Knife', true)
+		pos = nearest_threat(origin, long_range_dist, 'Knife', true)
 	elseif name == 'Knife' then
-		pos = nearest_threat(origin, rc_dist, 'Gun', true) or nearest_threat(origin, rc_dist, nil, true)
+		pos = nearest_threat(origin, long_range_dist, 'Gun', true) or nearest_threat(origin, long_range_dist, nil, true)
 	end
 	if not pos then return end
 	local screen_point = cam:WorldToScreenPoint(pos)
@@ -425,7 +436,7 @@ local function scripted_shoot()
 	end
 	if not succ then return end
 	shooting_enabled = false
-	sleep(0.14)
+	sleep(scripted_shoot_cooldown)
 	shooting_enabled = true
 end
 
@@ -447,43 +458,42 @@ old_hmm_index = hmm(game, '__index', nc(function(self, key)
 		if not val then return old_hmm_index(self, key) end
 		return val
 	end
-
 	return old_hmm_index(self, key)
 end))
 
 local sg = game:GetService('StarterGui')
 local sg_sc = sg.SetCore
 local sg_scp = {Button1 = 'OK', Duration = 4, Icon = 'rbxassetid://7440784829', Text = 'Script activated', Title = 'MM24'}
-while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.04) end end
+while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.4) end end
 clear(sg_scp)
 coroutine_resume(coroutine_create(function()
 	while true do
 		data = get_plr_data:InvokeServer() or data
-		sleep(1)
+		sleep(name_tag_refresh_rate)
 		local char = you.Character
 		if not char then continue end
 		local h = char:FindFirstChild('Humanoid')
 		if not h or h.Health <= 0 or h:GetState() == dead then continue end
-		if h.WalkSpeed ~= 0 then h.WalkSpeed = max(h.WalkSpeed, starter_player.CharacterWalkSpeed * 1.304) end
+		if h.WalkSpeed ~= 0 then h.WalkSpeed = max(h.WalkSpeed, starter_player.CharacterWalkSpeed * speed_boost) end
 		if h.UseJumpPower then
 			if h.JumpPower == 0 then continue end
-			h.JumpPower = max(h.JumpPower, starter_player.CharacterJumpPower * 1.164)
+			h.JumpPower = max(h.JumpPower, starter_player.CharacterJumpPower * jump_boost)
 		else
 			if h.JumpHeight == 0 then continue end
-			h.JumpHeight = max(h.JumpHeight, starter_player.CharacterJumpHeight * 1.164)
+			h.JumpHeight = max(h.JumpHeight, starter_player.CharacterJumpHeight * jump_boost)
 		end
 	end
 end))
 
 coroutine_resume(coroutine_create(function()
 	while true do
-		sleep(0.14)
+		sleep(highlight_refresh_rate)
 		for adornee, highlight in next, highlights do
 			if typeof(adornee) ~= 'Instance' or not adornee:IsA('BasePart') then continue end
 			local parent = adornee.Parent
 			if not parent or not highlight.Parent then continue end
 			highlight.Adornee = adornee
-			highlight.Size = adornee.Size * (if highlight.Name == 'SpecialHighlight' then 1.5 else 1)
+			highlight.Size = adornee.Size * if highlight.Name == 'SpecialHighlight' then ih_size_increase else 1
 			local plr = plrs:GetPlayerFromCharacter(parent)
 			if not plr then continue end
 			local plr_tag = name_tags[plr]
@@ -521,7 +531,7 @@ while true do
 			local gun = bp:FindFirstChild('Gun') or char:FindFirstChild('Gun')
 			local knife = bp:FindFirstChild('Knife') or char:FindFirstChild('Knife')
 			local spawns = map:FindFirstChild('Spawns')
-			local _, other_char = nearest_threat(pos, rc_dist, if gun then 'Knife' elseif knife then 'Gun' else nil, false)
+			local _, other_char = nearest_threat(pos, long_range_dist, if gun then 'Knife' elseif knife then 'Gun' else nil, false)
 			if spawns then
 				local list = spawns:GetChildren()
 				local len = #list
