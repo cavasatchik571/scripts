@@ -161,8 +161,8 @@ ui.Parent = pcall(tostring, core_gui) and core_gui or you:WaitForChild('PlayerGu
 
 local apos = ui.AbsolutePosition
 local cx, cy = -apos.X, -apos.Y
-local rcp_exclude = rcp_new() do rcp_exclude.FilterType, rcp_exclude.IgnoreWater, rcp_exclude.RespectCanCollide = enum_rfi.Exclude, true, true end
-local rcp_include = rcp_new() do rcp_include.FilterType, rcp_include.IgnoreWater, rcp_include.RespectCanCollide = enum_rfi.Include, true, true end
+local rcp_exclude = rcp_new() do rcp_exclude.FilterType, rcp_exclude.IgnoreWater, rcp_exclude.RespectCanCollide = enum_rfi.Exclude, true, false end
+local rcp_include = rcp_new() do rcp_include.FilterType, rcp_include.IgnoreWater, rcp_include.RespectCanCollide = enum_rfi.Include, true, false end
 local set = function(a, b, c) a[b] = c end
 local shooting_enabled = true
 
@@ -353,7 +353,7 @@ end
 
 local function get_alive_plrs()
 	local list = plrs:GetPlayers()
-	for i = #list, 1, -1 do local plr = list[i] if plr == you or not is_alive(plr) then remove(list, i) continue end end
+	for i = #list, 1, -1 do local plr = list[i] if plr == you or not is_alive(plr) then remove(list, i) end end
 	return list
 end
 
@@ -424,12 +424,12 @@ local function scripted_shoot()
 		defer(vim.SendMouseButtonEvent, vim, x or -1, y or -1, mb, false, nil, 0)
 	end
 	if not succ then return end
-	shoot_enabled = false
+	shooting_enabled = false
 	sleep(0.14)
 	shooting_enabled = true
 end
 
-ui_btn.MouseButton1Down:Connect(scripted_shoot)
+ui_btn.Activated:Connect(scripted_shoot)
 uis.InputBegan:Connect(function(input, gpe)
 	if gpe or gs.MenuIsOpen or input.UserInputType ~= keyboard or uis:GetFocusedTextBox() then return end
 	local key = input.KeyCode
