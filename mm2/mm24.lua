@@ -26,7 +26,7 @@ local highlight_refresh_rate = 0.144
 local highlight_transparency = 0.75
 local ih_size_increase = 1.5
 local ih_transparency = 0.24
-local jump_boost = 1.164
+local jump_boost = 1.15
 local line_thickness = 0.24
 local long_range_dist = 400
 local melee_hitbox_extender = 6
@@ -167,7 +167,7 @@ ui_btn.ZIndex = 4000
 stroke:Clone().Parent = ui_btn
 ui.Parent = pcall(tostring, core_gui) and core_gui or you:WaitForChild('PlayerGui')
 
----4
+---4💚
 
 local apos = ui.AbsolutePosition
 local cx, cy = -apos.X, -apos.Y
@@ -224,8 +224,8 @@ local special_func_checks = {
 
 local function check_special(e)
 	for i = 1, #special_func_checks do
-		local succ, color, transparency = special_func_checks[i](e)
-		if succ then return color, transparency end
+		local color, transparency = special_func_checks[i](e)
+		if color then return color, transparency end
 	end
 end
 
