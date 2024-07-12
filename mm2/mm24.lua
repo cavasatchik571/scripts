@@ -18,12 +18,12 @@ if env.mm24 then return end
 env.mm24 = true
 local danger_speed = 304
 local danger_y_zone = -400
-local gun_line_lifetime = 0.644
+local gun_line_lifetime = 0.64
 local hex_color_innocent = '#FFFFFF'
 local hex_color_murderer = '#FF0000'
 local hex_color_sheriff = '#0000FF'
 local line_thickness = 0.24
-local melee_hitbox_extender = 5.944
+local melee_hitbox_extender = 5.94
 local rc_dist = 400
 
 local cam = workspace.CurrentCamera
@@ -80,7 +80,7 @@ highlight_prefab.AdornCullingMode = Enum.AdornCullingMode.Automatic
 highlight_prefab.AlwaysOnTop = true
 highlight_prefab.Color3 = _4
 highlight_prefab.Name = 'Highlight'
-highlight_prefab.Transparency = 0.74
+highlight_prefab.Transparency = 0.754
 highlight_prefab.ZIndex = 4
 
 local name_tag = inst_new('BillboardGui')
@@ -353,7 +353,7 @@ end
 
 local function get_alive_plrs()
 	local list = plrs:GetPlayers()
-	for i = 1, #list do local plr = list[i] if plr == you or not is_alive(plr) then remove(list, i) continue end end
+	for i = #list, 1, -1 do local plr = list[i] if plr == you or not is_alive(plr) then remove(list, i) continue end end
 	return list
 end
 
@@ -429,7 +429,7 @@ local function scripted_shoot()
 	shooting_enabled = true
 end
 
-ui_btn.Activated:Connect(scripted_shoot)
+ui_btn.MouseButton1Down:Connect(scripted_shoot)
 uis.InputBegan:Connect(function(input, gpe)
 	if gpe or gs.MenuIsOpen or input.UserInputType ~= keyboard or uis:GetFocusedTextBox() then return end
 	local key = input.KeyCode
