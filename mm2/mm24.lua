@@ -94,7 +94,7 @@ name_tag.LightInfluence = 0
 name_tag.MaxDistance = 740
 name_tag.Name = 'NameTag'
 name_tag.ResetOnSpawn = false
-name_tag.Size = udim2_fs(6, 1.44)
+name_tag.Size = udim2_fs(6, 1.444)
 name_tag.StudsOffsetWorldSpace = vec3_new(0, 1.94, 0)
 
 local name_tag_lbl = inst_new('TextLabel')
@@ -157,7 +157,7 @@ ui_btn.ZIndex = 4000
 stroke:Clone().Parent = ui_btn
 ui.Parent = pcall(tostring, core_gui) and core_gui or you:WaitForChild('PlayerGui')
 
----4
+---4💚
 
 local apos = ui.AbsolutePosition
 local cx, cy = -apos.X, -apos.Y
@@ -401,7 +401,6 @@ local function get_threat_coordinates(weapon)
 end
 
 local function scripted_shoot()
-	sleep()
 	if not shooting_enabled or not is_alive(you) then return end
 	local weapon = get_weapon(you.Character)
 	if not weapon then return end
@@ -430,7 +429,7 @@ local function scripted_shoot()
 	shooting_enabled = true
 end
 
-ui_btn.MouseButton1Down:Connect(scripted_shoot)
+ui_btn.Activated:Connect(scripted_shoot)
 uis.InputBegan:Connect(function(input, gpe)
 	if gpe or gs.MenuIsOpen or input.UserInputType ~= keyboard or uis:GetFocusedTextBox() then return end
 	local key = input.KeyCode
@@ -448,6 +447,7 @@ old_hmm_index = hmm(game, '__index', nc(function(self, key)
 		if not val then return old_hmm_index(self, key) end
 		return val
 	end
+
 	return old_hmm_index(self, key)
 end))
 
