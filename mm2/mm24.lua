@@ -196,7 +196,7 @@ local special_func_checks = {
 	end,
 	function(e)
 		local parent = e.Parent
-		if not parent or parent.Name ~= 'Trap' then return end
+		if not parent or parent.Name ~= 'Trap' or not parent:FindFirstChild('Trigger') then return end
 		return true, colors_murderer, 0.24
 	end,
 	function(e)
