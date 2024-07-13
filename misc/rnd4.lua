@@ -52,10 +52,10 @@ local paths = {
 	['^Workspace%.monster$'] = path_fallback,
 	['^Workspace%.monster2$'] = path_fallback,
 	['^Workspace%.next%.room%.battery$'] = path_fallback,
-	['^Workspace%.next%.room%.hidelocker%.jack$'] = path_fallback,
+	['^Workspace%.next%.room%.hidelocker$'] = function(e) return e:WaitForChild('jack', 4) end,
 	['^Workspace%.next%.room%.lever$'] = path_fallback,
 	['^Workspace%.rooms%.%d+%.battery$'] = path_fallback,
-	['^Workspace%.rooms%.%d+%.hidelocker%.jack$'] = path_fallback,
+	['^Workspace%.rooms%.%d+%.hidelocker$'] = function(e) return e:WaitForChild('jack', 4) end,
 	['^Workspace%.rooms%.%d+%.lever$'] = path_fallback,
 	['^Workspace%.Spirit$'] = path_fallback
 }
