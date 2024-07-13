@@ -12,7 +12,7 @@ local hmm = hookmetamethod
 local ncc = newcclosure
 local you = game:GetService('Players').LocalPlayer
 if not gncm or not hf or not hmm or not ncc then return you:Kick('Your executor doesn\'t support RND4') end
-local env = (gengenv or function(...) return ... end)() or _ENV or shared or _G
+local env = (gengenv or function() return end)() or _ENV or shared or _G
 if env.rnd4 then return end
 env.rnd4 = true
 local clear = table.clear
@@ -44,23 +44,27 @@ local vec2_new = Vector2.new
 local vec3_new = Vector3.new
 local your_gui = you:WaitForChild('PlayerGui')
 local zero = Vector3.zero
+
 local og_fs, og_gftb, og_hmm
+local highlight_size = vec3_new(0.4, 0.64, 0.4)
+local path_fallback = function() return true end
 local paths = {
-	'^Workspace%.monster$',
-	'^Workspace%.monster2$',
-	'^Workspace%.next%.room%.battery$',
-	'^Workspace%.next%.room%.hidelocker%.jack$',
-	'^Workspace%.next%.room%.lever$',
-	'^Workspace%.rooms%.%d+%.battery$',
-	'^Workspace%.rooms%.%d+%.hidelocker%.jack$',
-	'^Workspace%.rooms%.%d+%.lever$',
-	'^Workspace%.Spirit$'
+	['^Workspace%.monster$'] = path_fallback,
+	['^Workspace%.monster2$'] = path_fallback,
+	['^Workspace%.next%.room%.battery$'] = path_fallback,
+	['^Workspace%.next%.room%.hidelocker$'] = function(e) return e:FindFirstChild('jack') end,
+	['^Workspace%.next%.room%.lever$'] = path_fallback,
+	['^Workspace%.rooms%.%d+%.battery$'] = path_fallback,
+	['^Workspace%.rooms%.%d+%.hidelocker$'] = function(e) return e:FindFirstChild('jack') end,
+	['^Workspace%.rooms%.%d+%.lever$'] = path_fallback,
+	['^Workspace%.Spirit$'] = path_fallback
 }
 
 local highlight = inst_new('BoxHandleAdornment')
 highlight.AlwaysOnTop = true
 highlight.Color3 = _4
 highlight.Name = 'Highlight'
+highlight.Size = highlight_size
 highlight.Transparency = 0.64
 highlight.ZIndex = 4
 
@@ -151,18 +155,13 @@ ui_list_layout.SortOrder = Enum.SortOrder.LayoutOrder
 ui_list_layout.VerticalAlignment = Enum.VerticalAlignment.Top
 ui_list_layout.Parent = lbl_frame
 
-local highlight_size = vec3_new(0.4, 0.64, 0.4)
-local paths_len = #paths
 light_inst.Parent = light_part
 light_part.Parent = workspace
 ui.Parent = if pcall(tostring, core_gui) then core_gui else your_gui
 
 local function is_special(e)
 	local name = e:GetFullName()
-	for i = 1, paths_len do
-		local path = paths[i]
-		if find(name, path, 1, false) == 1 then return true end
-	end
+	for path, extra_check in next, paths do if find(name, path, 1, false) == 1 and extra_check(e) then return true end end
 	return false
 end
 
@@ -201,11 +200,30 @@ local function descendant_added_w(e)
 			new_notification:Destroy()
 		end)
 	end
-	if not is_special(e) then return end
-	local new_highlight = highlight:Clone()
-	new_highlight.Adornee = e
-	highlights[e] = new_highlight
-	new_highlight.Parent = ui
+	if is_special(e) then
+		local new_highlight = highlight:Clone()
+		new_highlight.Adornee = e
+		highlights[e] = new_highlight
+		new_highlight.Parent = ui
+	elseif e:IsA('MeshPart') and find(e.MeshId, '34384784', 1, true) then
+		local part = inst_new('Part')
+		part.Anchored = true
+		part.BackSurface = e.BackSurface
+		part.BottomSurface = e.BottomSurface
+		part.CFrame = e.CFrame
+		part.CanTouch = false
+		part.CastShadow = false
+		part.Color = e.Color
+		part.FrontSurface = e.FrontSurface
+		part.LeftSurface = e.LeftSurface
+		part.Material = e.Material
+		part.Reflectance = e.Reflectance
+		part.RightSurface = e.RightSurface
+		part.Size = e.Size
+		part.TopSurface = e.TopSurface
+		part.Transparency = 1
+		part.Parent = e
+	end
 end
 
 og_fs = hf(inst_new('RemoteEvent').FireServer, ncc(function(self, arg_1, ...)
