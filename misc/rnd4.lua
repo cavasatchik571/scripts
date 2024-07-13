@@ -49,8 +49,10 @@ local paths = {
 	'^Workspace%.monster$',
 	'^Workspace%.monster2$',
 	'^Workspace%.next%.room%.battery$',
+	'^Workspace%.next%.room%.hidelocker%.jack$',
 	'^Workspace%.next%.room%.lever$',
 	'^Workspace%.rooms%.%d+%.battery$',
+	'^Workspace%.rooms%.%d+%.hidelocker%.jack$',
 	'^Workspace%.rooms%.%d+%.lever$',
 	'^Workspace%.Spirit$'
 }
