@@ -33,6 +33,7 @@ local highlights = {}
 local inst_new = Instance.new
 local lighting = game:GetService('Lighting')
 local max = math.max
+local remove = table.remove
 local sleep = task.wait
 local smooth = Enum.SurfaceType.Smooth
 local udim2_fs = UDim2.fromScale
@@ -274,7 +275,26 @@ workspace.DescendantRemoving:Connect(function(e)
 	old_highlight:Destroy()
 end)
 
-your_gui.ChildAdded:Connect(function(e) destroy_link(e, alert_if_monster(e, true)) end)
+your_gui.ChildAdded:Connect(function(e)
+	if e.Name ~= 'a90' then return end
+	destroy_link(e, alert_if_monster(e, true))
+	local descendants = e:GetDescendants()
+	local len = #descendants + 1
+	descendants[len] = e
+	for i = len, 1, -1 do
+		local descendant = descendants[i]
+		if not descendant:IsA('Script') then remove(descendants, i) continue end
+		descendant.Disabled = true
+		descendant.Enabled = false
+	end
+	sleep(0.4)
+	for i = 1, #descendants do
+		local descendant = descendants[i]
+		descendant.Disabled = true
+		descendant.Enabled = false
+	end
+end)
+
 local list = workspace:GetDescendants()
 for i = 1, #list do coroutine_resume(coroutine_create(descendant_added_w), list[i]) end
 clear(list)
