@@ -175,7 +175,7 @@ local function monster_name(e)
 	elseif name == 'handdebris' then
 		return 'Kalypto will be'
 	elseif name == 'monster' then
-		return if e:WaitForChild('light').Color:ToHex() == 'ff0000' then 'A-60' else 'A-60 Prime'
+		return if e:WaitForChild('light').Color:ToHex() == 'ff0000' then 'Multi Monster' else 'Multi Monster Prime'
 	elseif name == 'monster2' then
 		local children = your_gui:GetChildren()
 		for i = 1, #children do
