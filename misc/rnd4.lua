@@ -12,8 +12,7 @@ local hmm = hookmetamethod
 local ncc = newcclosure
 local you = game:GetService('Players').LocalPlayer
 if not gncm or not hf or not hmm or not ncc then return you:Kick('Your executor doesn\'t support RND4') end
-local empty_func = function(...) return ... end
-local env = (gengenv or empty_func)() or _ENV or shared or _G
+local env = (gengenv or function() end)() or _ENV or shared or _G
 if env.rnd4 then return end
 env.rnd4 = true
 local clear = table.clear
@@ -49,15 +48,13 @@ local zero = Vector3.zero
 local og_fs, og_gftb, og_hmm
 local highlight_size = vec3_new(0.4, 0.64, 0.4)
 local paths = {
-	['^Workspace%.monster$'] = empty_func,
-	['^Workspace%.monster2$'] = empty_func,
-	['^Workspace%.next%.room%.battery$'] = empty_func,
-	['^Workspace%.next%.room%.hidelocker%.jack$'] = function(e) return e.Parent end,
-	['^Workspace%.next%.room%.lever$'] = empty_func,
-	['^Workspace%.rooms%.%d+%.battery$'] = empty_func,
-	['^Workspace%.rooms%.%d+%.hidelocker%.jack$'] = function(e) return e.Parent end,
-	['^Workspace%.rooms%.%d+%.lever$'] = empty_func,
-	['^Workspace%.Spirit$'] = empty_func
+	'^Workspace%.monster$',
+	'^Workspace%.monster2$',
+	'^Workspace%.next%.room%.battery$',
+	'^Workspace%.next%.room%.lever$',
+	'^Workspace%.rooms%.%d+%.battery$',
+	'^Workspace%.rooms%.%d+%.lever$',
+	'^Workspace%.Spirit$'
 }
 
 local highlight = inst_new('BoxHandleAdornment')
@@ -159,14 +156,10 @@ light_inst.Parent = light_part
 light_part.Parent = workspace
 ui.Parent = if pcall(tostring, core_gui) then core_gui else your_gui
 
-local function get_special(e)
+local function is_special(e)
 	local name = e:GetFullName()
-	for path, func in next, paths do
-		if find(name, path, 1, false) ~= 1 then continue end
-		local to_return = func(e)
-		if to_return then return to_return end
-	end
-	return nil
+	for i = 1, #paths do local path = paths[i] if find(name, path, 1, false) == 1 then return true end end
+	return false
 end
 
 local function show_notification(text)
@@ -182,7 +175,6 @@ local function show_notification(text)
 		timer += dt
 		nt.Text = format('%.1fs', timer)
 	end)
-
 	return new_notification
 end
 
@@ -205,24 +197,52 @@ local function descendant_added_w(e)
 			new_notification:Destroy()
 		end)
 	end
-	local to_highlight = get_special(e)
-	if to_highlight then
+	if is_special(e) then
+		if highlights[e] then return end
 		local new_highlight = highlight:Clone()
-		new_highlight.Adornee = to_highlight
-		highlights[to_highlight] = new_highlight
+		new_highlight.Adornee = e
+		highlights[e] = new_highlight
 		new_highlight.Parent = ui
+	elseif e.Name == 'hidelocker' then
+		local function set_highlight(enabled)
+			if enabled then
+				if highlights[e] then return end
+				local new_highlight = highlight:Clone()
+				new_highlight.Adornee = e
+				highlights[e] = new_highlight
+				new_highlight.Parent = ui
+			else
+				local old_highlight = highlights[e]
+				if not old_highlight then return end
+				highlights[e] = nil
+				old_highlight:Destroy()
+			end
+		end
+		local function func(child) if child.Name == 'jack' then set_highlight(true) end end
+		e.ChildAdded:Connect(func)
+		e.ChildRemoved:Connect(function(child) if child.Name == 'jack' then set_highlight(false) end end)
+		local children = e:GetChildren()
+		for i = 1, #children do func(children[i]) end
+		clear(children)
 	elseif e:IsA('MeshPart') and find(e.MeshId, '34384784', 1, true) then
 		local part = inst_new('Part')
-		part.Anchored = true
+		part.Anchored = false
 		part.CFrame = e.CFrame
 		part.CanTouch = false
-		part.CastShadow = false
+		part.CastShadow = e.CastShadow
 		part.Color = e.Color
+		part.Massless = true
 		part.Material = e.Material
+		part.Name = e.Name
 		part.Reflectance = e.Reflectance
 		part.Size = e.Size
 		part.Transparency = 1
-		part.Parent = e
+
+		local weld = inst_new('WeldConstraint')
+		weld.Part0 = e
+		weld.Part1 = part
+		weld.Parent = e
+		part.Parent = e.Parent
 	end
 end
 
@@ -245,8 +265,8 @@ workspace.DescendantRemoving:Connect(function(e)
 	debris:AddItem(alert_if_monster(e, false), 4)
 	local old_highlight = highlights[e]
 	if not old_highlight then return end
-	old_highlight:Destroy()
 	highlights[e] = nil
+	old_highlight:Destroy()
 end)
 
 local list = workspace:GetDescendants()
