@@ -222,8 +222,8 @@ local function descendant_added_w(e)
 			end
 		end
 		e.Changed:Connect(update)
-		e.ChildAdded:Connect(update)
-		e.ChildRemoved:Connect(update)
+		e.DescendantAdded:Connect(update)
+		e.DescendantRemoving:Connect(update)
 		update()
 	elseif e:IsA('MeshPart') and find(e.MeshId, '34384784', 1, true) then
 		local part = inst_new('Part')
