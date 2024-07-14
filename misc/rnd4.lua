@@ -161,19 +161,23 @@ local function is_special(e)
 	return false
 end
 
-local function show_notification(text)
-	local connection
-	local timer = 0
+local function show_notification(text, include_time)
 	local new_notification = notification:Clone()
 	local nt = new_notification.Timer
+	if include_time then
+		local timer = 0
+		local connection
+		connection = hb:Connect(function(dt)
+			if not new_notification then return connection:Disconnect() end
+			timer += dt
+			nt.Text = format('%.1fs', timer)
+		end)
+	else
+		nt:Destroy()
+	end
 	new_notification.Text = '\n  ' .. (if typeof(text) == 'string' and #text > 0 then text else '4') .. '  \n'
 	new_notification.Visible = true
 	new_notification.Parent = lbl_frame
-	connection = hb:Connect(function(dt)
-		if not new_notification then return connection:Disconnect() end
-		timer += dt
-		nt.Text = format('%.1fs', timer)
-	end)
 	return new_notification
 end
 
@@ -182,20 +186,22 @@ end
 local function alert_if_monster(e, spawned)
 	local name = e.Name
 	if name ~= 'a90' and name ~= 'handdebris' and name ~= 'monster' and name ~= 'monster2' then return end
-	return show_notification('A ' .. name .. ' has ' .. (if spawned then 'spawned' else 'disappeared') .. '!')
+	return show_notification('A ' .. name .. ' has ' .. (if spawned then 'spawned' else 'disappeared') .. '!', spawned)
+end
+
+local function destroy_link(from, to)
+	if not from or not to then return end
+	local connection
+	connection = from.Changed:Connect(function(property)
+		if from.Parent or property ~= 'Parent' then return end
+		connection:Disconnect()
+		to:Destroy()
+	end)
 end
 
 local function descendant_added_w(e)
 	sleep(0.204)
-	local new_notification = alert_if_monster(e, true)
-	if new_notification then
-		local connection
-		connection = e.Changed:Connect(function(property)
-			if e.Parent or property ~= 'Parent' then return end
-			connection:Disconnect()
-			new_notification:Destroy()
-		end)
-	end
+	destroy_link(e, alert_if_monster(e, true))
 	if is_special(e) then
 		if highlights[e] then return end
 		local new_highlight = highlight:Clone()
@@ -268,10 +274,11 @@ workspace.DescendantRemoving:Connect(function(e)
 	old_highlight:Destroy()
 end)
 
-your_gui.ChildAdded:Connect(function(e) debris:AddItem(alert_if_monster(e, true), 4) end)
+your_gui.ChildAdded:Connect(function(e) destroy_link(e, alert_if_monster(e, true)) end)
 local list = workspace:GetDescendants()
 for i = 1, #list do coroutine_resume(coroutine_create(descendant_added_w), list[i]) end
 clear(list)
+debris:AddItem(show_notification('rnd4 activated!', false), 4)
 while true do
 	sleep(0.1)
 	light_part.CFrame = (workspace.CurrentCamera or light_part).CFrame
