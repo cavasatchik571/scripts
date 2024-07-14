@@ -190,9 +190,9 @@ local function monster_name_decipher(e, spawned)
 			return 'Multi Monster Prime ' .. if spawned then 'spawned!' else 'disappeared!'
 		end
 	elseif name == 'monster2' then
-		local audio = e:WaitForChild('Rumble')
-		return (if audio.Volume == 0.2 then if audio.IsPlaying then 'Insidae '
-			else 'Insidae Prime ' else 'A120 ') .. if spawned then 'spawned!' else 'disappeared!'
+		return (if e:WaitForChild('Thud').IsPlaying then 'Happy Scribble '
+			elseif e:WaitForChild('wind').IsPlaying then 'Insidae '
+			else 'Insidae Prime ') .. if spawned then 'spawned!' else 'disappeared!'
 	end
 	return name
 end
