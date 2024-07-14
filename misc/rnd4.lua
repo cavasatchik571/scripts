@@ -46,7 +46,7 @@ local your_gui = you:WaitForChild('PlayerGui')
 local zero = Vector3.zero
 
 local og_fs, og_gftb, og_hmm
-local highlight_size = vec3_new(0.4, 0.64, 0.4)
+local highlight_size = vec3_new(0.144, 0.64, 0.144)
 local paths = {
 	'^Workspace%.monster$',
 	'^Workspace%.monster2$',
