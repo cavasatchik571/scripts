@@ -183,7 +183,7 @@ end
 local function alert_if_monster(e, spawned)
 	local name = e.Name
 	if name ~= 'a90' and name ~= 'monster' and name ~= 'monster2' then return end
-	return show_notification('A ' .. name .. ' has ' .. (if spawned then 'spawned' else 'despawned') .. '!')
+	return show_notification('A ' .. name .. ' has ' .. (if spawned then 'spawned' else 'disappeared') .. '!')
 end
 
 local function descendant_added_w(e)
