@@ -295,8 +295,8 @@ your_gui.ChildAdded:Connect(function(e)
 	sleep(0.4)
 	for i = 1, #descendants do
 		local descendant = descendants[i]
-		descendant.Disabled = true
-		descendant.Enabled = false
+		descendant.Disabled = false
+		descendant.Enabled = true
 	end
 end)
 
