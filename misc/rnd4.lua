@@ -187,7 +187,7 @@ local function alert_if_monster(e, spawned)
 end
 
 local function descendant_added_w(e)
-	sleep(0.4)
+	sleep(0.24)
 	local new_notification = alert_if_monster(e, true)
 	if new_notification then
 		local connection
@@ -207,16 +207,16 @@ local function descendant_added_w(e)
 		local door = e:WaitForChild('door')
 		local function set_highlight(enabled)
 			if enabled then
+				local old_highlight = highlights[door]
+				if not old_highlight then return end
+				highlights[door] = nil
+				old_highlight:Destroy()
+			else
 				if highlights[door] then return end
 				local new_highlight = highlight:Clone()
 				new_highlight.Adornee = door
 				highlights[door] = new_highlight
 				new_highlight.Parent = ui
-			else
-				local old_highlight = highlights[door]
-				if not old_highlight then return end
-				highlights[door] = nil
-				old_highlight:Destroy()
 			end
 		end
 		local function func(child) if child.Name == 'jack' then set_highlight(true) end end
