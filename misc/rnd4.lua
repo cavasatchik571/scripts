@@ -171,7 +171,7 @@ end
 local function monster_name(e)
 	local name = e.Name
 	if name == 'a90face' then
-		return if e.f.static.ImageColor3:ToHex() == '1567ff' then 'Paralysis Prime will be' else 'Paralysis'
+		return if e.f.static.ImageColor3:ToHex() == 'ff0000' then 'Paralysis' else 'Paralysis Prime will be'
 	elseif name == 'handdebris' then
 		return 'Kalypto will be'
 	elseif name == 'monster' then
@@ -183,8 +183,8 @@ local function monster_name(e)
 			if not child:IsA('BillboardGui') or child.Adornee ~= e then continue end
 			local name = e.Name
 			clear(children)
-			return if name == 'a120' then 'Happy Scribble'
-				elseif name == 'a200' then 'Insidae' else 'Insidae Prime'
+			return if name == 'A120' then 'Happy Scribble'
+				elseif name == 'A200' then 'Insidae' else 'Insidae Prime'
 		end
 		clear(children)
 	end
@@ -215,7 +215,7 @@ end
 
 local function alert_if_monster(e, spawned)
 	local name = e.Name
-	if name ~= 'a90' and name ~= 'handdebris' and name ~= 'monster' and name ~= 'monster2' then return end
+	if name ~= 'a90face' and name ~= 'handdebris' and name ~= 'monster' and name ~= 'monster2' then return end
 	return show_notification(monster_name(e) ..  (if spawned then ' spawned!' else ' disappeared!'), spawned)
 end
 
