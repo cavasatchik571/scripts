@@ -205,7 +205,7 @@ local function descendant_added_w(e)
 		new_highlight.Parent = ui
 	elseif e.Name == 'hidelocker' then
 		local door = e:WaitForChild('door')
-		local function set_highlight()
+		local function update()
 			local parent = e.Parent
 			local enabled = parent and door.Parent and tonumber(parent.Name) and not e:FindFirstChild('jack')
 			if enabled then
