@@ -207,21 +207,22 @@ local function descendant_added_w(e)
 		local door = e:WaitForChild('door')
 		local function set_highlight(enabled)
 			if enabled then
-				local old_highlight = highlights[door]
-				if not old_highlight then return end
-				highlights[door] = nil
-				old_highlight:Destroy()
-			else
 				if highlights[door] then return end
 				local new_highlight = highlight:Clone()
 				new_highlight.Adornee = door
 				highlights[door] = new_highlight
 				new_highlight.Parent = ui
+			else
+				local old_highlight = highlights[door]
+				if not old_highlight then return end
+				highlights[door] = nil
+				old_highlight:Destroy()
 			end
 		end
-		local function func(child) if child.Name == 'jack' then set_highlight(true) end end
+		local function func(child) if child.Name == 'jack' then set_highlight(false) end end
+		set_highlight(true)
 		e.ChildAdded:Connect(func)
-		e.ChildRemoved:Connect(function(child) if child.Name == 'jack' then set_highlight(false) end end)
+		e.ChildRemoved:Connect(function(child) if child.Name == 'jack' then set_highlight(true) end end)
 		local children = e:GetChildren()
 		for i = 1, #children do func(children[i]) end
 		clear(children)
@@ -234,7 +235,6 @@ local function descendant_added_w(e)
 		part.Color = e.Color
 		part.Massless = true
 		part.Material = e.Material
-		part.Name = e.Name
 		part.Size = e.Size
 		part.Transparency = 1
 		local weld = inst_new('WeldConstraint')
