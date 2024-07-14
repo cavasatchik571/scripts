@@ -204,11 +204,14 @@ local function descendant_added_w(e)
 		highlights[e] = new_highlight
 		new_highlight.Parent = ui
 	elseif e.Name == 'hidelocker' then
-		local door = e:WaitForChild('door')
-		local function update()
+		local door = e:WaitForChild('door', 14)
+		if not door then return end
+		while true do
+			sleep(0.04)
+			local door_parent = door.Parent
 			local parent = e.Parent
-			local enabled = parent and door.Parent and tonumber(parent.Name) and not e:FindFirstChild('jack')
-			if enabled then
+			local visible = door_parent and parent and tonumber(parent.Name) and not e:FindFirstChild('jack')
+			if visible then
 				if highlights[door] then return end
 				local new_highlight = highlight:Clone()
 				new_highlight.Adornee = door
@@ -219,12 +222,9 @@ local function descendant_added_w(e)
 				if not old_highlight then return end
 				highlights[door] = nil
 				old_highlight:Destroy()
+				if not door_parent or not parent then break end
 			end
 		end
-		e.Changed:Connect(update)
-		e.DescendantAdded:Connect(update)
-		e.DescendantRemoving:Connect(update)
-		update()
 	elseif e:IsA('MeshPart') and find(e.MeshId, '34384784', 1, true) then
 		local part = inst_new('Part')
 		part.Anchored = false
