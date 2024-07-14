@@ -145,7 +145,7 @@ notification_timer.TextYAlignment = Enum.TextYAlignment.Top
 notification_timer.Parent = notification
 
 local corner = inst_new('UICorner')
-corner.CornerRadius = udim_new(0.04, 0)
+corner.CornerRadius = udim_new(0.144, 0)
 corner.Name = 'Corner'
 corner.Parent = notification
 
