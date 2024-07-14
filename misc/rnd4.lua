@@ -167,6 +167,20 @@ local function is_special(e)
 	return false
 end
 
+local function monster_name(e)
+	local name = e.Name
+	if name == 'a90' then
+		return 'A-90'
+	elseif name == 'handdebris' then
+		return 'Kalypto'
+	elseif name == 'monster' then
+		return if e:WaitForChild('light').Color.R == 1 then 'A-60' else 'A-60 Prime'
+	elseif name == 'monster2' then
+		return 'A-120/Insidæ'
+	end
+	return name
+end
+
 local function show_notification(text, include_time)
 	local new_notification = notification:Clone()
 	local nt = new_notification.Timer
@@ -192,7 +206,7 @@ end
 local function alert_if_monster(e, spawned)
 	local name = e.Name
 	if name ~= 'a90' and name ~= 'handdebris' and name ~= 'monster' and name ~= 'monster2' then return end
-	return show_notification('A ' .. name .. ' has ' .. (if spawned then 'spawned' else 'disappeared') .. '!', spawned)
+	return show_notification(monster_name(e) ..  (if spawned then 'spawned!' else 'disappeared!'), spawned)
 end
 
 local function destroy_link(from, to)
