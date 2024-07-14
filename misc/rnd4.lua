@@ -268,7 +268,7 @@ workspace.DescendantRemoving:Connect(function(e)
 	old_highlight:Destroy()
 end)
 
-your_gui.ChildAdded:Connect(function(e) debris:AddItem(alert_if_monster(e, false), 4) end)
+your_gui.ChildAdded:Connect(function(e) debris:AddItem(alert_if_monster(e, true), 4) end)
 local list = workspace:GetDescendants()
 for i = 1, #list do coroutine_resume(coroutine_create(descendant_added_w), list[i]) end
 clear(list)
