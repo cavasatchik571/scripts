@@ -218,7 +218,7 @@ local function descendant_added_w(e)
 				new_highlight.Parent = ui
 			else
 				local old_highlight = highlights[door]
-				if not old_highlight then
+				if old_highlight then
 					highlights[door] = nil
 					old_highlight:Destroy()
 				end
