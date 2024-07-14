@@ -181,7 +181,7 @@ local function monster_name(e)
 		for i = 1, #children do
 			local child = children[i]
 			if not child:IsA('BillboardGui') or child.Adornee ~= e then continue end
-			local name = e.Name
+			local name = child.Name
 			clear(children)
 			return if name == 'A120' then 'Happy Scribble'
 				elseif name == 'A200' then 'Insidae' else 'Insidae Prime'
