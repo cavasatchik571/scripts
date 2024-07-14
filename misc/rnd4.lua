@@ -205,7 +205,9 @@ local function descendant_added_w(e)
 		new_highlight.Parent = ui
 	elseif e.Name == 'hidelocker' then
 		local door = e:WaitForChild('door')
-		local function set_highlight(enabled)
+		local function set_highlight()
+			local parent = e.Parent
+			local enabled = parent and door.Parent and tonumber(parent.Name) and not e:FindFirstChild('jack')
 			if enabled then
 				if highlights[door] then return end
 				local new_highlight = highlight:Clone()
@@ -219,13 +221,10 @@ local function descendant_added_w(e)
 				old_highlight:Destroy()
 			end
 		end
-		local function func(child) if child.Name == 'jack' then set_highlight(false) end end
-		set_highlight(true)
-		e.ChildAdded:Connect(func)
-		e.ChildRemoved:Connect(function(child) if child.Name == 'jack' then set_highlight(true) end end)
-		local children = e:GetChildren()
-		for i = 1, #children do func(children[i]) end
-		clear(children)
+		e.Changed:Connect(update)
+		e.ChildAdded:Connect(update)
+		e.ChildRemoved:Connect(update)
+		update()
 	elseif e:IsA('MeshPart') and find(e.MeshId, '34384784', 1, true) then
 		local part = inst_new('Part')
 		part.Anchored = false
@@ -233,6 +232,7 @@ local function descendant_added_w(e)
 		part.CanTouch = false
 		part.CastShadow = e.CastShadow
 		part.Color = e.Color
+		part.CustomPhysicalProperties = e.CustomPhysicalProperties
 		part.Massless = true
 		part.Material = e.Material
 		part.Size = e.Size
