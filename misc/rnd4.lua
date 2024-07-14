@@ -6,12 +6,13 @@ local _4 = Color3.new(0, .4984, 0)
 -- by Vov4ik
 
 if game.PlaceId ~= 12208518151 then return end
+local cc = checkcaller
 local gncm = getnamecallmethod
 local hf = hookfunction
 local hmm = hookmetamethod
 local ncc = newcclosure
 local you = game:GetService('Players').LocalPlayer
-if not gncm or not hf or not hmm or not ncc then return you:Kick('Your executor doesn\'t support RND4') end
+if not cc or not gncm or not hf or not hmm or not ncc then return you:Kick('Your executor doesn\'t support RND4') end
 local env = (gengenv or function() end)() or _ENV or shared or _G
 if env.rnd4 then return end
 env.rnd4 = true
@@ -36,6 +37,7 @@ local max = math.max
 local remove = table.remove
 local sleep = task.wait
 local smooth = Enum.SurfaceType.Smooth
+local starter_gui = game:GetService('StarterGui')
 local udim2_fs = UDim2.fromScale
 local udim2_new = UDim2.new
 local udim_new = UDim.new
@@ -45,7 +47,7 @@ local vec2_new = Vector2.new
 local vec3_new = Vector3.new
 local your_gui = you:WaitForChild('PlayerGui')
 local zero = Vector3.zero
-local og_fs, og_gftb, og_hmm
+local og_fs, og_gftb, og_hmm, og_sc
 local highlight_size = vec3_new(0.24, 0.24, 0.24)
 local paths = {
 	'^Workspace%.godhand$',
@@ -170,18 +172,18 @@ end
 
 local function monster_name_decipher(e, spawned)
 	local name = e.Name
-	if name == 'a90face' then
-		if e.f.static.ImageColor3:ToHex() == 'ff0000' then
-			return 'Paralysis will spawn!'
-		else
-			return 'Paralysis Prime will spawn!'
+	if name == 'a90' then
+		local children = your_gui:GetChildren()
+		local count = 0
+		for i = 1, #children do
+			local child = children[i]
+			if child.Name ~= 'a90' then continue end
+			count += 1
 		end
+		clear(children)
+		return if count > 1 then 'Paralysis Prime will spawn!' else 'Paralysis will spawn!'
 	elseif name == 'handdebris' then
-		if spawned then
-			return 'Kalypto might spawn!'
-		else
-			return workspace:FindFirstChild('godhand') and 'Kalypto will disappear' else 'Kalypto may not spawn'
-		end
+		return if spawned then 'Kalypto might spawn!' else 'Kalypto may not spawn or has disappeared'
 	elseif name == 'monster' then
 		if e:WaitForChild('light').Color:ToHex() == 'ff0000' then
 			return 'Multi Monster ' .. if spawned then 'spawned!' else 'disappeared!'
@@ -189,7 +191,8 @@ local function monster_name_decipher(e, spawned)
 			return 'Multi Monster Prime ' .. if spawned then 'spawned!' else 'disappeared!'
 		end
 	elseif name == 'monster2' then
-		return 'A monster 2 ' .. if spawned then 'spawned!' else 'disappeared!'
+		local v = e:WaitForChild('Rumble').Volume
+		return (if v ~= 0.2 then 'Insidae ' elseif v == 0 then 'Insidae Prime ' else 'A120 ') .. if spawned then 'spawned!' else 'disappeared!'
 	end
 	return name
 end
@@ -218,7 +221,7 @@ end
 
 local function alert_if_monster(e, spawned)
 	local name = e.Name
-	if name ~= 'a90face' and name ~= 'handdebris' and name ~= 'monster' and name ~= 'monster2' then return end
+	if name ~= 'a90' and name ~= 'handdebris' and name ~= 'monster' and name ~= 'monster2' then return end
 	return show_notification(monster_name_decipher(e, spawned), spawned)
 end
 
@@ -290,12 +293,20 @@ og_fs = hf(inst_new('RemoteEvent').FireServer, ncc(function(self, arg_1, ...)
 end))
 
 og_gftb = hf(uis.GetFocusedTextBox, ncc(function(self, ...) return nil end))
-og_hmm = hmm(game, '__namecall', ncc(function(self, arg_1, ...)
+og_hmm = hmm(game, '__namecall', ncc(function(self, arg_1, arg_2, ...)
+	local is_mine = cc()
 	local ncm = upper(gncm())
 	if find(upper(self.Name), 'PLAYERREMOTE', 1, true) and find(upper(tostring(arg_1)), 'SERIOUS', 1, true) and
 		find(ncm, 'FIRESERVER', 1, true) then return end
+	if not is_mine and self == starter_gui and find(ncm, 'SETCORE', 1, true)
+		and arg_1 == 'DevConsoleVisible' and arg_2 == false then return end
 	if self == uis and ncm == 'GETFOCUSEDTEXTBOX' then return nil end
-	return og_hmm(self, arg_1, ...)
+	return og_hmm(self, arg_1, arg_2, ...)
+end))
+
+og_sc = hf(starter_gui.SetCore, ncc(function(self, arg_1, arg_2, ...)
+	if not cc() and self == starter_gui and arg_1 == 'DevConsoleVisible' and arg_2 == false then return end
+	return og_sc(self, arg_1, arg_2, ...)
 end))
 
 workspace.DescendantAdded:Connect(descendant_added_w)
