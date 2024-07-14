@@ -191,7 +191,7 @@ local function monster_name_decipher(e, spawned)
 		end
 	elseif name == 'monster2' then
 		return (if e:WaitForChild('Thud').IsPlaying then 'Happy Scribble '
-			elseif e:WaitForChild('wind').Volume <= 0.04 then 'Insidae '
+			elseif e:WaitForChild('wind').TimePosition >= 14 then 'Insidae '
 			else 'Insidae Prime ') .. if spawned then 'spawned!' else 'disappeared!'
 	end
 	return name
