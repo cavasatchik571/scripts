@@ -48,6 +48,7 @@ local zero = Vector3.zero
 local og_fs, og_gftb, og_hmm
 local highlight_size = vec3_new(0.24, 0.24, 0.24)
 local paths = {
+	'^Workspace%.godhand$',
 	'^Workspace%.monster$',
 	'^Workspace%.monster2$',
 	'^Workspace%.next%.room%.battery$',
@@ -169,14 +170,23 @@ end
 
 local function monster_name(e)
 	local name = e.Name
-	if name == 'a90' then
-		return 'A-90'
+	if name == 'a90face' then
+		return if e.f.static.ImageColor3:ToHex() == '1567ff' then 'Paralysis Prime will be' else 'Paralysis'
 	elseif name == 'handdebris' then
-		return 'Kalypto'
+		return 'Kalypto will be'
 	elseif name == 'monster' then
-		return if e:WaitForChild('light').Color.R == 1 then 'A-60' else 'A-60 Prime'
+		return if e:WaitForChild('light').Color:ToHex() == 'ff0000' then 'A-60' else 'A-60 Prime'
 	elseif name == 'monster2' then
-		return 'A-120/Insidæ'
+		local children = your_gui:GetChildren()
+		for i = 1, #children do
+			local child = children[i]
+			if not child:IsA('BillboardGui') or child.Adornee ~= e then continue end
+			local name = e.Name
+			clear(children)
+			return if name == 'a120' then 'Happy Scribble'
+				elseif name == 'a200' then 'Insidae' else 'Insidae Prime'
+		end
+		clear(children)
 	end
 	return name
 end
@@ -206,7 +216,7 @@ end
 local function alert_if_monster(e, spawned)
 	local name = e.Name
 	if name ~= 'a90' and name ~= 'handdebris' and name ~= 'monster' and name ~= 'monster2' then return end
-	return show_notification(monster_name(e) ..  (if spawned then 'spawned!' else 'disappeared!'), spawned)
+	return show_notification(monster_name(e) ..  (if spawned then ' spawned!' else ' disappeared!'), spawned)
 end
 
 local function destroy_link(from, to)
@@ -220,7 +230,7 @@ local function destroy_link(from, to)
 end
 
 local function descendant_added_w(e)
-	sleep(0.204)
+	sleep(0.104)
 	destroy_link(e, alert_if_monster(e, true))
 	if is_special(e) then
 		if highlights[e] then return end
@@ -295,8 +305,8 @@ workspace.DescendantRemoving:Connect(function(e)
 end)
 
 your_gui.ChildAdded:Connect(function(e)
-	if e.Name ~= 'a90' then return end
 	destroy_link(e, alert_if_monster(e, true))
+	if e.Name ~= 'a90' then return end
 	local descendants = e:GetDescendants()
 	local len = #descendants + 1
 	descendants[len] = e
