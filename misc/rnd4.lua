@@ -44,7 +44,6 @@ local vec2_new = Vector2.new
 local vec3_new = Vector3.new
 local your_gui = you:WaitForChild('PlayerGui')
 local zero = Vector3.zero
-
 local og_fs, og_gftb, og_hmm
 local highlight_size = vec3_new(0.24, 0.24, 0.24)
 local paths = {
@@ -187,7 +186,7 @@ local function alert_if_monster(e, spawned)
 end
 
 local function descendant_added_w(e)
-	sleep(0.24)
+	sleep(0.204)
 	local new_notification = alert_if_monster(e, true)
 	if new_notification then
 		local connection
@@ -212,16 +211,17 @@ local function descendant_added_w(e)
 			local parent = e.Parent
 			local visible = door_parent and parent and tonumber(parent.Name) and not e:FindFirstChild('jack')
 			if visible then
-				if highlights[door] then return end
+				if highlights[door] then continue end
 				local new_highlight = highlight:Clone()
 				new_highlight.Adornee = door
 				highlights[door] = new_highlight
 				new_highlight.Parent = ui
 			else
 				local old_highlight = highlights[door]
-				if not old_highlight then return end
-				highlights[door] = nil
-				old_highlight:Destroy()
+				if not old_highlight then
+					highlights[door] = nil
+					old_highlight:Destroy()
+				end
 				if not door_parent or not parent then break end
 			end
 		end
