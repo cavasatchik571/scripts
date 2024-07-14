@@ -191,7 +191,7 @@ local function monster_name_decipher(e, spawned)
 		end
 	elseif name == 'monster2' then
 		return (if e:WaitForChild('Thud').IsPlaying then 'Happy Scribble '
-			elseif e:WaitForChild('wind').IsPlaying then 'Insidae '
+			elseif e:WaitForChild('wind').Volume <= 0.04 then 'Insidae '
 			else 'Insidae Prime ') .. if spawned then 'spawned!' else 'disappeared!'
 	end
 	return name
@@ -321,21 +321,31 @@ workspace.DescendantRemoving:Connect(function(e)
 end)
 
 your_gui.ChildAdded:Connect(function(e)
-	debris:AddItem(alert_if_monster(e, false), 4)
 	if e.Name ~= 'a90' then return end
-	local descendants = e:GetDescendants()
-	local len = #descendants + 1
-	descendants[len] = e
-	for i = len, 1, -1 do
-		local descendant = descendants[i]
-		if not descendant:IsA('Script') then remove(descendants, i) continue end
-		descendant.Disabled, descendant.Enabled = true, false
+	local list = {}
+	local function update(descendant)
+		if not descendant:IsA('Script') then return end
+		list[descendant] = descendant.Parent
+		descendant.Disabled = true
+		descendant.Enabled = false
+		descendant.Parent = nil
+		defer(function()
+			descendant.Disabled = true
+			descendant.Enabled = false
+			descendant.Parent = nil
+		end)
 	end
-	sleep(0.4)
+	update(e)
+	local connection, descendants = e.DescendantAdded:Connect(update), e:GetDescendants()
 	for i = 1, #descendants do
-		local descendant = descendants[i]
-		descendant.Disabled, descendant.Enabled = false, true
+		update(descendants[i])
 	end
+	clear(descendants)
+	debris:AddItem(alert_if_monster(e, false), 4)
+	sleep(0.5)
+	connection:Disconnect()
+	for descendant, parent in next, list do descendant.Enabled, descendant.Parent = true, parent end
+	clear(list)
 end)
 
 local list = workspace:GetDescendants()
