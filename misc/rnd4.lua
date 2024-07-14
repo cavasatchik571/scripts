@@ -182,7 +182,7 @@ end
 
 local function alert_if_monster(e, spawned)
 	local name = e.Name
-	if name ~= 'monster' and name ~= 'monster2' then return end
+	if name ~= 'a90' and name ~= 'monster' and name ~= 'monster2' then return end
 	return show_notification('A ' .. name .. ' has ' .. (if spawned then 'spawned' else 'despawned') .. '!')
 end
 
@@ -235,7 +235,6 @@ local function descendant_added_w(e)
 		part.Massless = true
 		part.Material = e.Material
 		part.Name = e.Name
-		part.Reflectance = e.Reflectance
 		part.Size = e.Size
 		part.Transparency = 1
 		local weld = inst_new('WeldConstraint')
@@ -269,6 +268,7 @@ workspace.DescendantRemoving:Connect(function(e)
 	old_highlight:Destroy()
 end)
 
+you.ChildAdded:Connect(function(e) debris:AddItem(alert_if_monster(e, false), 4) end)
 local list = workspace:GetDescendants()
 for i = 1, #list do coroutine_resume(coroutine_create(descendant_added_w), list[i]) end
 clear(list)
