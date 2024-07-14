@@ -24,6 +24,7 @@ local core_gui = game:GetService('CoreGui')
 local coroutine_create = coroutine.create
 local coroutine_resume = coroutine.resume
 local debris = game:GetService('Debris')
+local defer = task.defer
 local find = string.find
 local font = Font.new('rbxasset://fonts/families/Ubuntu.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
 local format = string.format
@@ -191,7 +192,7 @@ local function monster_name_decipher(e, spawned)
 		end
 	elseif name == 'monster2' then
 		return (if e:WaitForChild('Thud').IsPlaying then 'Happy Scribble '
-			elseif e:WaitForChild('wind').TimePosition >= 14 then 'Insidae '
+			elseif e:WaitForChild('Rumble'):FindFirstChildOfClass('Sound').TimePosition == 0 then 'Insidae '
 			else 'Insidae Prime ') .. if spawned then 'spawned!' else 'disappeared!'
 	end
 	return name
@@ -280,7 +281,6 @@ local function descendant_added_w(e)
 		part.Material = e.Material
 		part.Size = e.Size
 		part.Transparency = 1
-
 		local weld = inst_new('WeldConstraint')
 		weld.Part0 = e
 		weld.Part1 = part
