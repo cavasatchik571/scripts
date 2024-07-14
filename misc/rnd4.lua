@@ -191,8 +191,9 @@ local function monster_name_decipher(e, spawned)
 			return 'Multi Monster Prime ' .. if spawned then 'spawned!' else 'disappeared!'
 		end
 	elseif name == 'monster2' then
-		local v = e:WaitForChild('Rumble').Volume
-		return (if v ~= 0.2 then 'Insidae ' elseif v == 0 then 'Insidae Prime ' else 'A120 ') .. if spawned then 'spawned!' else 'disappeared!'
+		local audio = e:WaitForChild('Rumble')
+		return (if audio.Volume == 0.2 then if audio.IsPlaying then 'Insidae '
+			else 'Insidae Prime ' else 'A120 ') .. if spawned then 'spawned!' else 'disappeared!'
 	end
 	return name
 end
@@ -279,6 +280,7 @@ local function descendant_added_w(e)
 		part.Material = e.Material
 		part.Size = e.Size
 		part.Transparency = 1
+
 		local weld = inst_new('WeldConstraint')
 		weld.Part0 = e
 		weld.Part1 = part
@@ -327,14 +329,12 @@ your_gui.ChildAdded:Connect(function(e)
 	for i = len, 1, -1 do
 		local descendant = descendants[i]
 		if not descendant:IsA('Script') then remove(descendants, i) continue end
-		descendant.Disabled = true
-		descendant.Enabled = false
+		descendant.Disabled, descendant.Enabled = true, false
 	end
 	sleep(0.4)
 	for i = 1, #descendants do
 		local descendant = descendants[i]
-		descendant.Disabled = false
-		descendant.Enabled = true
+		descendant.Disabled, descendant.Enabled = false, true
 	end
 end)
 
