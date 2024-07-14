@@ -33,7 +33,6 @@ local es = Enum.EasingStyle
 local highlights = {}
 local inst_new = Instance.new
 local lighting = game:GetService('Lighting')
-local max = math.max
 local remove = table.remove
 local sleep = task.wait
 local smooth = Enum.SurfaceType.Smooth
@@ -215,6 +214,7 @@ local function show_notification(text, include_time)
 	new_notification.Text = '\n  ' .. (if typeof(text) == 'string' and #text > 0 then text else '4') .. '  \n'
 	new_notification.Visible = true
 	new_notification.Parent = lbl_frame
+	debris:AddItem(new_notifcation, 60.04)
 	return new_notification
 end
 
