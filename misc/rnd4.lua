@@ -204,17 +204,18 @@ local function descendant_added_w(e)
 		highlights[e] = new_highlight
 		new_highlight.Parent = ui
 	elseif e.Name == 'hidelocker' then
+		local door = e:WaitForChild('door')
 		local function set_highlight(enabled)
 			if enabled then
-				if highlights[e] then return end
+				if highlights[door] then return end
 				local new_highlight = highlight:Clone()
-				new_highlight.Adornee = e
-				highlights[e] = new_highlight
+				new_highlight.Adornee = door
+				highlights[door] = new_highlight
 				new_highlight.Parent = ui
 			else
-				local old_highlight = highlights[e]
+				local old_highlight = highlights[door]
 				if not old_highlight then return end
-				highlights[e] = nil
+				highlights[door] = nil
 				old_highlight:Destroy()
 			end
 		end
@@ -237,7 +238,6 @@ local function descendant_added_w(e)
 		part.Reflectance = e.Reflectance
 		part.Size = e.Size
 		part.Transparency = 1
-
 		local weld = inst_new('WeldConstraint')
 		weld.Part0 = e
 		weld.Part1 = part
