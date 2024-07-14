@@ -168,25 +168,28 @@ local function is_special(e)
 	return false
 end
 
-local function monster_name(e)
+local function monster_name_decipher(e, spawned)
 	local name = e.Name
 	if name == 'a90face' then
-		return if e.f.static.ImageColor3:ToHex() == 'ff0000' then 'Paralysis' else 'Paralysis Prime will be'
-	elseif name == 'handdebris' then
-		return 'Kalypto will be'
-	elseif name == 'monster' then
-		return if e:WaitForChild('light').Color:ToHex() == 'ff0000' then 'Multi Monster' else 'Multi Monster Prime'
-	elseif name == 'monster2' then
-		local children = your_gui:GetChildren()
-		for i = 1, #children do
-			local child = children[i]
-			if not child:IsA('BillboardGui') or child.Adornee ~= e then continue end
-			local name = child.Name
-			clear(children)
-			return if name == 'A120' then 'Happy Scribble'
-				elseif name == 'A200' then 'Insidae' else 'Insidae Prime'
+		if e.f.static.ImageColor3:ToHex() == 'ff0000' then
+			return 'Paralysis will spawn!'
+		else
+			return 'Paralysis Prime will spawn!'
 		end
-		clear(children)
+	elseif name == 'handdebris' then
+		if spawned then
+			return 'Kalypto might spawn!'
+		else
+			return workspace:FindFirstChild('godhand') and 'Kalypto will disappear' else 'Kalypto may not spawn'
+		end
+	elseif name == 'monster' then
+		if e:WaitForChild('light').Color:ToHex() == 'ff0000' then
+			return 'Multi Monster ' .. if spawned then 'spawned!' else 'disappeared!'
+		else
+			return 'Multi Monster Prime ' .. if spawned then 'spawned!' else 'disappeared!'
+		end
+	elseif name == 'monster2' then
+		return 'A monster 2 ' .. if spawned then 'spawned!' else 'disappeared!'
 	end
 	return name
 end
@@ -216,7 +219,7 @@ end
 local function alert_if_monster(e, spawned)
 	local name = e.Name
 	if name ~= 'a90face' and name ~= 'handdebris' and name ~= 'monster' and name ~= 'monster2' then return end
-	return show_notification(monster_name(e) ..  (if spawned then ' spawned!' else ' disappeared!'), spawned)
+	return show_notification(monster_name_decipher(e, spawned), spawned)
 end
 
 local function destroy_link(from, to)
@@ -305,7 +308,7 @@ workspace.DescendantRemoving:Connect(function(e)
 end)
 
 your_gui.ChildAdded:Connect(function(e)
-	destroy_link(e, alert_if_monster(e, true))
+	debris:AddItem(alert_if_monster(e, false), 4)
 	if e.Name ~= 'a90' then return end
 	local descendants = e:GetDescendants()
 	local len = #descendants + 1
