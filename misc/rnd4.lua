@@ -335,7 +335,7 @@ your_gui.ChildAdded:Connect(function(e)
 	debris:AddItem(alert_if_monster(e, false), 4)
 	local name = e.Name
 	if name ~= 'a90' and name ~= 'a90face' and name ~= 'a90gui' and name ~= 'a90ui' then return end
-	a90:Destroy()
+	e:Destroy()
 end)
 
 local list = workspace:GetDescendants()
