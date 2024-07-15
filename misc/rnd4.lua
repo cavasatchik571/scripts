@@ -34,6 +34,9 @@ local highlights = {}
 local inst_new = Instance.new
 local lighting = game:GetService('Lighting')
 local remove = table.remove
+local s1 = Enum.CameraType.Scriptable
+local s2 = Enum.DevComputerMovementMode.Scriptable
+local s3 = Enum.DevTouchMovementMode.Scriptable
 local sleep = task.wait
 local smooth = Enum.SurfaceType.Smooth
 local starter_gui = game:GetService('StarterGui')
@@ -47,7 +50,7 @@ local vec3_new = Vector3.new
 local your_gui = you:WaitForChild('PlayerGui')
 local zero = Vector3.zero
 local og_fs, og_gftb, og_hmm, og_sc
-local highlight_size = vec3_new(0.24, 0.24, 0.24)
+local highlight_size = vec3_new(0.244, 0.244, 0.244)
 local paths = {
 	'^Workspace%.godhand$',
 	'^Workspace%.monster$',
@@ -199,8 +202,7 @@ local function monster_name_decipher(e, spawned)
 			count += 1
 		end
 		clear(children)
-		return (if e:WaitForChild('Thud').IsPlaying then 'Happy Scribble '
-			elseif count > 1 then 'Insidae Prime '
+		return (if e:WaitForChild('Thud').IsPlaying then 'Happy Scribble ' elseif count > 1 then 'Insidae Prime '
 			else 'Insidae ') .. if spawned then 'spawned!' else 'disappeared!'
 	end
 	return name
@@ -329,9 +331,11 @@ end)
 your_gui.ChildAdded:Connect(function(e)
 	if e.Name ~= 'a90' then return end
 	debris:AddItem(alert_if_monster(e, false), 4)
-	local a, b = you.DevComputerCameraMode, you.DevComputerMovementMode
-	you.DevComputerCameraMode, you.DevComputerMovementMode = 
+	local cam = workspace.CurrentCamera
+	local a, b, c = cam.CameraType, you.DevComputerMovementMode, you.DevTouchMovementMode
+	cam.CameraType, you.DevComputerMovementMode, you.DevTouchMovementMode = s1, s2, s3
 	sleep(0.4)
+	cam.CameraType, you.DevComputerMovementMode, you.DevTouchMovementMode = a, b, c
 end)
 
 local list = workspace:GetDescendants()
