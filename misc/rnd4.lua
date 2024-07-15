@@ -24,7 +24,6 @@ local core_gui = game:GetService('CoreGui')
 local coroutine_create = coroutine.create
 local coroutine_resume = coroutine.resume
 local debris = game:GetService('Debris')
-local defer = task.defer
 local find = string.find
 local font = Font.new('rbxasset://fonts/families/Ubuntu.json', Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
 local format = string.format
@@ -54,9 +53,12 @@ local paths = {
 	'^Workspace%.monster$',
 	'^Workspace%.monster2$',
 	'^Workspace%.next%.room%.battery$',
+	'^Workspace%.next%.room%.door$',
 	'^Workspace%.next%.room%.lever$',
 	'^Workspace%.rooms%.%d+%.battery$',
+	'^Workspace%.rooms%.%d+%.door$',
 	'^Workspace%.rooms%.%d+%.lever$',
+	'^Workspace%.spawn%.door$',
 	'^Workspace%.Spirit$'
 }
 
@@ -277,19 +279,13 @@ local function descendant_added_w(e)
 	elseif e:IsA('MeshPart') and find(e.MeshId, '34384784', 1, true) then
 		local part = inst_new('Part')
 		part.Anchored = false
-		part.BackSurface = e.BackSurface
-		part.BottomSurface = e.BottomSurface
 		part.CFrame = e.CFrame
 		part.CanTouch = false
 		part.Color = e.Color
 		part.CustomPhysicalProperties = e.CustomPhysicalProperties
-		part.FrontSurface = e.FrontSurface
-		part.LeftSurface = e.LeftSurface
 		part.Massless = true
 		part.Material = e.Material
-		part.RightSurface = e.RightSurface
 		part.Size = e.Size
-		part.TopSurface = e.TopSurface
 		part.Transparency = 1
 		local weld = inst_new('WeldConstraint')
 		weld.Part0 = e
@@ -331,31 +327,11 @@ workspace.DescendantRemoving:Connect(function(e)
 end)
 
 your_gui.ChildAdded:Connect(function(e)
-	if e.Name ~= 'a90' or e:GetAttribute('Ignore') then return end
-	e:SetAttribute('Ignore', true)
-	local list = {}
-	local function update(descendant)
-		if not descendant:IsA('Script') then return end
-		list[descendant] = descendant.Parent
-		descendant.Disabled = true
-		descendant.Enabled = false
-		descendant.Parent = nil
-		defer(function()
-			descendant.Disabled = true
-			descendant.Enabled = false
-			descendant.Parent = nil
-		end)
-	end
-	update(e)
-	local connection, descendants = e.DescendantAdded:Connect(update), e:GetDescendants()
-	for i = 1, #descendants do update(descendants[i]) end
-	clear(descendants)
+	if e.Name ~= 'a90' then return end
 	debris:AddItem(alert_if_monster(e, false), 4)
-	sleep(0.5)
-	connection:Disconnect()
-	for descendant, parent in next, list do descendant.Enabled, descendant.Parent = true, parent end
-	clear(list)
-	e:SetAttribute('Ignore', nil)
+	local a, b = you.DevComputerCameraMode, you.DevComputerMovementMode
+	you.DevComputerCameraMode, you.DevComputerMovementMode = 
+	sleep(0.4)
 end)
 
 local list = workspace:GetDescendants()
