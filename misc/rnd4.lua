@@ -34,9 +34,6 @@ local highlights = {}
 local inst_new = Instance.new
 local lighting = game:GetService('Lighting')
 local remove = table.remove
-local s1 = Enum.CameraType.Scriptable
-local s2 = Enum.DevComputerMovementMode.Scriptable
-local s3 = Enum.DevTouchMovementMode.Scriptable
 local sleep = task.wait
 local smooth = Enum.SurfaceType.Smooth
 local starter_gui = game:GetService('StarterGui')
@@ -281,13 +278,19 @@ local function descendant_added_w(e)
 	elseif e:IsA('MeshPart') and find(e.MeshId, '34384784', 1, true) then
 		local part = inst_new('Part')
 		part.Anchored = false
+		part.BackSurface = e.BackSurface
+		part.BottomSurface = e.BottomSurface
 		part.CFrame = e.CFrame
 		part.CanTouch = false
 		part.Color = e.Color
 		part.CustomPhysicalProperties = e.CustomPhysicalProperties
+		part.FrontSurface = e.FrontSurface
+		part.LeftSurface = e.LeftSurface
 		part.Massless = true
 		part.Material = e.Material
+		part.RightSurface = e.RightSurface
 		part.Size = e.Size
+		part.TopSurface = e.TopSurface
 		part.Transparency = 1
 		local weld = inst_new('WeldConstraint')
 		weld.Part0 = e
@@ -329,13 +332,10 @@ workspace.DescendantRemoving:Connect(function(e)
 end)
 
 your_gui.ChildAdded:Connect(function(e)
-	if e.Name ~= 'a90' then return end
 	debris:AddItem(alert_if_monster(e, false), 4)
-	local cam = workspace.CurrentCamera
-	local a, b, c = cam.CameraType, you.DevComputerMovementMode, you.DevTouchMovementMode
-	cam.CameraType, you.DevComputerMovementMode, you.DevTouchMovementMode = s1, s2, s3
-	sleep(0.4)
-	cam.CameraType, you.DevComputerMovementMode, you.DevTouchMovementMode = a, b, c
+	local name = e.Name
+	if name ~= 'a90' and name ~= 'a90face' and name ~= 'a90gui' and name ~= 'a90ui' then return end
+	a90:Destroy()
 end)
 
 local list = workspace:GetDescendants()
