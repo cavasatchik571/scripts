@@ -173,8 +173,7 @@ end
 local function monster_name_decipher(e, spawned)
 	local name = e.Name
 	if name == 'a90' then
-		local children = your_gui:GetChildren()
-		local count = 0
+		local children, count = workspace:GetChildren(), 0
 		for i = 1, #children do
 			local child = children[i]
 			if child.Name ~= 'a90' then continue end
@@ -191,9 +190,16 @@ local function monster_name_decipher(e, spawned)
 			return 'Multi Monster Prime ' .. if spawned then 'spawned!' else 'disappeared!'
 		end
 	elseif name == 'monster2' then
+		local children, count = workspace:GetChildren(), 0
+		for i = 1, #children do
+			local child = children[i]
+			if child.Name ~= 'monster2' or child:WaitForChild('Thud').IsPlaying then continue end
+			count += 1
+		end
+		clear(children)
 		return (if e:WaitForChild('Thud').IsPlaying then 'Happy Scribble '
-			elseif e:WaitForChild('Rumble'):FindFirstChildOfClass('Sound').TimePosition == 0 then 'Insidae '
-			else 'Insidae Prime ') .. if spawned then 'spawned!' else 'disappeared!'
+			elseif count > 1 then 'Insidae Prime '
+			else 'Insidae ') .. if spawned then 'spawned!' else 'disappeared!'
 	end
 	return name
 end
@@ -202,8 +208,7 @@ local function show_notification(text, include_time)
 	local new_notification = notification:Clone()
 	local nt = new_notification.Timer
 	if include_time then
-		local timer = 0
-		local connection
+		local connection, timer = nil, 0
 		connection = hb:Connect(function(dt)
 			if not new_notification then return connection:Disconnect() end
 			timer += dt
@@ -272,14 +277,19 @@ local function descendant_added_w(e)
 	elseif e:IsA('MeshPart') and find(e.MeshId, '34384784', 1, true) then
 		local part = inst_new('Part')
 		part.Anchored = false
+		part.BackSurface = e.BackSurface
+		part.BottomSurface = e.BottomSurface
 		part.CFrame = e.CFrame
 		part.CanTouch = false
-		part.CastShadow = e.CastShadow
 		part.Color = e.Color
 		part.CustomPhysicalProperties = e.CustomPhysicalProperties
+		part.FrontSurface = e.FrontSurface
+		part.LeftSurface = e.LeftSurface
 		part.Massless = true
 		part.Material = e.Material
+		part.RightSurface = e.RightSurface
 		part.Size = e.Size
+		part.TopSurface = e.TopSurface
 		part.Transparency = 1
 		local weld = inst_new('WeldConstraint')
 		weld.Part0 = e
@@ -321,7 +331,8 @@ workspace.DescendantRemoving:Connect(function(e)
 end)
 
 your_gui.ChildAdded:Connect(function(e)
-	if e.Name ~= 'a90' then return end
+	if e.Name ~= 'a90' or e:GetAttribute('Ignore') then return end
+	e:SetAttribute('Ignore', true)
 	local list = {}
 	local function update(descendant)
 		if not descendant:IsA('Script') then return end
@@ -337,15 +348,14 @@ your_gui.ChildAdded:Connect(function(e)
 	end
 	update(e)
 	local connection, descendants = e.DescendantAdded:Connect(update), e:GetDescendants()
-	for i = 1, #descendants do
-		update(descendants[i])
-	end
+	for i = 1, #descendants do update(descendants[i]) end
 	clear(descendants)
 	debris:AddItem(alert_if_monster(e, false), 4)
 	sleep(0.5)
 	connection:Disconnect()
 	for descendant, parent in next, list do descendant.Enabled, descendant.Parent = true, parent end
 	clear(list)
+	e:SetAttribute('Ignore', nil)
 end)
 
 local list = workspace:GetDescendants()
