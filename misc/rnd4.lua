@@ -47,7 +47,7 @@ local vec3_new = Vector3.new
 local your_gui = you:WaitForChild('PlayerGui')
 local zero = Vector3.zero
 local og_fs, og_gftb, og_hmm, og_sc
-local highlight_size = vec3_new(0.244, 0.244, 0.244)
+local highlight_size = vec3_new(0.24, 0.244, 0.24)
 local paths = {
 	'^Workspace%.godhand$',
 	'^Workspace%.monster$',
@@ -67,7 +67,7 @@ highlight.AlwaysOnTop = true
 highlight.Color3 = _4
 highlight.Name = 'Highlight'
 highlight.Size = highlight_size
-highlight.Transparency = 0.644
+highlight.Transparency = 0.64
 highlight.ZIndex = 4
 
 local ui = inst_new('ScreenGui')
@@ -88,7 +88,7 @@ lbl_frame.Size = udim2_fs(0.4, 0.144)
 lbl_frame.Parent = ui
 
 local light_inst = inst_new('PointLight')
-light_inst.Brightness = 0.944
+light_inst.Brightness = 0.94
 light_inst.Color = color3_from_rgb(164, 255, 164)
 light_inst.Enabled = true
 light_inst.Name = 'Light'
@@ -192,7 +192,7 @@ local function monster_name_decipher(e, spawned)
 		if not e:GetAttribute('SavedName') then
 			e:SetAttribute('SavedName', e:WaitForChild('light').Color:ToHex() == 'ff0000' and 'A-60 Prime' or 'A-60')
 		end
-		return e:GetAttribute('SavedName') .. if spawned then 'spawned!' else 'disappeared!'
+		return e:GetAttribute('SavedName') .. if spawned then ' spawned!' else ' disappeared!'
 	elseif name == 'monster2' then
 		if not e:GetAttribute('SavedName') then
 			local children, count = workspace:GetChildren(), 0
@@ -206,7 +206,7 @@ local function monster_name_decipher(e, spawned)
 				elseif count > 1 then 'Insidae Prime '
 				else 'Insidae ')
 		end
-		return e:GetAttribute('SavedName') .. if spawned then 'spawned!' else 'disappeared!'
+		return e:GetAttribute('SavedName') .. if spawned then ' spawned!' else ' disappeared!'
 	end
 	return name
 end
