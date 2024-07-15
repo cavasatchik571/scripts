@@ -67,7 +67,7 @@ highlight.AlwaysOnTop = true
 highlight.Color3 = _4
 highlight.Name = 'Highlight'
 highlight.Size = highlight_size
-highlight.Transparency = 0.64
+highlight.Transparency = 0.644
 highlight.ZIndex = 4
 
 local ui = inst_new('ScreenGui')
@@ -175,32 +175,38 @@ end
 local function monster_name_decipher(e, spawned)
 	local name = e.Name
 	if name == 'a90spawn' then
-		local children, count = your_gui:GetChildren(), 0
-		for i = 1, #children do
-			local child = children[i]
-			if child.Name ~= 'a90spawn' then continue end
-			count += 1
+		if not e:GetAttribute('SavedName') then
+			local children, count = your_gui:GetChildren(), 0
+			for i = 1, #children do
+				local child = children[i]
+				if child.Name ~= 'a90spawn' then continue end
+				count += 1
+			end
+			clear(children)
+			e:SetAttribute('SavedName', if count > 1 then 'Paralysis Prime' else 'Paralysis')
 		end
-		clear(children)
-		return if count > 1 then 'Paralysis Prime deleted!' else 'Paralysis deleted!'
+		return e:GetAttribute('SavedName') .. ' deleted!'
 	elseif name == 'handdebris' then
 		return if spawned then 'Kalypto might spawn!' else 'Kalypto may not spawn or has disappeared'
 	elseif name == 'monster' then
-		if e:WaitForChild('light').Color:ToHex() == 'ff0000' then
-			return 'Multi Monster ' .. if spawned then 'spawned!' else 'disappeared!'
-		else
-			return 'Multi Monster Prime ' .. if spawned then 'spawned!' else 'disappeared!'
+		if not e:GetAttribute('SavedName') then
+			e:SetAttribute('SavedName', e:WaitForChild('light').Color:ToHex() == 'ff0000' and 'A-60 Prime' or 'A-60'
 		end
+		return e:GetAttribute('SavedName') .. if spawned then 'spawned!' else 'disappeared!'
 	elseif name == 'monster2' then
-		local children, count = workspace:GetChildren(), 0
-		for i = 1, #children do
-			local child = children[i]
-			if child.Name ~= 'monster2' or child:WaitForChild('Thud').IsPlaying then continue end
-			count += 1
+		if not e:GetAttribute('SavedName') then
+			local children, count = workspace:GetChildren(), 0
+			for i = 1, #children do
+				local child = children[i]
+				if child.Name ~= 'monster2' or child:WaitForChild('Thud').IsPlaying then continue end
+				count += 1
+			end
+			clear(children)
+			e:SetAttribute('SavedName', if e:WaitForChild('Thud').IsPlaying then 'Happy Scribble '
+				elseif count > 1 then 'Insidae Prime '
+				else 'Insidae ')
 		end
-		clear(children)
-		return (if e:WaitForChild('Thud').IsPlaying then 'Happy Scribble ' elseif count > 1 then 'Insidae Prime '
-			else 'Insidae ') .. if spawned then 'spawned!' else 'disappeared!'
+		return e:GetAttribute('SavedName') .. if spawned then 'spawned!' else 'disappeared!'
 	end
 	return name
 end
@@ -221,7 +227,7 @@ local function show_notification(text, include_time)
 	new_notification.Text = '\n  ' .. (if typeof(text) == 'string' and #text > 0 then text else '4') .. '  \n'
 	new_notification.Visible = true
 	new_notification.Parent = lbl_frame
-	debris:AddItem(new_notification, 60.04)
+	debris:AddItem(new_notification, 240.04)
 	return new_notification
 end
 
@@ -230,7 +236,7 @@ end
 local function alert_if_monster(e, spawned)
 	local name = e.Name
 	if name ~= 'a90spawn' and name ~= 'handdebris' and name ~= 'monster' and name ~= 'monster2' then return end
-	return show_notification(monster_name_decipher(e, spawned), spawned)
+	return monster_name_decipher(e, spawned)
 end
 
 local function destroy_link(from, to)
@@ -278,13 +284,17 @@ local function descendant_added_w(e)
 	elseif e:IsA('MeshPart') and find(e.MeshId, '34384784', 1, true) then
 		local part = inst_new('Part')
 		part.Anchored = false
+		part.BackSurface = e.BackSurface
 		part.BottomSurface = e.BottomSurface
 		part.CFrame = e.CFrame
 		part.CanTouch = false
 		part.Color = e.Color
 		part.CustomPhysicalProperties = e.CustomPhysicalProperties
+		part.FrontSurface = e.FrontSurface
+		part.LeftSurface = e.LeftSurface
 		part.Massless = true
 		part.Material = e.Material
+		part.RightSurface = e.RightSurface
 		part.Size = e.Size
 		part.TopSurface = e.TopSurface
 		part.Transparency = 1
@@ -343,7 +353,7 @@ for i = 1, #list do coroutine_resume(coroutine_create(descendant_added_w), list[
 clear(list)
 debris:AddItem(show_notification('rnd4 activated!', false), 4)
 while true do
-	sleep(0.1)
+	sleep(0.144)
 	light_part.CFrame = (workspace.CurrentCamera or light_part).CFrame
 	lighting.GlobalShadows = false
 	for e, highlight in next, highlights do
