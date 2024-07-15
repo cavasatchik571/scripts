@@ -67,7 +67,7 @@ highlight.AlwaysOnTop = true
 highlight.Color3 = _4
 highlight.Name = 'Highlight'
 highlight.Size = highlight_size
-highlight.Transparency = 0.64
+highlight.Transparency = 0.644
 highlight.ZIndex = 4
 
 local ui = inst_new('ScreenGui')
@@ -88,7 +88,7 @@ lbl_frame.Size = udim2_fs(0.4, 0.144)
 lbl_frame.Parent = ui
 
 local light_inst = inst_new('PointLight')
-light_inst.Brightness = 0.94
+light_inst.Brightness = 0.944
 light_inst.Color = color3_from_rgb(164, 255, 164)
 light_inst.Enabled = true
 light_inst.Name = 'Light'
@@ -236,7 +236,7 @@ end
 local function alert_if_monster(e, spawned)
 	local name = e.Name
 	if name ~= 'a90spawn' and name ~= 'handdebris' and name ~= 'monster' and name ~= 'monster2' then return end
-	return monster_name_decipher(e, spawned)
+	return show_notification(monster_name_decipher(e, spawned), spawned)
 end
 
 local function destroy_link(from, to)
