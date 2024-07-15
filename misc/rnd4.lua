@@ -174,15 +174,15 @@ end
 
 local function monster_name_decipher(e, spawned)
 	local name = e.Name
-	if name == 'a90' then
-		local children, count = workspace:GetChildren(), 0
+	if name == 'a90spawn' then
+		local children, count = your_gui:GetChildren(), 0
 		for i = 1, #children do
 			local child = children[i]
-			if child.Name ~= 'a90' then continue end
+			if child.Name ~= 'a90spawn' then continue end
 			count += 1
 		end
 		clear(children)
-		return if count > 1 then 'Paralysis Prime will spawn!' else 'Paralysis will spawn!'
+		return if count > 1 then 'Paralysis Prime deleted!' else 'Paralysis deleted!'
 	elseif name == 'handdebris' then
 		return if spawned then 'Kalypto might spawn!' else 'Kalypto may not spawn or has disappeared'
 	elseif name == 'monster' then
@@ -229,7 +229,7 @@ end
 
 local function alert_if_monster(e, spawned)
 	local name = e.Name
-	if name ~= 'a90' and name ~= 'handdebris' and name ~= 'monster' and name ~= 'monster2' then return end
+	if name ~= 'a90spawn' and name ~= 'handdebris' and name ~= 'monster' and name ~= 'monster2' then return end
 	return show_notification(monster_name_decipher(e, spawned), spawned)
 end
 
@@ -278,17 +278,13 @@ local function descendant_added_w(e)
 	elseif e:IsA('MeshPart') and find(e.MeshId, '34384784', 1, true) then
 		local part = inst_new('Part')
 		part.Anchored = false
-		part.BackSurface = e.BackSurface
 		part.BottomSurface = e.BottomSurface
 		part.CFrame = e.CFrame
 		part.CanTouch = false
 		part.Color = e.Color
 		part.CustomPhysicalProperties = e.CustomPhysicalProperties
-		part.FrontSurface = e.FrontSurface
-		part.LeftSurface = e.LeftSurface
 		part.Massless = true
 		part.Material = e.Material
-		part.RightSurface = e.RightSurface
 		part.Size = e.Size
 		part.TopSurface = e.TopSurface
 		part.Transparency = 1
@@ -336,6 +332,10 @@ your_gui.ChildAdded:Connect(function(e)
 	local name = e.Name
 	if name ~= 'a90' and name ~= 'a90face' and name ~= 'a90gui' and name ~= 'a90ui' then return end
 	e:Destroy()
+	local folder = inst_new('Folder')
+	folder.Name = 'a90spawn'
+	folder.Parent = your_gui
+	debris:AddItem(folder, 4)
 end)
 
 local list = workspace:GetDescendants()
