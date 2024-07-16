@@ -47,7 +47,7 @@ local vec3_new = Vector3.new
 local your_gui = you:WaitForChild('PlayerGui')
 local zero = Vector3.zero
 local og_fs, og_gftb, og_hmm, og_sc
-local highlight_size = vec3_new(0.24, 0.244, 0.24)
+local highlight_size = vec3_new(0.244, 0.244, 0.244)
 local paths = {
 	'^Workspace%.godhand$',
 	'^Workspace%.monster$',
@@ -67,7 +67,7 @@ highlight.AlwaysOnTop = true
 highlight.Color3 = _4
 highlight.Name = 'Highlight'
 highlight.Size = highlight_size
-highlight.Transparency = 0.64
+highlight.Transparency = 0.644
 highlight.ZIndex = 4
 
 local ui = inst_new('ScreenGui')
@@ -202,9 +202,9 @@ local function monster_name_decipher(e, spawned)
 				count += 1
 			end
 			clear(children)
-			e:SetAttribute('SavedName', if e:WaitForChild('Thud').IsPlaying then 'Happy Scribble '
-				elseif count > 1 then 'Insidae Prime '
-				else 'Insidae ')
+			e:SetAttribute('SavedName', if e:WaitForChild('Thud').IsPlaying then 'Happy Scribble'
+				elseif count > 1 then 'Insidae Prime'
+				else 'Insidae')
 		end
 		return e:GetAttribute('SavedName') .. if spawned then ' spawned!' else ' disappeared!'
 	end
