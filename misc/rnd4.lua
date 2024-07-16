@@ -47,7 +47,7 @@ local vec3_new = Vector3.new
 local your_gui = you:WaitForChild('PlayerGui')
 local zero = Vector3.zero
 local og_fs, og_gftb, og_hmm, og_sc
-local highlight_size = vec3_new(0.244, 0.244, 0.244)
+local highlight_size = vec3_new(0.24, 0.244, 0.24)
 local paths = {
 	'^Workspace%.godhand$',
 	'^Workspace%.monster$',
@@ -183,14 +183,15 @@ local function monster_name_decipher(e, spawned)
 				count += 1
 			end
 			clear(children)
-			e:SetAttribute('SavedName', if count > 1 then 'Paralysis Prime' else 'Paralysis')
+			e:SetAttribute('SavedName', if count > 1 then 'Paralysis Prime (A-90\')' else 'Paralysis (A-90)')
 		end
-		return e:GetAttribute('SavedName') .. ' deleted!'
+		return e:GetAttribute('SavedName') .. ' has been deleted!'
 	elseif name == 'handdebris' then
-		return if spawned then 'Kalypto might spawn!' else 'Kalypto may not spawn or has disappeared'
+		return if spawned then 'Kalypto (A-250) might spawn!' else 'Kalypto (A-250) may not spawn or has disappeared'
 	elseif name == 'monster' then
 		if not e:GetAttribute('SavedName') then
-			e:SetAttribute('SavedName', e:WaitForChild('light').Color:ToHex() == 'ff0000' and 'A-60' or 'A-60 Prime')
+			e:SetAttribute('SavedName', e:WaitForChild('light').Color:ToHex() == 'ff0000' and
+				'Multi Monster (A-60)' or 'Multi Monster Prime (A-60\')')
 		end
 		return e:GetAttribute('SavedName') .. if spawned then ' spawned!' else ' disappeared!'
 	elseif name == 'monster2' then
@@ -203,8 +204,7 @@ local function monster_name_decipher(e, spawned)
 			end
 			clear(children)
 			e:SetAttribute('SavedName', if e:WaitForChild('Thud').IsPlaying then 'Happy Scribble (A-120)'
-				elseif count > 1 then 'Insidae Prime'
-				else 'Insidae')
+				elseif count > 1 then 'Insidae Prime (A-200\')' else 'Insidae (A-200)')
 		end
 		return e:GetAttribute('SavedName') .. if spawned then ' spawned!' else ' disappeared!'
 	end
