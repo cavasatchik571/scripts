@@ -190,7 +190,7 @@ local function monster_name_decipher(e, spawned)
 		return if spawned then 'Kalypto might spawn!' else 'Kalypto may not spawn or has disappeared'
 	elseif name == 'monster' then
 		if not e:GetAttribute('SavedName') then
-			e:SetAttribute('SavedName', e:WaitForChild('light').Color:ToHex() == 'ff0000' and 'A-60 Prime' or 'A-60')
+			e:SetAttribute('SavedName', e:WaitForChild('light').Color:ToHex() == 'ff0000' and 'A-60' or 'A-60 Prime')
 		end
 		return e:GetAttribute('SavedName') .. if spawned then ' spawned!' else ' disappeared!'
 	elseif name == 'monster2' then
@@ -202,7 +202,7 @@ local function monster_name_decipher(e, spawned)
 				count += 1
 			end
 			clear(children)
-			e:SetAttribute('SavedName', if e:WaitForChild('Thud').IsPlaying then 'Happy Scribble'
+			e:SetAttribute('SavedName', if e:WaitForChild('Thud').IsPlaying then 'Happy Scribble (A-120)'
 				elseif count > 1 then 'Insidae Prime'
 				else 'Insidae')
 		end
