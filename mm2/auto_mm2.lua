@@ -1,27 +1,31 @@
---!nolint
---!nonstrict
+-- afk4.lua
+-- by @Vov4ik4124
 
 local _4 = Color3.new(0, .2514, 0)
 
--- source code
+-- check APIs
 
-if not game:IsLoaded() then game.Loaded:Wait() end
 if game.GameId ~= 66654135 then return end
-local env = shared or _G
+local env = (getgenv or function() end)() or _ENV or shared or _G
 if env.afk4 then return end
 local fti = firetouchinterest or fire_touch_interest
+local gncm = getnamecallmethod or get_namecall_method
+local hf = hookfunction or hook_function
+local hmm = hookmetamethod or hook_meta_method
+local ncc = newcclosure or new_cclosure
 local plrs = game:GetService('Players')
 local qt = queueonteleport or (syn and syn.queue_on_teleport) or queue_on_teleport or (fluxus and fluxus.queue_on_teleport)
 local you = plrs.LocalPlayer
-if not fti or not qt then return you:Kick('AFK4 doesn\'t support your executor') end
-env.afk4 = true
+if not fti or not gncm or not hf or not hmm or not ncc or not qt then return you:Kick('Your client doesn\'t support AFK4') end
+
+-- fail-safe measure
+
 local sleep = task.wait
 local ts = game:GetService('TeleportService')
 local ts_ttpi = ts.TeleportToPlaceInstance
 local vec2_zero = Vector2.zero
 local vu = game:GetService('VirtualUser')
 you.Idled:Connect(function()
-	if not env.afk4 then return end
 	vu:Button1Down(vec2_zero)
 	sleep()
 	vu:Button1Up(vec2_zero)
@@ -48,93 +52,103 @@ you.ChildRemoved:Connect(function(child)
 	end
 end)
 
-local all = Enum.CoreGuiType.All
-local cf_new = CFrame.new
-local checks = 0
-local dead = Enum.HumanoidStateType.Dead
-local floor = math.floor
-local lighting = game:GetService('Lighting')
-local min = math.min
+-- states
+
+local hst = Enum.HumanoidStateType
+local hst_approved = {hst.Freefall}
+local hst_al = #hst_approved
+local hst_ignore = hst:GetEnumItems()
+local hst_il = #hst_ignore
 local remove = table.remove
-local rng = Random.new()
-local sort = table.sort
-local sound_service = game:GetService('SoundService')
-local starter_gui = game:GetService('StarterGui')
-local string_find = string.find
 local table_find = table.find
-local upper = string.upper
+for i = hst_il, 1, -1 do
+	if table_find(hst_approved, hst_ignore[i]) then
+		remove(hst_ignore, i)
+		hst_il -= 1
+	end
+end
+
+-- hooks
+
+local your_h
+do
+	local inst_new = Instance.new
+	local old_gse, old_hmm, old_sse
+	local test_h = inst_new('Humanoid')
+	local function is_hst(e)
+		return typeof(e) == 'EnumItem' and e.EnumType == hst
+	end
+	old_gse = hf(test_h.GetStateEnabled, ncc(function(self, arg_1, ...)
+		if self ~= your_h or not is_hst(arg_1) then return old_gse(self, arg_1, ...) end
+		return if table_find(hst_approved, arg_1) then true else false
+	end))
+	old_hmm = hmm(game, '__namecall', ncc(function(self, arg_1, ...)
+		if self == your_h and is_hst(arg_1)then
+			local ncm = gncm()
+			if ncm == 'GetStateEnabled' then
+				return if table_find(hst_approved, arg_1) then true else false
+			elseif ncm == 'SetStateEnabled' then
+				return old_hmm(self, arg_1, if table_find(hst_approved, arg_1) then true else false)
+			end
+		end
+		return old_hmm(self, arg_1, ...)
+	end))
+	old_sse = hf(test_h.SetStateEnabled, ncc(function(self, arg_1, ...)
+		if self ~= your_h or not is_hst(arg_1) then return old_sse(self, arg_1, ...) end
+		return old_sse(self, arg_1, if table_find(hst_approved, arg_1) then true else false)
+	end))
+	test_h:Destroy()
+end
+
+-- logic
+
+local clear = table.clear
+local coins = {}
+local dead = hst.Dead
 local vec3_new = Vector3.new
-local vec3_zero = Vector3.zero
-local nearest_plr_pos, point_of_interest = vec3_zero, vec3_zero
-local offset_pos, speed, speed_lb, speed_ub = vec3_new(0, -1, 0), 20.14, -4, 0
+local zero = Vector3.zero
+local function cc0(child) coins[#coins + 1] = child end
+local function cc1(child)
+	local i = table_find(coins, child)
+	if not i then return end
+	remove(coins, i)
+end
 
----4
-
-local function clear_velocity(inst)
-	local children = inst:GetChildren()
-	for i = 1, #children do
-		local child = children[i]
-		if not child:IsA('BasePart') then continue end
-		child.AssemblyAngularVelocity, child.AssemblyLinearVelocity = vec3_zero, vec3_zero
+local function descendant_added(e)
+	local parent = e.Parent
+	if e.Name == 'CoinContainer' then
+		clear(coins)
+		local list = e:GetChildren()
+		for i = 1, #list do coins[i] = list[i] end
+		e.ChildAdded:Connect(cc0)
+		e.ChildRemoved:Connect(cc1)
+	elseif e:IsA('BasePart') and e ~= (if your_h then your_h.RootPart else nil) and parent.Name ~= 'CoinContainer' then
+		e.CanTouch = false
 	end
 end
 
-local function filter_coins(cc)
-	for i = #cc, 1, -1 do
-		local c = cc[i]
-		if c.Name ~= 'Coin_Server' or c.Transparency ~= 1 then remove(cc, i) continue end
-		local cv = c:FindFirstChild('CoinVisual')
-		if not cv then remove(cc, i) continue end
-		local inst = cv:FindFirstChild('MainCoin')
-		if not inst or inst.Transparency ~= 0 then remove(cc, i) continue end
-	end
+workspace.DescendantAdded:Connect(descendant_added)
+workspace.DescendantRemoving:Connect(function(e)
+	if e.Name ~= 'CoinContainer' then return end
+	clear(coins)
+	you:SetAttribute('Done', nil)
+end)
+
+do
+	local list = workspace:GetDescendants()
+	for i = 1, #list do descendant_added(list[i]) end
 end
 
-local function is_alive(plr)
-	local bp = plr:FindFirstChildOfClass('Backpack')
-	if not bp then return false end
-	local char = plr.Character
-	if not char or not char.Parent then return false end
-	local h = char:FindFirstChildOfClass('Humanoid')
-	if not h or h.Health <= 0 or h:GetState() == dead or not h.RootPart then return false end
-	return true
-end
+---4💚
 
-local function near_plr()
-	local dist = 444
-	local list = plrs:GetPlayers()
-	local pos = you.Character:FindFirstChildOfClass('Humanoid').RootPart.Position
-	local result
-	for i = 1, #list do
-		local element = list[i]
-		if element == you or not is_alive(element) then continue end
-		local new_dist = (element.Character:FindFirstChildOfClass('Humanoid').RootPart.Position - pos).Magnitude
-		if new_dist >= dist then continue end
-		dist, result = new_dist, element
-	end
-	return result
-end
+local all = Enum.CoreGuiType.All
+local checks = 0
+local lighting = game:GetService('Lighting')
+local rng = Random.new()
+local ss = game:GetService('SoundService')
+local string_find = string.find
+local upper = string.upper
 
-local function remove_all_except(inst, ...)
-	local args = {...}
-	local children = inst:GetChildren()
-	for i = 1, #children do
-		local child = children[i]
-		if table_find(args, child.Name) then continue end
-		child:Destroy()
-	end
-end
-
-local function sort_coins(a, b)
-	local a_score = -(point_of_interest - a.Position).Magnitude + floor(((nearest_plr_pos - a.Position).Magnitude + 0.7) / 6) * 6
-	local b_score = -(point_of_interest - b.Position).Magnitude + floor(((nearest_plr_pos - b.Position).Magnitude + 0.7) / 6) * 6
-	return a_score > b_score
-end
-
-local sg = game:GetService('StarterGui')
-local sg_sc = sg.SetCore
-local sg_scp = {Button1 = 'OK', Duration = 4, Icon = 'rbxassetid://7440784829', Text = 'Script activated', Title = 'AFK4'}
-while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.04) end end
 local function full_bag_of(main_gui, t)
 	if not main_gui or not t then return false end
 	local descendants = main_gui:GetDescendants()
@@ -157,20 +171,47 @@ local function full_bag_of(main_gui, t)
 	return false
 end
 
+local function remove_all_except(inst, ...)
+	local args = {...}
+	local children = inst:GetChildren()
+	for i = 1, #children do
+		local child = children[i]
+		if table_find(args, child.Name) then continue end
+		child:Destroy()
+	end
+end
+
+local function set_cf(part, cf)
+	local pos = cf.Position
+	part.Velocity = zero
+	part.RotVelocity = zero
+	part.Position = pos
+	part.CFrame = cf
+	part.CanTouch = true
+	part.CanCollide = false
+	part.AssemblyLinearVelocity = zero
+	part.AssemblyAngularVelocity = zero
+end
+
 coroutine.resume(coroutine.create(function()
 	while true do
 		sleep(0.04)
-		if you:GetAttribute('4') == _4 or not is_alive(you) or not workspace:FindFirstChild('Normal') then continue end
+		if you:GetAttribute('Done') or
+			not your_h or
+			your_h.Health <= 0 or
+			your_h:GetState() == dead or
+			not workspace:FindFirstChild('Normal') then continue end
+
 		local char = you.Character
 		local h = char:FindFirstChildOfClass('Humanoid')
 		local hrp = h.RootPart
 		local your_gui = you:FindFirstChildOfClass('PlayerGui')
 		if not your_gui then continue end
-		if checks >= 10 then
+		if checks >= 8 then
 			checks = 0
 			local succ, result = pcall(full_bag_of, your_gui:FindFirstChild('MainGUI'), 'Coin')
 			if not succ or not result then continue end
-			you:SetAttribute('4', _4)
+			you:SetAttribute('Done', true)
 			if you:FindFirstChildOfClass('Backpack'):FindFirstChild('Knife') or char:FindFirstChild('Knife') then
 				local init = hrp:GetAttribute('SafeCFrame')
 				if not init then
@@ -187,8 +228,15 @@ coroutine.resume(coroutine.create(function()
 	end
 end))
 
+local sg = game:GetService('StarterGui')
+do
+	local sg_sc = sg.SetCore
+	local sg_scp = {Button1 = 'OK', Duration = 4, Icon = 'rbxassetid://7440784829', Text = 'Script activated', Title = 'AFK4'}
+	while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.04) end end
+	clear(sg_scp)
+end
+
 while true do
-	local dt = sleep()
 	local list = plrs:GetPlayers()
 	for i = 1, #list do
 		local plr = list[i]
@@ -208,46 +256,48 @@ while true do
 			child:Destroy()
 		end
 	end
-
-	remove_all_except(workspace, 'Camera', 'Normal', 'Terrain', unpack(list))
 	lighting:ClearAllChildren()
-	sound_service:ClearAllChildren()
-	starter_gui:SetCoreGuiEnabled(all, false)
-	if not is_alive(you) then continue end
-	local char = you.Character
-	clear_velocity(char)
-	local h = char:FindFirstChildOfClass('Humanoid')
-	h.PlatformStand, workspace.Gravity = true, 0
-	clear_velocity(char)
+	remove_all_except(workspace, 'Camera', 'Normal', 'Terrain', unpack(list))
+	sg:SetCoreGuiEnabled(all, false)
+	ss:ClearAllChildren()
+	workspace.Gravity = 0
 	local map = workspace:FindFirstChild('Normal')
-	if not map then you:SetAttribute('4', nil) continue end
-	remove_all_except(map, 'CoinContainer')
-	local cc = map:FindFirstChild('CoinContainer')
-	if not cc or you:GetAttribute('4') == _4 then continue end
-	local plr = near_plr()
-	if not plr or not is_alive(plr) then continue end
-	local list = cc:GetChildren()
-	pcall(filter_coins, list)
-	local len = #list
-	if len == 0 then continue end
-	local hrp = h.RootPart
-	local p0 = hrp.Position
-	nearest_plr_pos = plr.Character:FindFirstChildOfClass('Humanoid').RootPart.Position
-	point_of_interest = p0
-	pcall(sort, list, sort_coins)
-	local p1 = list[1]:GetPivot().Position
-	local diff = p1 + offset_pos - p0
-	local dist = diff.Magnitude
-	if dist > 444 then
-		hrp.CFrame = cf_new(offset_pos + p1, p1)
-	elseif dist > 0.24 then
-		local pos = p0 + (dist == 0 and vec3_zero or diff.Unit) * (speed + rng:NextNumber(speed_lb, speed_ub)) * dt
-		hrp.CFrame = cf_new(pos) * cf_new(offset_pos + p1, p1).Rotation
+	if map then remove_all_except(map, 'CoinContainer') end
+	local char = you.Character
+	if not char then sleep(0.04) continue end
+	your_h = char:FindFirstChildOfClass('Humanoid')
+	if not your_h then sleep(0.04) continue end
+	if not your_h:GetAttribute('Done') then
+		your_h:SetAttribute('Done', true)
+		local sse = your_h.SetStateEnabled
+		for i = 1, hst_il do pcall(sse, your_h, hst_ignore[i], false) end
+		for i = 1, hst_al do
+			local state = hst_approved[i]
+			pcall(sse, your_h, state, true)
+			if state == dead then continue end
+			your_h:ChangeState(state)
+		end
 	end
-	for i = 1, len do
-		local part = list[i]
-		if (hrp.Position - part.Position).Magnitude >= 8 then continue end
-		fti(hrp, part, 1)
-		fti(hrp, part, 0)
+	if not your_h or your_h.Health <= 0 or your_h:GetState() == dead then sleep(0.04) continue end
+	local rp = your_h.RootPart
+	if not rp or not rp.Parent then sleep(0.04) continue end
+	local len = #coins
+	if len == 0 then sleep(0.04) continue end
+	local coin = coins[rng:NextInteger(1, len)]
+	if not coin or not coin.Parent then sleep(0.04) continue end
+	if you:GetAttribute('Done') then
+		sleep(0.04)
+	else
+		local t = 1.4
+		while coin and coin.Parent and t > 0 do
+			for i = 1, #coins do
+				local part = coins[i]
+				if not part or not part.Parent then continue end
+				fti(rp, part, 1)
+				fti(rp, part, 0)
+			end
+			set_cf(rp, coin.CFrame)
+			t -= sleep()
+		end
 	end
 end
