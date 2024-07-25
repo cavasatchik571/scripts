@@ -17,6 +17,7 @@ local plrs = game:GetService('Players')
 local qt = queueonteleport or (syn and syn.queue_on_teleport) or queue_on_teleport or (fluxus and fluxus.queue_on_teleport)
 local you = plrs.LocalPlayer
 if not fti or not gncm or not hf or not hmm or not ncc or not qt then return you:Kick('Your client doesn\'t support AFK4') end
+env.afk4 = true
 
 -- fail-safe measures
 
@@ -133,7 +134,7 @@ local function char_added(char)
 	your_h = new_h
 end
 
--- logic
+-- source code
 
 local added_at = huge
 local clear = table.clear
@@ -164,7 +165,6 @@ local function cc_child_added(child)
 		c2:Disconnect()
 		cc_child_removed(child)
 	end
-
 	c0 = child.Changed:Connect(clean_up)
 	c1 = child.ChildRemoved:Connect(clean_up)
 	c2 = child:GetAttributeChangedSignal('Collected'):Once(clean_up)
@@ -230,7 +230,7 @@ do
 	for i = 1, #list do resume(create(descendant_added), list[i]) end
 	local sg_sc = sg.SetCore
 	local sg_scp = {Button1 = 'OK', Duration = 4, Icon = 'rbxassetid://7440784829', Text = 'Script activated', Title = 'AFK4'}
-	while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.04) end end
+	while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.4) end end
 end
 
 local all = Enum.CoreGuiType.All
