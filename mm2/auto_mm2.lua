@@ -78,7 +78,6 @@ do
 		if self ~= your_h or not is_hst(arg_1) then return old_gse(self, arg_1, ...) end
 		return if find(hst_approved, arg_1) then true else false
 	end))
-
 	old_nc = hmm(game, '__namecall', ncc(function(self, arg_1, ...)
 		if self == your_h and is_hst(arg_1) then
 			local ncm = gncm()
@@ -90,12 +89,10 @@ do
 		end
 		return old_nc(self, arg_1, ...)
 	end))
-
 	old_sse = hf(test_h.SetStateEnabled, ncc(function(self, arg_1, ...)
 		if self ~= your_h or not is_hst(arg_1) then return old_sse(self, arg_1, ...) end
 		return old_sse(self, arg_1, if find(hst_approved, arg_1) then true else false)
 	end))
-
 	test_h:Destroy()
 end
 
@@ -106,33 +103,6 @@ local huge = math.huge
 local resume = coroutine.resume
 local vec3_power = Vector3.new(huge, huge, huge)
 local zero = Vector3.zero
-
-local function char_added(char)
-	if not char then return end
-	local new_h = char:WaitForChild('Humanoid', 20.4)
-	if not char or not char.Parent or not new_h or not new_h.Parent then return end
-	for i = 1, hst_el do new_h:SetStateEnabled(hst_exclude[i], false) end
-	for i = 1, hst_al do
-		local state = hst_approved[i]
-		new_h:SetStateEnabled(state, true)
-		if state == hst_dead then continue end
-		new_h:ChangeState(state)
-	end
-
-	local your_hrp = char:WaitForChild('HumanoidRootPart', 20.4)
-	if not char or not char.Parent or not your_hrp or not your_hrp.Parent then return end
-	local bav = inst_new('BodyAngularVelocity')
-	bav.AngularVelocity = zero
-	bav.MaxTorque = vec3_power
-	bav.Name = 'BAV'
-	bav.Parent = your_hrp
-	local bv = inst_new('BodyVelocity')
-	bv.MaxForce = vec3_power
-	bv.Name = 'BV'
-	bv.Velocity = zero
-	bv.Parent = your_hrp
-	your_h = new_h
-end
 
 -- source code
 
@@ -165,6 +135,7 @@ local function cc_child_added(child)
 		c2:Disconnect()
 		cc_child_removed(child)
 	end
+
 	c0 = child.Changed:Connect(clean_up)
 	c1 = child.ChildRemoved:Connect(clean_up)
 	c2 = child:GetAttributeChangedSignal('Collected'):Once(clean_up)
@@ -223,14 +194,11 @@ end)
 
 local sg = game:GetService('StarterGui')
 do
-	you.CharacterAdded:Connect(char_added)
-	local char = you.Character
-	if char then resume(create(char_added), char) end
 	local list = workspace:GetDescendants()
 	for i = 1, #list do resume(create(descendant_added), list[i]) end
 	local sg_sc = sg.SetCore
 	local sg_scp = {Button1 = 'OK', Duration = 4, Icon = 'rbxassetid://7440784829', Text = 'Script activated', Title = 'AFK4'}
-	while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.4) end end
+	while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.04) end end
 end
 
 local all = Enum.CoreGuiType.All
@@ -265,9 +233,34 @@ while true do
 	ss:ClearAllChildren()
 	workspace.Gravity = 0
 	local char = you.Character
-	if not char or not your_h or not your_h.Parent or your_h.Health <= 0 or your_h:GetState() == hst_dead then sleep(0.04) continue end
+	if not char or not char.Parent then sleep(0.04) continue end
+	local new_h = char:FindFirstChildOfClass('Humanoid')
+	if not new_h or your_h.Health <= 0 or your_h:GetState() == hst_dead then sleep(0.04) continue end
+	your_h = new_h
+	if not new_h:GetAttribute('Done') then
+		new_h:SetAttribute('Done', true)
+		for i = 1, hst_el do new_h:SetStateEnabled(hst_exclude[i], false) end
+		for i = 1, hst_al do
+			local state = hst_approved[i]
+			new_h:SetStateEnabled(state, true)
+			if state == hst_dead then continue end
+			new_h:ChangeState(state)
+		end
+	end
 	local rp = your_h.RootPart
 	if not rp or not rp.Parent then sleep(0.04) continue end
+	if not rp:FindFirstChild('BAV') then
+		local bav = inst_new('BodyAngularVelocity')
+		bav.AngularVelocity = zero
+		bav.MaxTorque = vec3_power
+		bav.Name = 'BAV'
+		bav.Parent = rp
+		local bv = inst_new('BodyVelocity')
+		bv.MaxForce = vec3_power
+		bv.Name = 'BV'
+		bv.Velocity = zero
+		bv.Parent = rp
+	end
 	local map = workspace:FindFirstChild('Normal')
 	if not map then sleep(0.04) continue end
 	remove_all_except(map, 'CoinContainer')
@@ -276,12 +269,9 @@ while true do
 		if (tick() - added_at) >= 24 and not you:GetAttribute('Done') then
 			you:SetAttribute('Done', true)
 			local bp = you:FindFirstChildOfClass('Backpack')
-			if not (bp:FindFirstChild('Knife') or char:FindFirstChild('Knife')) then
-				your_h:ChangeState(hst_dead)
-				continue
-			end
+			if not (bp:FindFirstChild('Knife') or char:FindFirstChild('Knife')) then your_h:ChangeState(hst_dead) continue end
 		end
-		local t = 0.2514
+		local t = 0.25
 		while t > 0 do
 			t -= sleep()
 			reset_velocity(char)
