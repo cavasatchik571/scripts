@@ -60,7 +60,7 @@ local hst = Enum.HumanoidStateType
 local hst_al = 1
 local hst_approved = {hst.Freefall}
 local hst_dead = hst.Dead
-local hst_el = 15
+local hst_el = 14
 local hst_exclude = {
 	hst.FallingDown, hst.Ragdoll, hst.GettingUp, hst.Jumping, hst.Swimming, hst.Flying, hst.Landed, hst.Running,
 	hst.RunningNoPhysics, hst.StrafingNoPhysics, hst.Climbing, hst.Seated, hst.PlatformStanding, hst.Physics
