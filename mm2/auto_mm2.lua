@@ -137,12 +137,13 @@ end
 
 local added_at = huge
 local clear = table.clear
+local coin_types = {'Coin'}
 local coins = {}
 local remove = table.remove
 
 local function is_coin_valid(e)
 	return (e.Parent or game).Name == 'CoinContainer' and e.Name == 'Coin_Server' and
-		e:FindFirstChild('CoinVisual') and not e:GetAttribute('Collected')
+		e:FindFirstChild('CoinVisual') and find(coin_types, e:GetAttribute('CoinType')) and not e:GetAttribute('Collected')
 end
 
 local function cc_child_removed(child)
@@ -238,7 +239,6 @@ local lighting = game:GetService('Lighting')
 local rng = Random.new()
 local safe_pos = cf_new(0, -24, 0)
 local ss = game:GetService('SoundService')
-
 while true do
 	local list = plrs:GetPlayers()
 	for i = 1, #list do
