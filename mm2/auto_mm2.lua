@@ -5,6 +5,7 @@ local _4 = Color3.new(0, .2514, 0)
 
 -- check APIs
 
+if not game:IsLoaded() then game.Loaded:Wait() end
 if game.GameId ~= 66654135 then return end
 local env = (getgenv or function() end)() or _ENV or shared or _G
 if env.afk4 then return end
@@ -135,7 +136,6 @@ local function cc_child_added(child)
 		c2:Disconnect()
 		cc_child_removed(child)
 	end
-
 	c0 = child.Changed:Connect(clean_up)
 	c1 = child.ChildRemoved:Connect(clean_up)
 	c2 = child:GetAttributeChangedSignal('Collected'):Once(clean_up)
