@@ -133,7 +133,7 @@ local function char_added(char)
 	your_h = new_h
 end
 
--- source code
+-- logic
 
 local added_at = huge
 local clear = table.clear
