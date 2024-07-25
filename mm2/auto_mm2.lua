@@ -143,7 +143,7 @@ local remove = table.remove
 
 local function is_coin_valid(e)
 	return (e.Parent or game).Name == 'CoinContainer' and e.Name == 'Coin_Server' and
-		e:FindFirstChild('CoinVisual') and find(coin_types, e:GetAttribute('CoinType')) and not e:GetAttribute('Collected')
+		e:FindFirstChild('CoinVisual') and find(coin_types, e:GetAttribute('CoinID')) and not e:GetAttribute('Collected')
 end
 
 local function cc_child_removed(child)
@@ -289,7 +289,7 @@ while true do
 		end
 	else
 		local coin = coins[rng:NextInteger(1, len)]
-		local t = 2.5
+		local t = 2.514
 		while is_coin_valid(coin) and t > 0 do
 			t -= sleep()
 			local cf = coin:GetPivot()
