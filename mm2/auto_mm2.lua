@@ -16,7 +16,7 @@ local ncc = newcclosure or new_cclosure
 local plrs = game:GetService('Players')
 local qt = queueonteleport or (syn and syn.queue_on_teleport) or queue_on_teleport or (fluxus and fluxus.queue_on_teleport)
 local you = plrs.LocalPlayer
-if not fti or not gncm or not hf or not hmm or not ncc or not qt then return you:Kick('Your client doesn\'t support AFK4') end
+if not fti or not gncm or not hf or not hmm or not ncc or not qt then return you:Kick('Your client doesn\'t support AFK4.') end
 
 -- fail-safe measures
 
@@ -77,6 +77,7 @@ do
 		if self ~= your_h or not is_hst(arg_1) then return old_gse(self, arg_1, ...) end
 		return if find(hst_approved, arg_1) then true else false
 	end))
+
 	old_nc = hmm(game, '__namecall', ncc(function(self, arg_1, ...)
 		if self == your_h and is_hst(arg_1) then
 			local ncm = gncm()
@@ -88,10 +89,12 @@ do
 		end
 		return old_nc(self, arg_1, ...)
 	end))
+
 	old_sse = hf(test_h.SetStateEnabled, ncc(function(self, arg_1, ...)
 		if self ~= your_h or not is_hst(arg_1) then return old_sse(self, arg_1, ...) end
 		return old_sse(self, arg_1, if find(hst_approved, arg_1) then true else false)
 	end))
+
 	test_h:Destroy()
 end
 
@@ -105,7 +108,7 @@ local zero = Vector3.zero
 
 local function char_added(char)
 	if not char then return end
-	local new_h = char:WaitForChild('Humanoid', 40.4)
+	local new_h = char:WaitForChild('Humanoid', 20.4)
 	if not char or not char.Parent or not new_h or not new_h.Parent then return end
 	for i = 1, hst_el do new_h:SetStateEnabled(hst_exclude[i], false) end
 	for i = 1, hst_al do
@@ -114,7 +117,8 @@ local function char_added(char)
 		if state == hst_dead then continue end
 		new_h:ChangeState(state)
 	end
-	local your_hrp = char:WaitForChild('HumanoidRootPart', 40.4)
+
+	local your_hrp = char:WaitForChild('HumanoidRootPart', 20.4)
 	if not char or not char.Parent or not your_hrp or not your_hrp.Parent then return end
 	local bav = inst_new('BodyAngularVelocity')
 	bav.AngularVelocity = zero
@@ -129,7 +133,7 @@ local function char_added(char)
 	your_h = new_h
 end
 
--- logic
+-- source code
 
 local added_at = huge
 local clear = table.clear
@@ -159,6 +163,7 @@ local function cc_child_added(child)
 		c2:Disconnect()
 		cc_child_removed(child)
 	end
+
 	c0 = child.Changed:Connect(clean_up)
 	c1 = child.ChildRemoved:Connect(clean_up)
 	c2 = child:GetAttributeChangedSignal('Collected'):Once(clean_up)
@@ -231,7 +236,7 @@ local all = Enum.CoreGuiType.All
 local cf_new = CFrame.new
 local lighting = game:GetService('Lighting')
 local rng = Random.new()
-local safe_pos = cf_new(0, -240, 0)
+local safe_pos = cf_new(0, -24, 0)
 local ss = game:GetService('SoundService')
 
 while true do
@@ -284,11 +289,11 @@ while true do
 		end
 	else
 		local coin = coins[rng:NextInteger(1, len)]
-		local t = rng:NextNumber(2.74, 3.4)
-		while t > 0 do
+		local t = 2.5
+		while is_coin_valid(coin) and t > 0 do
 			t -= sleep()
 			local cf = coin:GetPivot()
-			if is_coin_valid(coin) then char:PivotTo(cf) end
+			char:PivotTo(cf)
 			local len = #coins
 			if len == 0 then continue end
 			local your_pos = cf.Position
@@ -298,6 +303,11 @@ while true do
 				fti(rp, part, 1)
 				fti(rp, part, 0)
 			end
+		end
+		while t > 0 do
+			t -= sleep()
+			reset_velocity(char)
+			char:PivotTo(safe_pos)
 		end
 	end
 end
