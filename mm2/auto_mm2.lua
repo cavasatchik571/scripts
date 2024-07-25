@@ -16,7 +16,7 @@ local ncc = newcclosure or new_cclosure
 local plrs = game:GetService('Players')
 local qt = queueonteleport or (syn and syn.queue_on_teleport) or queue_on_teleport or (fluxus and fluxus.queue_on_teleport)
 local you = plrs.LocalPlayer
-if not fti or not gncm or not hf or not hmm or not ncc or not qt then return you:Kick('Your client doesn\'t support AFK4') end
+if not fti or not gncm or not hf or not hmm or not ncc or not qt then return you:Kick('Your client doesn\'t support AFK4.') end
 env.afk4 = true
 
 -- fail-safe measures
@@ -235,7 +235,7 @@ while true do
 	local char = you.Character
 	if not char or not char.Parent then sleep(0.04) continue end
 	local new_h = char:FindFirstChildOfClass('Humanoid')
-	if not new_h or your_h.Health <= 0 or your_h:GetState() == hst_dead then sleep(0.04) continue end
+	if not new_h or new_h.Health <= 0 or new_h:GetState() == hst_dead then sleep(0.04) continue end
 	your_h = new_h
 	if not new_h:GetAttribute('Done') then
 		new_h:SetAttribute('Done', true)
@@ -271,7 +271,7 @@ while true do
 			local bp = you:FindFirstChildOfClass('Backpack')
 			if not (bp:FindFirstChild('Knife') or char:FindFirstChild('Knife')) then your_h:ChangeState(hst_dead) continue end
 		end
-		local t = 0.25
+		local t = 0.2514
 		while t > 0 do
 			t -= sleep()
 			reset_velocity(char)
