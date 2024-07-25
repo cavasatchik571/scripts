@@ -17,7 +17,7 @@ local ncc = newcclosure or new_cclosure
 local plrs = game:GetService('Players')
 local qt = queueonteleport or (syn and syn.queue_on_teleport) or queue_on_teleport or (fluxus and fluxus.queue_on_teleport)
 local you = plrs.LocalPlayer
-if not fti or not gncm or not hf or not hmm or not ncc or not qt then return you:Kick('Your client doesn\'t support AFK4.') end
+if not fti or not gncm or not hf or not hmm or not ncc or not qt then return you:Kick('Your client doesn\'t support AFK4') end
 env.afk4 = true
 
 -- fail-safe measures
@@ -79,6 +79,7 @@ do
 		if self ~= your_h or not is_hst(arg_1) then return old_gse(self, arg_1, ...) end
 		return if find(hst_approved, arg_1) then true else false
 	end))
+
 	old_nc = hmm(game, '__namecall', ncc(function(self, arg_1, ...)
 		if self == your_h and is_hst(arg_1) then
 			local ncm = gncm()
@@ -90,10 +91,12 @@ do
 		end
 		return old_nc(self, arg_1, ...)
 	end))
+
 	old_sse = hf(test_h.SetStateEnabled, ncc(function(self, arg_1, ...)
 		if self ~= your_h or not is_hst(arg_1) then return old_sse(self, arg_1, ...) end
 		return old_sse(self, arg_1, if find(hst_approved, arg_1) then true else false)
 	end))
+
 	test_h:Destroy()
 end
 
@@ -105,7 +108,7 @@ local resume = coroutine.resume
 local vec3_power = Vector3.new(huge, huge, huge)
 local zero = Vector3.zero
 
--- source code
+-- logic
 
 local added_at = huge
 local clear = table.clear
@@ -114,7 +117,7 @@ local coins = {}
 local remove = table.remove
 
 local function is_coin_valid(e)
-	return (e.Parent or game).Name == 'CoinContainer' and e.Name == 'Coin_Server' and
+	return typeof(e) == 'Instance' and (e.Parent or game).Name == 'CoinContainer' and e.Name == 'Coin_Server' and
 		e:FindFirstChild('CoinVisual') and find(coin_types, e:GetAttribute('CoinID')) and not e:GetAttribute('Collected')
 end
 
@@ -169,6 +172,7 @@ local function remove_all_except(inst, ...)
 end
 
 local function reset_velocity(char)
+	if not char then return end
 	local descendants = char:GetDescendants()
 	for i = 1, #descendants do
 		local descendant = descendants[i]
@@ -232,6 +236,8 @@ while true do
 	sg:SetCoreGuiEnabled(all, false)
 	ss:ClearAllChildren()
 	workspace.Gravity = 0
+	local bp = you:FindFirstChildOfClass('Backpack')
+	if not bp or not bp.Parent then sleep(0.04) continue end
 	local char = you.Character
 	if not char or not char.Parent then sleep(0.04) continue end
 	local new_h = char:FindFirstChildOfClass('Humanoid')
@@ -247,6 +253,7 @@ while true do
 			new_h:ChangeState(state)
 		end
 	end
+
 	local rp = your_h.RootPart
 	if not rp or not rp.Parent then sleep(0.04) continue end
 	if not rp:FindFirstChild('BAV') then
@@ -254,13 +261,16 @@ while true do
 		bav.AngularVelocity = zero
 		bav.MaxTorque = vec3_power
 		bav.Name = 'BAV'
+		bav.P = 1250
 		bav.Parent = rp
 		local bv = inst_new('BodyVelocity')
 		bv.MaxForce = vec3_power
 		bv.Name = 'BV'
+		bv.P = 1250
 		bv.Velocity = zero
 		bv.Parent = rp
 	end
+
 	local map = workspace:FindFirstChild('Normal')
 	if not map then sleep(0.04) continue end
 	remove_all_except(map, 'CoinContainer')
@@ -268,11 +278,10 @@ while true do
 	if len == 0 then
 		if (tick() - added_at) >= 24 and not you:GetAttribute('Done') then
 			you:SetAttribute('Done', true)
-			local bp = you:FindFirstChildOfClass('Backpack')
 			if not (bp:FindFirstChild('Knife') or char:FindFirstChild('Knife')) then your_h:ChangeState(hst_dead) continue end
 		end
 		local t = 0.2514
-		while t > 0 do
+		while char and char.Parent and t > 0 do
 			t -= sleep()
 			reset_velocity(char)
 			char:PivotTo(safe_pos)
@@ -280,9 +289,10 @@ while true do
 	else
 		local coin = coins[rng:NextInteger(1, len)]
 		local t = 2.514
-		while is_coin_valid(coin) and t > 0 do
+		while char and char.Parent and is_coin_valid(coin) and t > 0 do
 			t -= sleep()
 			local cf = coin:GetPivot()
+			reset_velocity(char)
 			char:PivotTo(cf)
 			local len = #coins
 			if len == 0 then continue end
@@ -294,7 +304,7 @@ while true do
 				fti(rp, part, 0)
 			end
 		end
-		while t > 0 do
+		while char and char.Parent and t > 0 do
 			t -= sleep()
 			reset_velocity(char)
 			char:PivotTo(safe_pos)
