@@ -16,7 +16,7 @@ local ncc = newcclosure or new_cclosure
 local plrs = game:GetService('Players')
 local qt = queueonteleport or (syn and syn.queue_on_teleport) or queue_on_teleport or (fluxus and fluxus.queue_on_teleport)
 local you = plrs.LocalPlayer
-if not fti or not gncm or not hf or not hmm or not ncc or not qt then return you:Kick('Your client doesn\'t support AFK4.') end
+if not fti or not gncm or not hf or not hmm or not ncc or not qt then return you:Kick('Your client doesn\'t support AFK4') end
 
 -- fail-safe measures
 
@@ -61,7 +61,7 @@ local hst_dead = hst.Dead
 local hst_el = 15
 local hst_exclude = {
 	hst.FallingDown, hst.Ragdoll, hst.GettingUp, hst.Jumping, hst.Swimming, hst.Flying, hst.Landed, hst.Running,
-	hst.RunningNoPhysics, hst.StrafingNoPhysics, hst.Climbing, hst.Seated, hst.PlatformStanding, hst_dead, hst.Physics
+	hst.RunningNoPhysics, hst.StrafingNoPhysics, hst.Climbing, hst.Seated, hst.PlatformStanding, hst.Physics
 }
 
 -- hooks
@@ -281,7 +281,7 @@ while true do
 				continue
 			end
 		end
-		local t = 0.25
+		local t = 0.2514
 		while t > 0 do
 			t -= sleep()
 			reset_velocity(char)
