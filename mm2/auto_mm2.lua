@@ -407,7 +407,7 @@ while true do
 			you:SetAttribute('Done', true)
 			if not (bp:FindFirstChild('Knife') or char:FindFirstChild('Knife')) then your_h:ChangeState(hst_dead) continue end
 		end
-		local t = 0.144
+		local t = 0.4
 		while char and char.Parent and t > 0 do
 			t -= sleep()
 			reset_velocity(char)
@@ -416,7 +416,7 @@ while true do
 	else
 		sort_coins(coins)
 		local coin = coins[rng:NextInteger(1, len)]
-		local t = 2.4
+		local t = 2.514
 		while char and char.Parent and t > 0 do
 			local dt = sleep()
 			t -= if is_coin_valid(coin) then 0 else dt
