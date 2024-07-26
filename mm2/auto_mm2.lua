@@ -172,13 +172,14 @@ if gncm and hf and hmm and ncc then
 	end))
 end
 
--- logic
+-- source code
 
 local added_at = huge
 local clear = table.clear
 local create = coroutine.create
 local coin_types = {'Coin'}
 local coins = {}
+local defer = task.defer
 local remove = table.remove
 local resume = coroutine.resume
 local smooth = Enum.SurfaceType.Smooth
@@ -232,7 +233,7 @@ local function descendant_added(e)
 		e.BackSurface, e.BottomSurface, e.FrontSurface, e.LeftSurface, e.RightSurface, e.TopSurface = smooth, smooth, smooth, smooth, smooth, smooth
 		e.CastShadow, e.Material, e.Reflectance = false, smooth_plastic, 0
 	elseif e:IsA('Decal') then
-		e:Destroy()
+		defer(e.Destroy, e)
 	elseif e:IsA('Beam') or e:IsA('Fire') or e:IsA('Highlight') or e:IsA('Light') or
 		e:IsA('ParticleEmitter') or e:IsA('Smoke') or e:IsA('Sparkles') or e:IsA('Trail') then
 		e.Enabled = false
@@ -319,12 +320,11 @@ do
 		clear(coins)
 		you:SetAttribute('Done', nil)
 	end)
-
 	local list = workspace:GetDescendants()
 	for i = 1, #list do resume(create(descendant_added), list[i]) end
 	local sg_sc = sg.SetCore
-	local sg_scp = {Button1 = 'OK', Duration = 4, Icon = 'rbxassetid://7440784829', Text = 'Script activated', Title = 'AFK4'}
-	while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.4) end end
+	local sg_scp = {Button1 = 'OK', Duration = 4, Icon = 'rbxassetid://7440784829', Text = 'Script activated.', Title = 'AFK4'}
+	while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.04) end end
 end
 
 local all = Enum.CoreGuiType.All
