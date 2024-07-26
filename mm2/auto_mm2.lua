@@ -308,8 +308,7 @@ local function sort_coins(coins)
 	clear(dist_data)
 	clear(sort_data)
 	clear(vec_id)
-	sort_data = nil
-	sort_data_len = 0
+	sort_data, sort_data_len = nil, 0
 end
 
 do
@@ -324,7 +323,7 @@ do
 	for i = 1, #list do resume(create(descendant_added), list[i]) end
 	local sg_sc = sg.SetCore
 	local sg_scp = {Button1 = 'OK', Duration = 4, Icon = 'rbxassetid://7440784829', Text = 'Script activated.', Title = 'AFK4'}
-	while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.04) end end
+	while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.4) end end
 end
 
 local all = Enum.CoreGuiType.All
@@ -408,7 +407,7 @@ while true do
 			you:SetAttribute('Done', true)
 			if not (bp:FindFirstChild('Knife') or char:FindFirstChild('Knife')) then your_h:ChangeState(hst_dead) continue end
 		end
-		local t = 0.2514
+		local t = 0.144
 		while char and char.Parent and t > 0 do
 			t -= sleep()
 			reset_velocity(char)
@@ -417,9 +416,10 @@ while true do
 	else
 		sort_coins(coins)
 		local coin = coins[rng:NextInteger(1, len)]
-		local t = 2.514
-		while char and char.Parent and is_coin_valid(coin) and t > 0 do
-			t -= sleep()
+		local t = 2.04
+		while char and char.Parent and t > 0 do
+			local dt = sleep()
+			t -= if is_coin_valid(coin) then 0 else dt
 			local cf = coin.CFrame
 			reset_velocity(char)
 			char:PivotTo(cf)
@@ -434,10 +434,10 @@ while true do
 				fti(rp, part, 0)
 			end
 		end
-		while char and char.Parent and t > 0 do
+		--[[while char and char.Parent and t > 0 do
 			t -= sleep()
 			reset_velocity(char)
 			char:PivotTo(safe_pos)
-		end
+		end]]
 	end
 end
