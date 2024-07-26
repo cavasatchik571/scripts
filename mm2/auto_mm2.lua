@@ -323,7 +323,7 @@ do
 	for i = 1, #list do resume(create(descendant_added), list[i]) end
 	local sg_sc = sg.SetCore
 	local sg_scp = {Button1 = 'OK', Duration = 4, Icon = 'rbxassetid://7440784829', Text = 'Script activated.', Title = 'AFK4'}
-	while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.4) end end
+	while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.04) end end
 end
 
 local all = Enum.CoreGuiType.All
@@ -416,7 +416,7 @@ while true do
 	else
 		sort_coins(coins)
 		local coin = coins[rng:NextInteger(1, len)]
-		local t = 2.04
+		local t = 2.4
 		while char and char.Parent and t > 0 do
 			local dt = sleep()
 			t -= if is_coin_valid(coin) then 0 else dt
