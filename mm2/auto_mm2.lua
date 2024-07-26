@@ -3,56 +3,130 @@
 
 local _4 = Color3.new(0, .2514, 0)
 
--- check APIs
+-- execution check
 
 if not game:IsLoaded() then game.Loaded:Wait() end
-if game.GameId ~= 66654135 then return end
+if not game:GetService('RunService'):IsStudio() and game.GameId ~= 66654135 then return end
 local env = (getgenv or function() end)() or _ENV or shared or _G
 if env.afk4 then return end
-local fti = firetouchinterest or fire_touch_interest
-local gncm = getnamecallmethod or get_namecall_method
-local hf = hookfunction or hook_function
-local hmm = hookmetamethod or hook_meta_method
-local ncc = newcclosure or new_cclosure
-local plrs = game:GetService('Players')
-local qt = queueonteleport or (syn and syn.queue_on_teleport) or queue_on_teleport or (fluxus and fluxus.queue_on_teleport)
-local you = plrs.LocalPlayer
-if not fti or not gncm or not hf or not hmm or not ncc or not qt then return you:Kick('Your client doesn\'t support AFK4') end
 env.afk4 = true
 
 -- fail-safe measures
 
+local plrs = game:GetService('Players')
+local gqt = function() return queueonteleport or (syn and syn.queue_on_teleport) or queue_on_teleport or (fluxus and fluxus.queue_on_teleport) end
 local sleep = task.wait
-local ts = game:GetService('TeleportService')
-local ts_ttpi = ts.TeleportToPlaceInstance
-local vec2_zero = Vector2.zero
-local vu = game:GetService('VirtualUser')
-you.Idled:Connect(function()
-	vu:Button1Down(vec2_zero)
-	sleep()
-	vu:Button1Up(vec2_zero)
-end)
-
-local aqt = true
-local source_code = ''
-while true do
-	local succ, new_code = pcall(game.HttpGet, game, 'https://raw.githubusercontent.com/cavasatchik571/scripts/main/mm2/auto_mm2.lua', true)
-	if succ then
-		source_code = new_code
-		break
-	else
-		sleep(4)
+local you = plrs.LocalPlayer
+do
+	local source_code = ''
+	local sub = string.sub
+	local get_source = function() return game:HttpGet('https://raw.githubusercontent.com/cavasatchik571/scripts/main/mm2/auto_mm2.lua', true) end
+	while true do
+		local succ, result = pcall(get_source)
+		if succ then
+			source_code = result
+			break
+		else
+			if sub(result, 1, 29) == 'HttpGet is not a valid member' then break end
+			sleep(2.4)
+		end
 	end
+	if source_code then
+		local c0
+		c0 = you.OnTeleport:Connect(function()
+			if not c0.Connected then return end
+			local qt = gqt()
+			if not qt then return end
+			c0:Disconnect()
+			qt(source_code)
+		end)
+	end
+	local c1
+	local ts = game:GetService('TeleportService')
+	local ts_ttpi = ts.TeleportToPlaceInstance
+	c1 = you.ChildRemoved:Connect(function(child)
+		if not c1.Connected or not child:IsA('PlayerScripts') then return end
+		c1:Disconnect()
+		you:Kick('Rejoining...')
+		while true do
+			sleep(2.4)
+			pcall(ts_ttpi, ts, game.PlaceId, game.JobId, you)
+		end
+	end)
+	local vec2_zero = Vector2.zero
+	local vu = game:GetService('VirtualUser')
+	you.Idled:Connect(function()
+		vu:Button1Down(vec2_zero)
+		sleep()
+		vu:Button1Up(vec2_zero)
+	end)
 end
 
-you.OnTeleport:Connect(function() if aqt then aqt = false qt(source_code) end end)
-you.ChildRemoved:Connect(function(child)
-	if not child:IsA('PlayerScripts') then return end
-	while true do
-		sleep(4)
-		pcall(ts_ttpi, ts, game.PlaceId, game.JobId, you)
-	end
-end)
+-- API check
+
+local fti = firetouchinterest or fire_touch_interest
+local gncm = getnamecallmethod or get_namecall_method
+local hf = hookfunction or hook_function
+local hmm = hookmetamethod or hook_metamethod
+local inst_new = Instance.new
+local ncc = newcclosure or new_cclosure
+do
+	local core_gui = game:GetService('CoreGui')
+	local ui = inst_new('ScreenGui')
+	ui.Archivable = false
+	ui.AutoLocalize = false
+	ui.ClipToDeviceSafeArea = false
+	ui.DisplayOrder = 2147483647
+	ui.Enabled = true
+	ui.Name = 'Logs4API'
+	ui.ResetOnSpawn = false
+	ui.ScreenInsets = Enum.ScreenInsets.DeviceSafeInsets
+	ui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+	pcall(function() ui.OnTopOfCoreBlur = true end)
+	local missing = {}
+	local missing_len = 0
+	if not fti then missing_len += 1 missing[missing_len] = 'Fire Touch Interest' end
+	if not gncm then missing_len += 1 missing[missing_len] = 'Get Namecall Method' end
+	if not hf then missing_len += 1 missing[missing_len] = 'Hook Function' end
+	if not hmm then missing_len += 1 missing[missing_len] = 'Hook Metamethod' end
+	if not ncc then missing_len += 1 missing[missing_len] = 'New CClosure' end
+	if not gqt() then missing_len += 1 missing[missing_len] = 'Queue On Teleport' end
+	local logs = inst_new('TextLabel')
+	logs.Active = false
+	logs.AnchorPoint = Vector2.new(0, 1)
+	logs.Archivable = false
+	logs.AutoLocalize = false
+	logs.AutomaticSize = Enum.AutomaticSize.XY
+	logs.BackgroundColor3 = _4
+	logs.BackgroundTransparency = 1
+	logs.BorderColor3 = _4
+	logs.BorderMode = Enum.BorderMode.Outline
+	logs.BorderSizePixel = 4
+	logs.FontFace = Font.new('rbxasset://fonts/families/Ubuntu.json', Enum.FontWeight.Regular, Enum.FontStyle.Normal)
+	logs.Interactable = false
+	logs.MaxVisibleGraphemes = -1
+	logs.Name = 'Logs'
+	logs.Position = UDim2.new(0, 4, 1, -4)
+	logs.RichText = false
+	logs.Rotation = 0
+	logs.Selectable = false
+	logs.Text = table.concat(missing, ' is missing\n')
+	logs.TextColor3 = _4
+	logs.TextDirection = Enum.TextDirection.LeftToRight
+	logs.TextScaled = false
+	logs.TextStrokeColor3 = _4
+	logs.TextStrokeTransparency = 1
+	logs.TextSize = 14
+	logs.TextTransparency = 0
+	logs.TextTruncate = Enum.TextTruncate.None
+	logs.TextWrapped = false
+	logs.TextXAlignment = Enum.TextXAlignment.Left
+	logs.TextYAlignment = Enum.TextYAlignment.Bottom
+	logs.Visible = true
+	logs.ZIndex = 2147483647
+	logs.Parent = ui
+	ui.Parent = if pcall(tostring, core_gui) then core_gui else you:WaitForChild('PlayerGui')
+end
 
 -- states
 
@@ -69,13 +143,13 @@ local hst_exclude = {
 -- hooks
 
 local find = table.find
-local inst_new = Instance.new
+local huge = math.huge
 local your_h
-do
+if gncm and hf and hmm and ncc then
+	local h = inst_new('Humanoid')
 	local is_hst = function(e) return typeof(e) == 'EnumItem' and e.EnumType == hst end
 	local old_gse, old_nc, old_sse
-	local test_h = inst_new('Humanoid')
-	old_gse = hf(test_h.GetStateEnabled, ncc(function(self, arg_1, ...)
+	old_gse = hf(h.GetStateEnabled, ncc(function(self, arg_1, ...)
 		if self ~= your_h or not is_hst(arg_1) then return old_gse(self, arg_1, ...) end
 		return if find(hst_approved, arg_1) then true else false
 	end))
@@ -92,29 +166,25 @@ do
 		return old_nc(self, arg_1, ...)
 	end))
 
-	old_sse = hf(test_h.SetStateEnabled, ncc(function(self, arg_1, ...)
+	old_sse = hf(h.SetStateEnabled, ncc(function(self, arg_1, ...)
 		if self ~= your_h or not is_hst(arg_1) then return old_sse(self, arg_1, ...) end
 		return old_sse(self, arg_1, if find(hst_approved, arg_1) then true else false)
 	end))
-
-	test_h:Destroy()
 end
-
--- set-up
-
-local create = coroutine.create
-local huge = math.huge
-local resume = coroutine.resume
-local vec3_power = Vector3.new(huge, huge, huge)
-local zero = Vector3.zero
 
 -- logic
 
 local added_at = huge
 local clear = table.clear
+local create = coroutine.create
 local coin_types = {'Coin'}
 local coins = {}
 local remove = table.remove
+local resume = coroutine.resume
+local smooth = Enum.SurfaceType.Smooth
+local smooth_plastic = Enum.Material.SmoothPlastic
+local vec3_power = Vector3.new(huge, huge, huge)
+local zero = Vector3.zero
 
 local function is_coin_valid(e)
 	return typeof(e) == 'Instance' and (e.Parent or game).Name == 'CoinContainer' and e.Name == 'Coin_Server' and
@@ -128,7 +198,7 @@ local function cc_child_removed(child)
 end
 
 local function cc_child_added(child)
-	sleep(0.01)
+	sleep()
 	if not is_coin_valid(child) then return end
 	coins[#coins + 1] = child
 	local c0, c1, c2
@@ -155,8 +225,17 @@ local function descendant_added(e)
 		local list = e:GetChildren()
 		for i = 1, #list do cc_child_added(list[i]) end
 		clear(list)
-	elseif e:IsA('BasePart') and e ~= (if your_h then your_h.RootPart else nil) and name ~= 'Coin_Server' then
-		e.CanTouch = false
+	elseif e:IsA('Attachment') or e:IsA('Constraint') or e:IsA('Explosion') or e:IsA('FloorWire') or e:IsA('ForceField') then
+		e.Visible = false
+	elseif e:IsA('BasePart') then
+		if e ~= (if your_h then your_h.RootPart else nil) and name ~= 'Coin_Server' then e.CanTouch = false end
+		e.BackSurface, e.BottomSurface, e.FrontSurface, e.LeftSurface, e.RightSurface, e.TopSurface = smooth, smooth, smooth, smooth, smooth, smooth
+		e.CastShadow, e.Material, e.Reflectance = false, smooth_plastic, 0
+	elseif e:IsA('Decal') then
+		e:Destroy()
+	elseif e:IsA('Beam') or e:IsA('Fire') or e:IsA('Highlight') or e:IsA('Light') or
+		e:IsA('ParticleEmitter') or e:IsA('Smoke') or e:IsA('Sparkles') or e:IsA('Trail') then
+		e.Enabled = false
 	end
 end
 
@@ -165,7 +244,7 @@ local function remove_all_except(inst, ...)
 	local children = inst:GetChildren()
 	for i = 1, #children do
 		local child = children[i]
-		if find(args, child.Name) then continue end
+		if not child.Parent or find(args, child.Name) then continue end
 		child:Destroy()
 	end
 	clear(args)
@@ -177,40 +256,87 @@ local function reset_velocity(char)
 	for i = 1, #descendants do
 		local descendant = descendants[i]
 		if not descendant:IsA('BasePart') then continue end
-		descendant.AssemblyAngularVelocity = zero
-		descendant.AssemblyLinearVelocity = zero
-		descendant.CanCollide = false
-		descendant.CanQuery = false
-		descendant.CanTouch = descendant.Name == 'HumanoidRootPart'
-		descendant.RotVelocity = zero
-		descendant.Velocity = zero
+		descendant.AssemblyAngularVelocity, descendant.AssemblyLinearVelocity, descendant.RotVelocity, descendant.Velocity = zero, zero, zero, zero
+		descendant.CanCollide, descendant.CanQuery, descendant.CanTouch = false, false, descendant.Name == 'HumanoidRootPart'
 	end
 	clear(descendants)
 end
 
-workspace.DescendantAdded:Connect(descendant_added)
-workspace.DescendantRemoving:Connect(function(e)
-	if e.Name ~= 'CoinContainer' then return end
-	added_at = huge
-	clear(coins)
-	you:SetAttribute('Done', nil)
-end)
-
 local sg = game:GetService('StarterGui')
+local sort = table.sort
+local sort_data
+local sort_data_len = 0
+local terrain = workspace.Terrain
+local vec_id = setmetatable({}, {__index = function(t, k) local r = t[k] if not r then r = tostring(k) t[k] = r end return r end})
+local dist_data = setmetatable({}, {__call = function(t, a, b)
+	local k = vec_id[a] .. ':' .. vec_id[b]
+	local r = t[k]
+	if not r then
+		r = (a - b).Magnitude
+		t[k] = r
+	end
+	return r
+end})
+
+local function sc_internal(a, b)
+	local a_pos = a.Position
+	local a_score = 0
+	local b_pos = b.Position
+	local b_score = 0
+	for i = 1, sort_data_len do
+		local pos = sort_data[i]
+		a_score += dist_data(a_pos, pos)
+		b_score += dist_data(b_pos, pos)
+	end
+	return a_score > b_score
+end
+
+local function sort_coins(coins)
+	sort_data = plrs:GetPlayers()
+	sort_data_len = #sort_data
+	for i = sort_data_len, 1, -1 do
+		local element = sort_data[i]
+		if not element or not element:FindFirstChildOfClass('Backpack') then remove(sort_data, i) continue end
+		local char = element.Character
+		if not char then remove(sort_data, i) continue end
+		local h = char:FindFirstChildOfClass('Humanoid')
+		if not h or h.Health <= 0 or h:GetState() == hst_dead or not h.RootPart then remove(sort_data, i) continue end
+		sort_data[i] = char:GetPivot().Position
+	end
+	pcall(sort, sc_internal, coins)
+	clear(dist_data)
+	clear(sort_data)
+	clear(vec_id)
+	sort_data = nil
+	sort_data_len = 0
+end
+
 do
+	workspace.DescendantAdded:Connect(descendant_added)
+	workspace.DescendantRemoving:Connect(function(e)
+		if e.Name ~= 'CoinContainer' then return end
+		added_at = huge
+		clear(coins)
+		you:SetAttribute('Done', nil)
+	end)
+
 	local list = workspace:GetDescendants()
 	for i = 1, #list do resume(create(descendant_added), list[i]) end
 	local sg_sc = sg.SetCore
 	local sg_scp = {Button1 = 'OK', Duration = 4, Icon = 'rbxassetid://7440784829', Text = 'Script activated', Title = 'AFK4'}
-	while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.04) end end
+	while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.4) end end
 end
 
 local all = Enum.CoreGuiType.All
 local cf_new = CFrame.new
+local colors_black = Color3.fromRGB(0, 0, 0)
 local lighting = game:GetService('Lighting')
 local rng = Random.new()
-local safe_pos = cf_new(0, -24, 0)
+local safe_pos = cf_new(0, -64, 0)
 local ss = game:GetService('SoundService')
+game:GetService('Chat').BubbleChatEnabled = false
+game:GetService('TextChatService'):WaitForChild('BubbleChatConfiguration').Enabled = false
+pcall(function() settings().QualityLevel = Enum.QualityLevel.Level01 end)
 while true do
 	local list = plrs:GetPlayers()
 	for i = 1, #list do
@@ -221,7 +347,7 @@ while true do
 		local children = char:GetChildren()
 		for j = 1, #children do
 			local child = children[j]
-			if child:IsA('Humanoid') then continue end
+			if not child.Parent or child:IsA('Humanoid') then continue end
 			local name = child.Name
 			if name == 'Head' or name == 'HumanoidRootPart' or name == 'LowerTorso' or name == 'Torso' or name == 'UpperTorso' then
 				remove_all_except(child, 'Neck', 'Root', 'RootJoint', 'Waist', 'WaistJoint')
@@ -231,10 +357,12 @@ while true do
 			child:Destroy()
 		end
 	end
+	lighting.FogColor, lighting.FogEnd, lighting.FogStart, lighting.GlobalShadows = colors_black, 1000000, 1000000, false
 	lighting:ClearAllChildren()
 	remove_all_except(workspace, 'Camera', 'Normal', 'Terrain', unpack(list))
 	sg:SetCoreGuiEnabled(all, false)
 	ss:ClearAllChildren()
+	terrain.WaterReflectance, terrain.WaterTransparency, terrain.WaterWaveSize, terrain.WaterWaveSpeed = 0, 0, 0, 0
 	workspace.Gravity = 0
 	local bp = you:FindFirstChildOfClass('Backpack')
 	if not bp or not bp.Parent then sleep(0.04) continue end
@@ -253,24 +381,24 @@ while true do
 			new_h:ChangeState(state)
 		end
 	end
-
 	local rp = your_h.RootPart
 	if not rp or not rp.Parent then sleep(0.04) continue end
 	if not rp:FindFirstChild('BAV') then
 		local bav = inst_new('BodyAngularVelocity')
 		bav.AngularVelocity = zero
+		bav.Archivable = false
 		bav.MaxTorque = vec3_power
 		bav.Name = 'BAV'
 		bav.P = 1250
 		bav.Parent = rp
 		local bv = inst_new('BodyVelocity')
+		bv.Archivable = false
 		bv.MaxForce = vec3_power
 		bv.Name = 'BV'
 		bv.P = 1250
 		bv.Velocity = zero
 		bv.Parent = rp
 	end
-
 	local map = workspace:FindFirstChild('Normal')
 	if not map then sleep(0.04) continue end
 	remove_all_except(map, 'CoinContainer')
@@ -287,13 +415,15 @@ while true do
 			char:PivotTo(safe_pos)
 		end
 	else
+		sort_coins(coins)
 		local coin = coins[rng:NextInteger(1, len)]
 		local t = 2.514
 		while char and char.Parent and is_coin_valid(coin) and t > 0 do
 			t -= sleep()
-			local cf = coin:GetPivot()
+			local cf = coin.CFrame
 			reset_velocity(char)
 			char:PivotTo(cf)
+			if not fti then continue end
 			local len = #coins
 			if len == 0 then continue end
 			local your_pos = cf.Position
