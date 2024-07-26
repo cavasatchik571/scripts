@@ -172,7 +172,7 @@ if gncm and hf and hmm and ncc then
 	end))
 end
 
--- source code
+-- logic
 
 local added_at = huge
 local clear = table.clear
@@ -349,16 +349,16 @@ while true do
 			if not child.Parent or child:IsA('Humanoid') then continue end
 			local name = child.Name
 			if name == 'Head' or name == 'HumanoidRootPart' or name == 'LowerTorso' or name == 'Torso' or name == 'UpperTorso' then
-				remove_all_except(child, 'Neck', 'Root', 'RootJoint', 'Waist', 'WaistJoint')
+				defer(remove_all_except, child, 'Neck', 'Root', 'RootJoint', 'Waist', 'WaistJoint')
 				child.Transparency = 1
 				continue
 			end
-			child:Destroy()
+			defer(child.Destroy, child)
 		end
 	end
 	lighting.FogColor, lighting.FogEnd, lighting.FogStart, lighting.GlobalShadows = colors_black, 1000000, 1000000, false
 	lighting:ClearAllChildren()
-	remove_all_except(workspace, 'Camera', 'Normal', 'Terrain', unpack(list))
+	defer(remove_all_except, workspace, 'Camera', 'Normal', 'Terrain', unpack(list))
 	sg:SetCoreGuiEnabled(all, false)
 	ss:ClearAllChildren()
 	terrain.WaterReflectance, terrain.WaterTransparency, terrain.WaterWaveSize, terrain.WaterWaveSpeed = 0, 0, 0, 0
