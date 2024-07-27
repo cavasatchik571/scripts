@@ -263,52 +263,49 @@ local function reset_velocity(char)
 	clear(descendants)
 end
 
+local dists = {}
+local opponents_len = 0
+local opponents_pos, your_prefix
 local sg = game:GetService('StarterGui')
 local sort = table.sort
-local sort_data
-local sort_data_len = 0
 local terrain = workspace.Terrain
-local vec_id = setmetatable({}, {__index = function(t, k) local r = t[k] if not r then r = tostring(k) t[k] = r end return r end})
-local dist_data = setmetatable({}, {__call = function(t, a, b)
-	local k = vec_id[a] .. ':' .. vec_id[b]
-	local r = t[k]
-	if not r then
-		r = (a - b).Magnitude
-		t[k] = r
-	end
-	return r
-end})
 
 local function sc_internal(a, b)
-	local a_pos = a.Position
-	local a_score = 0
-	local b_pos = b.Position
-	local b_score = 0
-	for i = 1, sort_data_len do
-		local pos = sort_data[i]
-		a_score += dist_data(a_pos, pos)
-		b_score += dist_data(b_pos, pos)
-	end
-	return a_score > b_score
+		local as, bs = tostring(a.Position), tostring(b.Position)
+		local a_score, b_score = -dists[your_prefix .. as], -dists[your_prefix .. bs]
+		for i = 1, opponents_len do
+				local prefix = opponents_pos[i]
+				a_score += dists[prefix .. as]
+				b_score += dists[prefix .. bs]
+		end
+		return a_score > b_score
 end
 
 local function sort_coins(coins)
-	sort_data = plrs:GetPlayers()
-	sort_data_len = #sort_data
-	for i = sort_data_len, 1, -1 do
-		local element = sort_data[i]
-		if not element or not element:FindFirstChildOfClass('Backpack') then remove(sort_data, i) continue end
+	opponents_pos = plrs:GetPlayers()
+	opponents_len = #opponents_pos
+	local coins_len = #coins
+	for i = opponents_len, 1, -1 do
+		local element = opponents_pos[i]
+		if not element or not element:FindFirstChildOfClass('Backpack') then remove(opponents_pos, i) continue end
 		local char = element.Character
-		if not char then remove(sort_data, i) continue end
+		if not char then remove(opponents_pos, i) continue end
 		local h = char:FindFirstChildOfClass('Humanoid')
-		if not h or h.Health <= 0 or h:GetState() == hst_dead or not h.RootPart then remove(sort_data, i) continue end
-		sort_data[i] = char:GetPivot().Position
+		if not h or h.Health <= 0 or h:GetState() == hst_dead or not h.RootPart then remove(opponents_pos, i) continue end
+		local pos = char:GetPivot().Position
+		local prefix = tostring(pos) .. ':'
+		for i = 1, coins_len do
+			local coin_pos = coins[i].Position
+			local id = prefix .. tostring(coin_pos)
+			if dists[id] then continue end
+			dists[id] = (coin_pos - pos).Magnitude * 100
+		end
+		if element == you then your_prefix = prefix else opponents_pos[i] = prefix end
 	end
-	pcall(sort, sc_internal, coins)
-	clear(dist_data)
-	clear(sort_data)
-	clear(vec_id)
-	sort_data, sort_data_len = nil, 0
+	sort(coins, sc_internal)
+	clear(dists)
+	clear(opponents_pos)
+	opponents_pos, opponents_len, your_prefix = nil, 0, nil
 end
 
 do
@@ -319,10 +316,11 @@ do
 		clear(coins)
 		you:SetAttribute('Done', nil)
 	end)
+
 	local list = workspace:GetDescendants()
 	for i = 1, #list do resume(create(descendant_added), list[i]) end
 	local sg_sc = sg.SetCore
-	local sg_scp = {Button1 = 'OK', Duration = 4, Icon = 'rbxassetid://7440784829', Text = 'Script activated.', Title = 'AFK4'}
+	local sg_scp = {Button1 = 'OK', Duration = 4, Icon = 'rbxassetid://7440784829', Text = 'Script activated', Title = 'AFK4'}
 	while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.04) end end
 end
 
@@ -356,6 +354,7 @@ while true do
 			defer(child.Destroy, child)
 		end
 	end
+
 	lighting.FogColor, lighting.FogEnd, lighting.FogStart, lighting.GlobalShadows = colors_black, 1000000, 1000000, false
 	lighting:ClearAllChildren()
 	defer(remove_all_except, workspace, 'Camera', 'Normal', 'Terrain', unpack(list))
@@ -380,6 +379,7 @@ while true do
 			new_h:ChangeState(state)
 		end
 	end
+
 	local rp = your_h.RootPart
 	if not rp or not rp.Parent then sleep(0.04) continue end
 	if not rp:FindFirstChild('BAV') then
@@ -407,7 +407,7 @@ while true do
 			you:SetAttribute('Done', true)
 			if not (bp:FindFirstChild('Knife') or char:FindFirstChild('Knife')) then your_h:ChangeState(hst_dead) continue end
 		end
-		local t = 0.4
+		local t = 0.2514
 		while char and char.Parent and t > 0 do
 			t -= sleep()
 			reset_velocity(char)
