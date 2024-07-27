@@ -420,15 +420,6 @@ local function scripted_shoot()
 	ui_btn.TextStrokeColor3 = shooting_enabled and _4 or colors_black
 end
 
-old_nc = hmm(game, '__namecall', ncc(function(self, arg_1, arg_2, arg_3, ...)
-	local ncm = gncm()
-	if ncm == 'InvokeServer' and shooting_enabled and arg_1 == 1 and typeof(arg_2) == 'Vector3' and arg_3 == 'AH2' and
-		find(self:GetFullName(), 'Gun.KnifeLocal.CreateBeam.RemoteFunction', 1, true) and self:IsA('RemoteFunction') then
-		return old_nc(self, 1, get_threat_pos(get_weapon(you)), 'AH2', ...)
-	end
-	return old_nc(self, arg_1, arg_2, arg_3, ...)
-end))
-
 old_i = hmm(game, '__index', ncc(function(self, key)
 	if self == mouse then
 		if key ~= 'X' and key ~= 'Y' then return old_i(self, key) end
@@ -449,6 +440,15 @@ old_is = hf(inst_new('RemoteFunction').InvokeServer, ncc(function(self, arg_1, a
 		return old_is(self, 1, get_threat_pos(get_weapon(you)) or arg_2, 'AH2', ...)
 	end
 	return old_is(self, arg_1, arg_2, arg_3, ...)
+end))
+
+old_nc = hmm(game, '__namecall', ncc(function(self, arg_1, arg_2, arg_3, ...)
+	local ncm = gncm()
+	if ncm == 'InvokeServer' and shooting_enabled and arg_1 == 1 and typeof(arg_2) == 'Vector3' and arg_3 == 'AH2' and
+		find(self:GetFullName(), 'Gun.KnifeLocal.CreateBeam.RemoteFunction', 1, true) and self:IsA('RemoteFunction') then
+		return old_nc(self, 1, get_threat_pos(get_weapon(you)) or arg_2, 'AH2', ...)
+	end
+	return old_nc(self, arg_1, arg_2, arg_3, ...)
 end))
 
 ui_btn.Activated:Connect(scripted_shoot)
