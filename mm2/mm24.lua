@@ -6,14 +6,15 @@ local _4 = Color3.new(0, .4984, 0)
 -- by @Vov4ik4124
 
 if game.PlaceId ~= 142823291 then return end
+local env = (getgenv or function() end)() or _ENV or shared or _G
 local fti = firetouchinterest or fire_touch_interest
 local gncm = getnamecallmethod or get_namecall_method
-local hmm = hookmetamethod or hook_meta_method
-local nc = newcclosure
+local hmm = hookmetamethod or hook_metamethod
+local hf = hookfunction or hook_function
+local ncc = newcclosure or new_cclosure
 local plrs = game:GetService('Players')
 local you = plrs.LocalPlayer
-if not fti or not gncm or not hmm or not nc then return you:Kick('MM24 doesn\'t support your executor') end
-local env = (getgenv or function() end)() or shared or _G
+if not env or not fti or not gncm or not hf or not hmm or not ncc then return you:Kick('Your executor does not support MM24') end
 if env.mm24 then return end
 env.mm24 = true
 local danger_speed = 304
@@ -23,7 +24,7 @@ local hex_color_innocent = '#FFFFFF'
 local hex_color_murderer = '#FF0000'
 local hex_color_sheriff = '#0000FF'
 local highlight_refresh_rate = 0.144
-local highlight_transparency = 0.75
+local highlight_transparency = 0.744
 local ih_size_increase = 1.5
 local ih_transparency = 0.24
 local jump_boost = 1.15
@@ -34,7 +35,7 @@ local name_tag_height_offset = 2
 local name_tag_refresh_rate = 1
 local name_tag_thickness = 4
 local scripted_shoot_cooldown = 0.144
-local speed_boost = 1.304
+local speed_boost = 1.314
 
 local cam = workspace.CurrentCamera
 local cf_new = CFrame.new
@@ -55,6 +56,7 @@ local defer = task.defer
 local enum_kc = Enum.KeyCode
 local enum_rfi = Enum.RaycastFilterType
 local enum_uit = Enum.UserInputType
+local find = string.find
 local get_plr_data = game:GetService('ReplicatedStorage'):WaitForChild('Remotes'):WaitForChild('Extras'):WaitForChild('GetPlayerData')
 local gs = game:GetService('GuiService')
 local highlights = {}
@@ -82,7 +84,6 @@ local uis = game:GetService('UserInputService')
 local upper = string.upper
 local vec2_new = Vector2.new
 local vec3_new = Vector3.new
-local vim = game:GetService('VirtualInputManager')
 local zero = Vector3.zero
 
 local highlight_prefab = inst_new('BoxHandleAdornment')
@@ -161,24 +162,24 @@ ui_btn.SizeConstraint = Enum.SizeConstraint.RelativeYY
 ui_btn.Text = '4'
 ui_btn.TextColor3 = colors_white
 ui_btn.TextScaled = true
-ui_btn.TextStrokeColor3 = _4
+ui_btn.TextStrokeColor3 = colors_black
 ui_btn.TextStrokeTransparency = 0
 ui_btn.ZIndex = 4000
 stroke:Clone().Parent = ui_btn
 ui.Parent = pcall(tostring, core_gui) and core_gui or you:WaitForChild('PlayerGui')
 
----4💚
+---4
 
 local apos = ui.AbsolutePosition
 local cx, cy = -apos.X, -apos.Y
+local old_i, old_is, old_nc
 local rcp_exclude = rcp_new() do rcp_exclude.FilterType, rcp_exclude.IgnoreWater, rcp_exclude.RespectCanCollide = enum_rfi.Exclude, true, false end
 local rcp_include = rcp_new() do rcp_include.FilterType, rcp_include.IgnoreWater, rcp_include.RespectCanCollide = enum_rfi.Include, true, false end
 local set = function(a, b, c) a[b] = c end
 local shooting_enabled = true
 
 local function adjust_line(highlight, p0, p1)
-	highlight.CFrame = cf_new((p0 + p1) / 2, p0)
-	highlight.Size = vec3_new(line_thickness, line_thickness, (p0 - p1).Magnitude)
+	highlight.CFrame, highlight.Size = cf_new((p0 + p1) / 2, p0), vec3_new(line_thickness, line_thickness, (p0 - p1).Magnitude)
 end
 
 local special_func_checks = {
@@ -202,9 +203,7 @@ local special_func_checks = {
 			clear(list)
 			adjust_line(line, p0, if result then result.Position else p0 + unit)
 		end)
-		line.Adornee = terrain
-		line.Color3 = colors_murderer
-		line.Parent = parent
+		line.Adornee, line.Color3, line.Parent = terrain, colors_murderer, parent
 		debris:AddItem(parent, 10)
 		return colors_murderer, ih_transparency
 	end,
@@ -256,9 +255,7 @@ local function descendant_added_w(e)
 		if not a0 or not a1 then return end
 		local line = highlight_prefab:Clone()
 		adjust_line(line, a0.WorldPosition, a1.WorldPosition)
-		line.Adornee = terrain
-		line.Color3 = colors_sheriff
-		line.Parent = ui
+		line.Adornee, line.Color3, line.Parent = terrain, colors_sheriff, ui
 		debris:AddItem(line, gun_line_lifetime)
 	elseif e:IsA('Decal') then
 		e.Transparency = 1
@@ -320,12 +317,11 @@ plrs.PlayerRemoving:Connect(function(plr)
 end)
 
 local list = plrs:GetPlayers()
-local old_func
 for i = 1, #list do plr_added(list[i]) end
 clear(list)
 local did_exist, rendering_stuff = pcall(settings)
 local lowest_quality = Enum.QualityLevel.Level01
-lighting.FogColor, lighting.FogEnd, lighting.FogStart, lighting.GlobalShadows = colors_black, 1000000, 1000000, false
+lighting.FogColor, lighting.FogEnd, lighting.FogStart, lighting.GlobalShadows = colors_black, 10000000, 10000000, false
 terrain.WaterReflectance, terrain.WaterTransparency, terrain.WaterWaveSize, terrain.WaterWaveSpeed = 0, 0, 0, 0
 if did_exist then
 	local rendering = rendering_stuff.Rendering
@@ -368,11 +364,21 @@ local function get_alive_plrs()
 	return list
 end
 
-local function get_weapon(char)
-	local tool = char:FindFirstChild('Gun')
-	if tool and tool:FindFirstChild('Handle') then return tool end
-	tool = char:FindFirstChild('Knife')
-	if tool and tool:FindFirstChild('Handle') then return tool end
+local function get_weapon(plr)
+	local bp = plr:FindFirstChild('Backpack')
+	if bp then
+		local tool = bp:FindFirstChild('Gun')
+		if tool and tool:FindFirstChild('Handle') then return tool end
+		tool = bp:FindFirstChild('Knife')
+		if tool and tool:FindFirstChild('Handle') then return tool end
+	end
+	local char = plr.Character
+	if char then
+		local tool = char:FindFirstChild('Gun')
+		if tool and tool:FindFirstChild('Handle') then return tool end
+		tool = char:FindFirstChild('Knife')
+		if tool and tool:FindFirstChild('Handle') then return tool end
+	end
 end
 
 local function nearest_threat(origin, dist, has, reachable)
@@ -398,7 +404,7 @@ local function nearest_threat(origin, dist, has, reachable)
 	return result_pos, result
 end
 
-local function get_threat_coordinates(weapon)
+local function get_threat_pos(weapon)
 	if not weapon then return end
 	local name, origin, pos = weapon.Name, weapon.Handle.Position, nil
 	if name == 'Gun' then
@@ -406,60 +412,52 @@ local function get_threat_coordinates(weapon)
 	elseif name == 'Knife' then
 		pos = nearest_threat(origin, long_range_dist, 'Gun', true) or nearest_threat(origin, long_range_dist, nil, true)
 	end
-	if not pos then return end
-	local screen_point = cam:WorldToScreenPoint(pos)
-	return screen_point.X + cx, screen_point.Y + cy
+	return pos
 end
 
 local function scripted_shoot()
-	if not shooting_enabled or not is_alive(you) then return end
-	local weapon = get_weapon(you.Character)
-	if not weapon then return end
-	local succ = false
-	if uis:GetLastInputType() == touch then
-		local x, y = get_threat_coordinates(weapon)
-		if x then
-			succ = true
-			vim:SendTouchEvent(24, 0, x, y)
-		end
-		local x, y = get_threat_coordinates(weapon)
-		defer(vim.SendTouchEvent, vim, 24, 2, x or -1, y or -1)
-	else
-		local mb = weapon.Name == 'Knife' and 1 or 0
-		local x, y = get_threat_coordinates(weapon)
-		if x then
-			succ = true
-			vim:SendMouseButtonEvent(x, y, mb, true, nil, 0)
-		end
-		local x, y = get_threat_coordinates(weapon)
-		defer(vim.SendMouseButtonEvent, vim, x or -1, y or -1, mb, false, nil, 0)
-	end
-	if not succ then return end
-	shooting_enabled = false
-	sleep(scripted_shoot_cooldown)
-	shooting_enabled = true
+	shooting_enabled = not shooting_enabled
+	ui_btn.TextStrokeColor3 = shooting_enabled and _4 or colors_black
 end
+
+old_nc = hmm(game, '__namecall', ncc(function(self, arg_1, arg_2, arg_3, ...)
+	local ncm = gncm()
+	if ncm == 'InvokeServer' and arg_1 == 1 and typeof(arg_2) == 'Vector3' and arg_3 == 'AH2' and
+		find(self:GetFullName(), 'Gun.KnifeLocal.CreateBeam.RemoteFunction', 1, true) and self:IsA('RemoteFunction') then
+		return old_nc(self, 1, get_threat_pos(get_weapon(you)), 'AH2')
+	end
+	return old_nc(self, ...)
+end))
+
+old_i = hmm(game, '__index', ncc(function(self, key)
+	if self == mouse then
+		if key ~= 'X' and key ~= 'Y' then return old_i(self, key) end
+		local pos = get_threat_pos(get_weapon(you))
+		if not pos then return old_i(self, key) end
+		local screen_point = cam:WorldToScreenPoint(pos)
+		local x, y = screen_point.X + cx, screen_point.Y + cy
+		local val = if key == 'X' then x elseif key == 'Y' then y else nil
+		if not val then return old_i(self, key) end
+		return val
+	end
+	return old_i(self, key)
+end))
+
+old_is = hf(inst_new('RemoteFunction').InvokeServer, ncc(function(self, arg_1, arg_2, arg_3, ...)
+	if arg_1 == 1 and typeof(arg_2) == 'Vector3' and arg_3 == 'AH2' and
+		find(self:GetFullName(), 'Gun.KnifeLocal.CreateBeam.RemoteFunction', 1, true) and self:IsA('RemoteFunction') then
+		return old_is(self, 1, get_threat_pos(get_weapon(you)), 'AH2')
+	end
+	return old_is(self, ...)
+end))
 
 ui_btn.Activated:Connect(scripted_shoot)
 uis.InputBegan:Connect(function(input, gpe)
 	if gpe or gs.MenuIsOpen or input.UserInputType ~= keyboard or uis:GetFocusedTextBox() then return end
 	local key = input.KeyCode
-	if key ~= enum_kc.Four and key ~= enum_kc.R then return end
+	if key ~= enum_kc.Four and key ~= enum_kc.Y then return end
 	scripted_shoot()
 end)
-
-local old_hmm_index
-old_hmm_index = hmm(game, '__index', nc(function(self, key)
-	if self == mouse then
-		if key ~= 'X' and key ~= 'Y' then return old_hmm_index(self, key) end
-		local x, y = get_threat_coordinates(get_weapon(you.Character))
-		if not x then return old_hmm_index(self, key) end
-		local val = if key == 'X' then x elseif key == 'Y' then y else nil
-		if not val then return old_hmm_index(self, key) end
-		return val
-	end
-	return old_hmm_index(self, key)
-end))
 
 local sg = game:GetService('StarterGui')
 local sg_sc = sg.SetCore
@@ -518,6 +516,7 @@ while true do
 		lbl.TextColor3 = color
 		lbl.Stroke.Color = color
 	end
+
 	if not is_alive(you) then ui_btn.Parent = nil continue end
 	local bp = you.Backpack
 	local char = you.Character
@@ -550,6 +549,7 @@ while true do
 			end
 		end
 	end
+
 	local equipped_knife = char:FindFirstChild('Knife')
 	ui_btn.Parent = (char:FindFirstChild('Gun') or equipped_knife) and ui or nil
 	if not equipped_knife then continue end
