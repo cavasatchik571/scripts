@@ -440,7 +440,7 @@ old_is = hf(inst_new('RemoteFunction').InvokeServer, ncc(function(self, ...)
 		local arg_2 = args[2]
 		if args[1] ~= 1 or typeof(arg_2) ~= 'Vector3' or args[3] ~= 'AH2' then return old_is(self, ...) end
 		args[2] = get_threat_pos(get_weapon(you)) or arg_2
-		return old_nc(self, unpack(args))
+		return old_is(self, unpack(args))
 	end
 	return old_is(self, ...)
 end))
