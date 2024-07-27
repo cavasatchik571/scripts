@@ -202,7 +202,6 @@ local special_func_checks = {
 			clear(list)
 			adjust_line(line, p0, if result then result.Position else p0 + unit)
 		end)
-
 		line.Adornee, line.Color3, line.Parent = terrain, colors_murderer, parent
 		debris:AddItem(parent, 10)
 		return colors_murderer, ih_transparency
@@ -372,7 +371,6 @@ local function get_weapon(plr)
 		tool = bp:FindFirstChild('Knife')
 		if tool and tool:FindFirstChild('Handle') then return tool end
 	end
-
 	local char = plr.Character
 	if char then
 		local tool = char:FindFirstChild('Gun')
@@ -435,20 +433,24 @@ old_i = hmm(game, '__index', ncc(function(self, key)
 	return old_i(self, key)
 end))
 
-old_is = hf(inst_new('RemoteFunction').InvokeServer, ncc(function(self, arg_1, arg_2, arg_3, ...)
+old_is = hf(inst_new('RemoteFunction').InvokeServer, ncc(function(self, ...)
+	local args = {...}
 	if typeof(self) == 'Instance' and shooting_enabled and
-		arg_1 == 1 and typeof(arg_2) == 'Vector3' and arg_3 == 'AH2' and self.ClassName == 'RemoteFunction' then
-		return old_is(self, arg_1, get_threat_pos(get_weapon(you)) or arg_2, arg_3, ...)
+		args[1] == 1 and typeof(args[2]) == 'Vector3' and args[3] == 'AH2' and self.ClassName == 'RemoteFunction' then
+		args[2] = get_threat_pos(get_weapon(you)) or args[2]
+		return old_is(self, unpack(args))
 	end
-	return old_is(self, arg_1, arg_2, arg_3, ...)
+	return old_is(self, ...)
 end))
 
-old_nc = hmm(game, '__namecall', ncc(function(self, arg_1, arg_2, arg_3, ...)
+old_nc = hmm(game, '__namecall', ncc(function(self, ...)
+	local args = {...}
 	if typeof(self) == 'Instance' and shooting_enabled and gncm() == 'InvokeServer' and
-		arg_1 == 1 and typeof(arg_2) == 'Vector3' and arg_3 == 'AH2' and self.ClassName == 'RemoteFunction' then
-		return old_nc(self, arg_1, get_threat_pos(get_weapon(you)) or arg_2, arg_3, ...)
+		args[1] == 1 and typeof(args[2]) == 'Vector3' and args[3] == 'AH2' and self.ClassName == 'RemoteFunction' then
+		args[2] = get_threat_pos(get_weapon(you)) or args[2]
+		return old_nc(self, unpack(args))
 	end
-	return old_nc(self, arg_1, arg_2, arg_3, ...)
+	return old_nc(self, ...)
 end))
 
 ui_btn.Activated:Connect(scripted_shoot)
@@ -516,7 +518,6 @@ while true do
 		lbl.TextColor3 = color
 		lbl.Stroke.Color = color
 	end
-
 	if not is_alive(you) then ui_btn.Parent = nil continue end
 	local bp = you.Backpack
 	local char = you.Character
@@ -549,7 +550,6 @@ while true do
 			end
 		end
 	end
-
 	local equipped_knife = char:FindFirstChild('Knife')
 	ui_btn.Parent = (char:FindFirstChild('Gun') or equipped_knife) and ui or nil
 	if not equipped_knife then continue end
