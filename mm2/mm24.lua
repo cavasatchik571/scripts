@@ -429,7 +429,7 @@ local function scripted_shoot()
 	ui_btn.TextStrokeColor3 = shooting_enabled and _4 or colors_black
 end
 
-old_i = hmm(game, '__index', function(self, key)
+old_i = hmm(game, '__index', ncc(function(self, key)
 	if not shooting_enabled or self ~= mouse or (key ~= 'X' and key ~= 'Y') then return old_i(self, key) end
 	local pos = get_threat_pos(get_weapon(you))
 	if not pos then return old_i(self, key) end
@@ -440,9 +440,9 @@ old_i = hmm(game, '__index', function(self, key)
 		return screen_point.Y + cy
 	end
 	return old_i(self, key)
-end)
+end))
 
-old_is = hf(inst_new('RemoteFunction').InvokeServer, function(self, ...)
+old_is = hf(inst_new('RemoteFunction').InvokeServer, ncc(function(self, ...)
 	if not shooting_enabled or self.ClassName ~= 'RemoteFunction' then return old_is(self, ...) end
 	local path = get_path(self)
 	if find(path, 'Gun.KnifeLocal.CreateBeam.RemoteFunction', 1, true) then
@@ -450,12 +450,13 @@ old_is = hf(inst_new('RemoteFunction').InvokeServer, function(self, ...)
 		local arg_2 = args[2]
 		if args[1] ~= 1 or typeof(arg_2) ~= 'Vector3' or args[3] ~= 'AH2' then return old_is(self, ...) end
 		args[2] = get_threat_pos(get_weapon(you)) or arg_2
-		return old_is(self, unpack(args))
+		old_is(self, unpack(args))
+		return true
 	end
 	return old_is(self, ...)
-end)
+end))
 
-old_nc = hmm(game, '__namecall', function(self, ...)
+old_nc = hmm(game, '__namecall', ncc(function(self, ...)
 	if not shooting_enabled or self.ClassName ~= 'RemoteFunction' or gncm() ~= 'InvokeServer' then return old_nc(self, ...) end
 	local path = get_path(self)
 	if find(path, 'Gun.KnifeLocal.CreateBeam.RemoteFunction', 1, true) then
@@ -463,10 +464,11 @@ old_nc = hmm(game, '__namecall', function(self, ...)
 		local arg_2 = args[2]
 		if args[1] ~= 1 or typeof(arg_2) ~= 'Vector3' or args[3] ~= 'AH2' then return old_nc(self, ...) end
 		args[2] = get_threat_pos(get_weapon(you)) or arg_2
-		return old_nc(self, unpack(args))
+		old_nc(self, unpack(args))
+		return true
 	end
 	return old_nc(self, ...)
-end)
+end))
 
 ui_btn.Activated:Connect(scripted_shoot)
 uis.InputBegan:Connect(function(input, gpe)
