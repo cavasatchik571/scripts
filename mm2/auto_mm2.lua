@@ -287,11 +287,11 @@ local function sort_coins(coins)
 	local coins_len = #coins
 	for i = opponents_len, 1, -1 do
 		local element = opponents_pos[i]
-		if not element or not element:FindFirstChildOfClass('Backpack') then remove(opponents_pos, i) continue end
+		if not element or not element:FindFirstChildOfClass('Backpack') then opponents_len -= 1 remove(opponents_pos, i) continue end
 		local char = element.Character
-		if not char then remove(opponents_pos, i) continue end
+		if not char then opponents_len -= 1 remove(opponents_pos, i) continue end
 		local h = char:FindFirstChildOfClass('Humanoid')
-		if not h or h.Health <= 0 or h:GetState() == hst_dead or not h.RootPart then remove(opponents_pos, i) continue end
+		if not h or h.Health <= 0 or h:GetState() == hst_dead or not h.RootPart then opponents_len -= 1 remove(opponents_pos, i) continue end
 		local pos = char:GetPivot().Position
 		local prefix = tostring(pos) .. ':'
 		for i = 1, coins_len do
@@ -300,7 +300,7 @@ local function sort_coins(coins)
 			if dists[id] then continue end
 			dists[id] = (coin_pos - pos).Magnitude * 100
 		end
-		if element == you then your_prefix = prefix else opponents_pos[i] = prefix end
+		if element == you then your_prefix = prefix opponents_len -= 1 remove(opponents_pos, i) else opponents_pos[i] = prefix end
 	end
 	sort(coins, sc_internal)
 	clear(dists)
@@ -321,7 +321,7 @@ do
 	for i = 1, #list do resume(create(descendant_added), list[i]) end
 	local sg_sc = sg.SetCore
 	local sg_scp = {Button1 = 'OK', Duration = 4, Icon = 'rbxassetid://7440784829', Text = 'Script activated', Title = 'AFK4'}
-	while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.04) end end
+	while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.4) end end
 end
 
 local all = Enum.CoreGuiType.All
