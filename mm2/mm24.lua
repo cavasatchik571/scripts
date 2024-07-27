@@ -363,6 +363,16 @@ local function get_alive_plrs()
 	return list
 end
 
+local function get_path(inst)
+	local r = inst.Name
+	while true do
+		inst = inst.Parent
+		if not inst then break end
+		r = inst.Name .. '.' .. r
+	end
+	return r
+end
+
 local function get_weapon(plr)
 	local bp = plr:FindFirstChild('Backpack')
 	if bp then
@@ -420,34 +430,39 @@ local function scripted_shoot()
 end
 
 old_i = hmm(game, '__index', ncc(function(self, key)
-	if self == mouse then
-		if key ~= 'X' and key ~= 'Y' then return old_i(self, key) end
-		local pos = get_threat_pos(get_weapon(you))
-		if not pos then return old_i(self, key) end
-		local screen_point = cam:WorldToScreenPoint(pos)
-		local x, y = screen_point.X + cx, screen_point.Y + cy
-		local val = if key == 'X' then x elseif key == 'Y' then y else nil
-		if not val then return old_i(self, key) end
-		return val
+	if not shooting_enabled or self ~= mouse or (key ~= 'X' and key ~= 'Y') then return old_i(self, key) end
+	local pos = get_threat_pos(get_weapon(you))
+	if not pos then return old_i(self, key) end
+	local screen_point = cam:WorldToScreenPoint(pos)
+	if key == 'X' then
+		return screen_point.X + cx
+	elseif key == 'Y' then
+		return screen_point.Y + cy
 	end
 	return old_i(self, key)
 end))
 
 old_is = hf(inst_new('RemoteFunction').InvokeServer, ncc(function(self, ...)
-	local args = {...}
-	if typeof(self) == 'Instance' and shooting_enabled and
-		args[1] == 1 and typeof(args[2]) == 'Vector3' and args[3] == 'AH2' and self.ClassName == 'RemoteFunction' then
-		args[2] = get_threat_pos(get_weapon(you)) or args[2]
+	if not shooting_enabled or self.ClassName ~= 'RemoteFunction' then return old_is(self, ...) end
+	local path = get_path(self)
+	if find(path, 'Gun.KnifeLocal.CreateBeam.RemoteFunction', 1, true) then
+		local args = {...}
+		local arg_2 = args[2]
+		if args[1] ~= 1 or typeof(arg_2) ~= 'Vector3' or args[3] ~= 'AH2' then return old_is(self, ...) end
+		args[2] = get_threat_pos(get_weapon(you)) or arg_2
 		return old_is(self, unpack(args))
 	end
 	return old_is(self, ...)
 end))
 
 old_nc = hmm(game, '__namecall', ncc(function(self, ...)
-	local args = {...}
-	if typeof(self) == 'Instance' and shooting_enabled and gncm() == 'InvokeServer' and
-		args[1] == 1 and typeof(args[2]) == 'Vector3' and args[3] == 'AH2' and self.ClassName == 'RemoteFunction' then
-		args[2] = get_threat_pos(get_weapon(you)) or args[2]
+	if not shooting_enabled or self.ClassName ~= 'RemoteFunction' or gncm() ~= 'InvokeServer' then return old_nc(self, ...) end
+	local path = get_path(self)
+	if find(path, 'Gun.KnifeLocal.CreateBeam.RemoteFunction', 1, true) then
+		local args = {...}
+		local arg_2 = args[2]
+		if args[1] ~= 1 or typeof(arg_2) ~= 'Vector3' or args[3] ~= 'AH2' then return old_nc(self, ...) end
+		args[2] = get_threat_pos(get_weapon(you)) or arg_2
 		return old_nc(self, unpack(args))
 	end
 	return old_nc(self, ...)
