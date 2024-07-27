@@ -411,7 +411,7 @@ local function get_threat_pos(weapon)
 	elseif name == 'Knife' then
 		pos = nearest_threat(origin, long_range_dist, 'Gun', true) or nearest_threat(origin, long_range_dist, nil, true)
 	end
-	return if pos then (pos - origin).Unit * long_range_dis else nil -- return pos
+	return pos
 end
 
 local function scripted_shoot()
