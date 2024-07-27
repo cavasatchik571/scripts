@@ -14,7 +14,7 @@ local hf = hookfunction or hook_function
 local ncc = newcclosure or new_cclosure
 local plrs = game:GetService('Players')
 local you = plrs.LocalPlayer
-if not env or not fti or not gncm or not hf or not hmm or not ncc then return you:Kick('Your executor does not support MM24') end
+if not env or not fti or not gncm or not hf or not hmm or not ncc then return you:Kick('Your client does not support MM24 script') end
 if env.mm24 then return end
 env.mm24 = true
 local danger_speed = 304
@@ -202,6 +202,7 @@ local special_func_checks = {
 			clear(list)
 			adjust_line(line, p0, if result then result.Position else p0 + unit)
 		end)
+
 		line.Adornee, line.Color3, line.Parent = terrain, colors_murderer, parent
 		debris:AddItem(parent, 10)
 		return colors_murderer, ih_transparency
@@ -435,18 +436,17 @@ old_i = hmm(game, '__index', ncc(function(self, key)
 end))
 
 old_is = hf(inst_new('RemoteFunction').InvokeServer, ncc(function(self, arg_1, arg_2, arg_3, ...)
-	if shooting_enanled and arg_1 == 1 and typeof(arg_2) == 'Vector3' and arg_3 == 'AH2' and
-		find(self:GetFullName(), 'Gun.KnifeLocal.CreateBeam.RemoteFunction', 1, true) and self:IsA('RemoteFunction') then
-		return old_is(self, 1, get_threat_pos(get_weapon(you)) or arg_2, 'AH2', ...)
+	if typeof(self) == 'Instance' and shooting_enabled and
+		arg_1 == 1 and typeof(arg_2) == 'Vector3' and arg_3 == 'AH2' and self.ClassName == 'RemoteFunction' then
+		return old_is(self, arg_1, get_threat_pos(get_weapon(you)) or arg_2, arg_3, ...)
 	end
 	return old_is(self, arg_1, arg_2, arg_3, ...)
 end))
 
 old_nc = hmm(game, '__namecall', ncc(function(self, arg_1, arg_2, arg_3, ...)
-	local ncm = gncm()
-	if ncm == 'InvokeServer' and shooting_enabled and arg_1 == 1 and typeof(arg_2) == 'Vector3' and arg_3 == 'AH2' and
-		find(self:GetFullName(), 'Gun.KnifeLocal.CreateBeam.RemoteFunction', 1, true) and self:IsA('RemoteFunction') then
-		return old_nc(self, 1, get_threat_pos(get_weapon(you)) or arg_2, 'AH2', ...)
+	if typeof(self) == 'Instance' and shooting_enabled and gncm() == 'InvokeServer' and
+		arg_1 == 1 and typeof(arg_2) == 'Vector3' and arg_3 == 'AH2' and self.ClassName == 'RemoteFunction' then
+		return old_nc(self, arg_1, get_threat_pos(get_weapon(you)) or arg_2, arg_3, ...)
 	end
 	return old_nc(self, arg_1, arg_2, arg_3, ...)
 end))
