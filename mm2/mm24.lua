@@ -20,9 +20,9 @@ env.mm24 = true
 local danger_speed = 304
 local danger_y_zone = -400
 local gun_line_lifetime = 0.64
-local hex_color_innocent = '#FFFFFF'
-local hex_color_murderer = '#FF0000'
-local hex_color_sheriff = '#0000FF'
+local hex_color_innocent = '#FFF'
+local hex_color_murderer = '#F00'
+local hex_color_sheriff = '#00F'
 local highlight_refresh_rate = 0.144
 local highlight_transparency = 0.75
 local ih_size_increase = 1.5
@@ -34,7 +34,6 @@ local melee_hitbox_extender = 6
 local name_tag_height_offset = 2
 local name_tag_refresh_rate = 1
 local name_tag_thickness = 4
-local scripted_shoot_cooldown = 0.144
 local speed_boost = 1.314
 
 local cam = workspace.CurrentCamera
@@ -124,7 +123,7 @@ name_tag_lbl.TextColor3 = colors_white
 name_tag_lbl.TextScaled = true
 name_tag_lbl.TextStrokeColor3 = colors_black
 name_tag_lbl.TextStrokeTransparency = 0
-name_tag_lbl.ZIndex = 4000
+name_tag_lbl.ZIndex = 40000
 name_tag_lbl.Parent = name_tag
 
 local stroke = inst_new('UIStroke')
@@ -139,7 +138,7 @@ stroke.Parent = name_tag_lbl
 local ui = inst_new('ScreenGui')
 ui.AutoLocalize = false
 ui.ClipToDeviceSafeArea = false
-ui.DisplayOrder = 4000
+ui.DisplayOrder = 40000
 ui.Name = '4Gui'
 ui.ResetOnSpawn = false
 ui.ScreenInsets = Enum.ScreenInsets.None
@@ -164,7 +163,7 @@ ui_btn.TextColor3 = colors_white
 ui_btn.TextScaled = true
 ui_btn.TextStrokeColor3 = colors_black
 ui_btn.TextStrokeTransparency = 0
-ui_btn.ZIndex = 4000
+ui_btn.ZIndex = 40000
 stroke:Clone().Parent = ui_btn
 ui.Parent = pcall(tostring, core_gui) and core_gui or you:WaitForChild('PlayerGui')
 
@@ -372,6 +371,7 @@ local function get_weapon(plr)
 		tool = bp:FindFirstChild('Knife')
 		if tool and tool:FindFirstChild('Handle') then return tool end
 	end
+
 	local char = plr.Character
 	if char then
 		local tool = char:FindFirstChild('Gun')
@@ -424,9 +424,9 @@ old_nc = hmm(game, '__namecall', ncc(function(self, arg_1, arg_2, arg_3, ...)
 	local ncm = gncm()
 	if ncm == 'InvokeServer' and arg_1 == 1 and typeof(arg_2) == 'Vector3' and arg_3 == 'AH2' and
 		find(self:GetFullName(), 'Gun.KnifeLocal.CreateBeam.RemoteFunction', 1, true) and self:IsA('RemoteFunction') then
-		return old_nc(self, 1, get_threat_pos(get_weapon(you)), 'AH2')
+		return old_nc(self, 1, get_threat_pos(get_weapon(you)), 'AH2', ...)
 	end
-	return old_nc(self, ...)
+	return old_nc(self, arg_1, arg_2, arg_3, ...)
 end))
 
 old_i = hmm(game, '__index', ncc(function(self, key)
@@ -446,9 +446,9 @@ end))
 old_is = hf(inst_new('RemoteFunction').InvokeServer, ncc(function(self, arg_1, arg_2, arg_3, ...)
 	if arg_1 == 1 and typeof(arg_2) == 'Vector3' and arg_3 == 'AH2' and
 		find(self:GetFullName(), 'Gun.KnifeLocal.CreateBeam.RemoteFunction', 1, true) and self:IsA('RemoteFunction') then
-		return old_is(self, 1, get_threat_pos(get_weapon(you)), 'AH2')
+		return old_is(self, 1, get_threat_pos(get_weapon(you)), 'AH2', ...)
 	end
-	return old_is(self, ...)
+	return old_is(self, arg_1, arg_2, arg_3, ...)
 end))
 
 ui_btn.Activated:Connect(scripted_shoot)
@@ -462,7 +462,7 @@ end)
 local sg = game:GetService('StarterGui')
 local sg_sc = sg.SetCore
 local sg_scp = {Button1 = 'OK', Duration = 4, Icon = 'rbxassetid://7440784829', Text = 'Script activated', Title = 'MM24'}
-while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.4) end end
+while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.04) end end
 clear(sg_scp)
 coroutine_resume(coroutine_create(function()
 	while true do
