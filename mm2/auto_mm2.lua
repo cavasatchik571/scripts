@@ -326,7 +326,7 @@ end
 
 local function best_coin()
 	sort_coins(coins)
-	return coins[rng:NextInteger(1, min(4, #coins))]
+	return coins[rng:NextInteger(1, min(8, #coins))]
 end
 
 local all = Enum.CoreGuiType.All
