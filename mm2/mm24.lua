@@ -104,7 +104,7 @@ name_tag.LightInfluence = 0
 name_tag.MaxDistance = 740
 name_tag.Name = 'NameTag'
 name_tag.ResetOnSpawn = false
-name_tag.Size = udim2_fs(6, 1.444)
+name_tag.Size = udim2_fs(6, 1.44)
 name_tag.StudsOffsetWorldSpace = vec3_new(0, name_tag_height_offset, 0)
 
 local name_tag_lbl = inst_new('TextLabel')
@@ -422,7 +422,7 @@ end
 
 old_nc = hmm(game, '__namecall', ncc(function(self, arg_1, arg_2, arg_3, ...)
 	local ncm = gncm()
-	if ncm == 'InvokeServer' and arg_1 == 1 and typeof(arg_2) == 'Vector3' and arg_3 == 'AH2' and
+	if ncm == 'InvokeServer' and shooting_enabled and arg_1 == 1 and typeof(arg_2) == 'Vector3' and arg_3 == 'AH2' and
 		find(self:GetFullName(), 'Gun.KnifeLocal.CreateBeam.RemoteFunction', 1, true) and self:IsA('RemoteFunction') then
 		return old_nc(self, 1, get_threat_pos(get_weapon(you)), 'AH2', ...)
 	end
@@ -444,9 +444,9 @@ old_i = hmm(game, '__index', ncc(function(self, key)
 end))
 
 old_is = hf(inst_new('RemoteFunction').InvokeServer, ncc(function(self, arg_1, arg_2, arg_3, ...)
-	if arg_1 == 1 and typeof(arg_2) == 'Vector3' and arg_3 == 'AH2' and
+	if shooting_enanled and arg_1 == 1 and typeof(arg_2) == 'Vector3' and arg_3 == 'AH2' and
 		find(self:GetFullName(), 'Gun.KnifeLocal.CreateBeam.RemoteFunction', 1, true) and self:IsA('RemoteFunction') then
-		return old_is(self, 1, get_threat_pos(get_weapon(you)), 'AH2', ...)
+		return old_is(self, 1, get_threat_pos(get_weapon(you)) or arg_2, 'AH2', ...)
 	end
 	return old_is(self, arg_1, arg_2, arg_3, ...)
 end))
