@@ -316,6 +316,7 @@ do
 		clear(coins)
 		you:SetAttribute('Done', nil)
 	end)
+
 	local list = workspace:GetDescendants()
 	for i = 1, #list do resume(create(descendant_added), list[i]) end
 	local sg_sc = sg.SetCore
@@ -417,10 +418,10 @@ while true do
 		end
 	else
 		local coin = best_coin()
-		if not is_coin_valid(prev_coin) then prev_coin = coin end
-		local dist = (coin.Position - prev_coin.Position).Magnitude
-		local t = if dist >= 400 then 0.04 elseif dist == 0 then 1.4 else dist ^ 0.5 / 2
+		local dist = if prev_coin then (coin.Position - prev_coin.Position).Magnitude else 384
+		local t = if dist >= 384 then 0.04 else dist ^ 0.5 / 1.75
 		prev_coin = coin
+
 		while char and char.Parent and t > 0 do
 			local dt = sleep()
 			t -= if is_coin_valid(coin) then 0 else dt
