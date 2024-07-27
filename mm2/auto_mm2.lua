@@ -153,7 +153,6 @@ if gncm and hf and hmm and ncc then
 		if self ~= your_h or not is_hst(arg_1) then return old_gse(self, arg_1, ...) end
 		return if find(hst_approved, arg_1) then true else false
 	end))
-
 	old_nc = hmm(game, '__namecall', ncc(function(self, arg_1, ...)
 		if self == your_h and is_hst(arg_1) then
 			local ncm = gncm()
@@ -165,14 +164,13 @@ if gncm and hf and hmm and ncc then
 		end
 		return old_nc(self, arg_1, ...)
 	end))
-
 	old_sse = hf(h.SetStateEnabled, ncc(function(self, arg_1, ...)
 		if self ~= your_h or not is_hst(arg_1) then return old_sse(self, arg_1, ...) end
 		return old_sse(self, arg_1, if find(hst_approved, arg_1) then true else false)
 	end))
 end
 
--- logic
+-- source code
 
 local added_at = huge
 local clear = table.clear
@@ -308,6 +306,8 @@ local function sort_coins(coins)
 	opponents_pos, opponents_len, your_prefix = nil, 0, nil
 end
 
+local min = math.min
+local rng = Random.new()
 do
 	workspace.DescendantAdded:Connect(descendant_added)
 	workspace.DescendantRemoving:Connect(function(e)
@@ -321,14 +321,19 @@ do
 	for i = 1, #list do resume(create(descendant_added), list[i]) end
 	local sg_sc = sg.SetCore
 	local sg_scp = {Button1 = 'OK', Duration = 4, Icon = 'rbxassetid://7440784829', Text = 'Script activated', Title = 'AFK4'}
-	while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.4) end end
+	while true do if pcall(sg_sc, sg, 'SendNotification', sg_scp) then break else sleep(0.04) end end
+end
+
+local function best_coin()
+	sort_coins(coins)
+	return coins[rng:NextInteger(1, min(4, #coins))]
 end
 
 local all = Enum.CoreGuiType.All
 local cf_new = CFrame.new
 local colors_black = Color3.fromRGB(0, 0, 0)
 local lighting = game:GetService('Lighting')
-local rng = Random.new()
+local prev_coin
 local safe_pos = cf_new(0, -64, 0)
 local ss = game:GetService('SoundService')
 game:GetService('Chat').BubbleChatEnabled = false
@@ -354,7 +359,6 @@ while true do
 			defer(child.Destroy, child)
 		end
 	end
-
 	lighting.FogColor, lighting.FogEnd, lighting.FogStart, lighting.GlobalShadows = colors_black, 1000000, 1000000, false
 	lighting:ClearAllChildren()
 	defer(remove_all_except, workspace, 'Camera', 'Normal', 'Terrain', unpack(list))
@@ -379,7 +383,6 @@ while true do
 			new_h:ChangeState(state)
 		end
 	end
-
 	local rp = your_h.RootPart
 	if not rp or not rp.Parent then sleep(0.04) continue end
 	if not rp:FindFirstChild('BAV') then
@@ -414,9 +417,11 @@ while true do
 			char:PivotTo(safe_pos)
 		end
 	else
-		sort_coins(coins)
-		local coin = coins[rng:NextInteger(1, len)]
-		local t = (char:GetPivot().Position - coin.Position).Magnitude / 160
+		local coin = best_coin()
+		if not is_coin_valid(prev_coin) then prev_coin = coin end
+		local dist = (char:GetPivot().Position - prev_coin.Position).Magnitude
+		local t = if dist >= 400 then 0.04 else dist ^ 0.5 / 2
+		prev_coin = coin
 		while char and char.Parent and t > 0 do
 			local dt = sleep()
 			t -= if is_coin_valid(coin) then 0 else dt
@@ -434,10 +439,5 @@ while true do
 				fti(rp, part, 0)
 			end
 		end
-		--[[while char and char.Parent and t > 0 do
-			t -= sleep()
-			reset_velocity(char)
-			char:PivotTo(safe_pos)
-		end]]
 	end
 end
