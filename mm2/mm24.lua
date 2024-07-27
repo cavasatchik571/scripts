@@ -24,7 +24,7 @@ local hex_color_innocent = '#FFFFFF'
 local hex_color_murderer = '#FF0000'
 local hex_color_sheriff = '#0000FF'
 local highlight_refresh_rate = 0.144
-local highlight_transparency = 0.744
+local highlight_transparency = 0.75
 local ih_size_increase = 1.5
 local ih_transparency = 0.24
 local jump_boost = 1.15
@@ -176,7 +176,7 @@ local old_i, old_is, old_nc
 local rcp_exclude = rcp_new() do rcp_exclude.FilterType, rcp_exclude.IgnoreWater, rcp_exclude.RespectCanCollide = enum_rfi.Exclude, true, false end
 local rcp_include = rcp_new() do rcp_include.FilterType, rcp_include.IgnoreWater, rcp_include.RespectCanCollide = enum_rfi.Include, true, false end
 local set = function(a, b, c) a[b] = c end
-local shooting_enabled = true
+local shooting_enabled = false
 
 local function adjust_line(highlight, p0, p1)
 	highlight.CFrame, highlight.Size = cf_new((p0 + p1) / 2, p0), vec3_new(line_thickness, line_thickness, (p0 - p1).Magnitude)
