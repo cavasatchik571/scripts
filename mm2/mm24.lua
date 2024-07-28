@@ -27,7 +27,7 @@ local highlight_refresh_rate = 0.144
 local highlight_transparency = 0.75
 local ih_size_increase = 1.5
 local ih_transparency = 0.24
-local jump_boost = 1.15
+local jump_boost = 1.2
 local line_thickness = 0.24
 local long_range_dist = 400
 local melee_hitbox_extender = 6
@@ -169,13 +169,15 @@ ui.Parent = pcall(tostring, core_gui) and core_gui or you:WaitForChild('PlayerGu
 
 ---4
 
+local auto_snap_enabled = false
 local apos = ui.AbsolutePosition
 local cx, cy = -apos.X, -apos.Y
+local func_hooks_enabled = true
 local old_fs, old_i, old_is, old_nc
 local rcp_exclude = rcp_new() do rcp_exclude.FilterType, rcp_exclude.IgnoreWater, rcp_exclude.RespectCanCollide = enum_rfi.Exclude, true, false end
 local rcp_include = rcp_new() do rcp_include.FilterType, rcp_include.IgnoreWater, rcp_include.RespectCanCollide = enum_rfi.Include, true, false end
+local ss_offset = vec3_new(0, -0.04, 0)
 local set = function(a, b, c) a[b] = c end
-local shooting_enabled = false
 
 local function adjust_line(highlight, p0, p1)
 	highlight.CFrame, highlight.Size = cf_new((p0 + p1) / 2, p0), vec3_new(line_thickness, line_thickness, (p0 - p1).Magnitude)
@@ -271,6 +273,7 @@ local function descendant_added_w(e)
 			highlights[child] = new_highlight
 			new_highlight.Parent = ui
 		end
+
 		char.ChildAdded:Connect(child_added)
 		local children = char:GetChildren()
 		for i = 1, #children do child_added(children[i]) end
@@ -332,7 +335,7 @@ if did_exist then
 end
 
 local function closest_reachable_spot(char, origin)
-	local center, children, len, points = char.Humanoid.RootPart.Position, char:GetChildren(), 0, {}
+	local center, children, len, points = char.Humanoid.RootPart.Position + ss_offset, char:GetChildren(), 0, {}
 	for i = 1, #children do
 		local child = children[i]
 		if not child:IsA('BasePart') then continue end
@@ -341,6 +344,7 @@ local function closest_reachable_spot(char, origin)
 		len += 1
 		points[len] = rr.Position
 	end
+
 	clear(children)
 	if len > 0 then
 		sort(points, function(a, b) return (a - center).Magnitude < (b - center).Magnitude end)
@@ -370,20 +374,17 @@ local function get_path(inst)
 end
 
 local function get_weapon(plr)
-	local bp = plr:FindFirstChild('Backpack')
-	if bp then
-		local tool = bp:FindFirstChild('Gun')
-		if tool and tool:FindFirstChild('Handle') then return tool end
-		tool = bp:FindFirstChild('Knife')
-		if tool and tool:FindFirstChild('Handle') then return tool end
-	end
+	if not is_alive(you) then return end
+	local bp = plr.Backpack
+	local tool = bp:FindFirstChild('Gun')
+	if tool and tool:FindFirstChild('Handle') then return tool end
+	tool = bp:FindFirstChild('Knife')
+	if tool and tool:FindFirstChild('Handle') then return tool end
 	local char = plr.Character
-	if char then
-		local tool = char:FindFirstChild('Gun')
-		if tool and tool:FindFirstChild('Handle') then return tool end
-		tool = char:FindFirstChild('Knife')
-		if tool and tool:FindFirstChild('Handle') then return tool end
-	end
+	tool = char:FindFirstChild('Gun')
+	if tool and tool:FindFirstChild('Handle') then return tool end
+	tool = char:FindFirstChild('Knife')
+	if tool and tool:FindFirstChild('Handle') then return tool end
 end
 
 local function nearest_threat(origin, dist, has, reachable)
@@ -420,12 +421,12 @@ local function get_threat_pos(weapon)
 end
 
 local function scripted_shoot()
-	shooting_enabled = not shooting_enabled
-	ui_btn.TextStrokeColor3 = shooting_enabled and _4 or colors_black
+	auto_snap_enabled = not auto_snap_enabled
+	ui_btn.TextStrokeColor3 = auto_snap_enabled and _4 or colors_black
 end
 
 old_i = hmm(game, '__index', ncc(function(self, key)
-	if not shooting_enabled or self ~= mouse or (key ~= 'X' and key ~= 'Y') then return old_i(self, key) end
+	if not auto_snap_enabled or self ~= mouse or (key ~= 'X' and key ~= 'Y') then return old_i(self, key) end
 	local pos = get_threat_pos(get_weapon(you))
 	if not pos then return old_i(self, key) end
 	local screen_point = cam:WorldToScreenPoint(pos)
@@ -438,22 +439,22 @@ old_i = hmm(game, '__index', ncc(function(self, key)
 end))
 
 local function func_management(self, ncm, func, ...)
-	if not shooting_enabled then return func(self, ...) end
+	if not func_hooks_enabled then return func(self, ...) end
+	func_hooks_enabled = false
 	local class = self.ClassName
 	if class == 'RemoteFunction' and ncm == 'InvokeServer' then
 		local path = get_path(self)
-		if find(path, 'Gun.KnifeLocal.CreateBeam.RemoteFunction', 1, true) then
+		if auto_snap_enabled and find(path, 'Gun.KnifeLocal.CreateBeam.RemoteFunction', 1, true) then
 			local args = {...}
 			local arg_2 = args[2]
 			if args[1] == 1 and typeof(arg_2) == 'Vector3' and args[3] == 'AH2' then
-				shooting_enabled = false
 				args[2] = get_threat_pos(get_weapon(you)) or arg_2
-				local results = {pcall(func, self, unpack(args))}
-				shooting_enabled = true
+				local results = {pcall(self[ncm], self, unpack(args))}
 				if results[1] then remove(results, 1) return unpack(results) end
 			end
 		end
 	end
+	func_hooks_enabled = true
 	return func(self, ...)
 end
 
@@ -525,6 +526,7 @@ while true do
 		lbl.TextColor3 = color
 		lbl.Stroke.Color = color
 	end
+
 	if not is_alive(you) then ui_btn.Parent = nil continue end
 	local bp = you.Backpack
 	local char = you.Character
@@ -557,6 +559,7 @@ while true do
 			end
 		end
 	end
+
 	local equipped_knife = char:FindFirstChild('Knife')
 	ui_btn.Parent = (char:FindFirstChild('Gun') or equipped_knife) and ui or nil
 	if not equipped_knife then continue end
