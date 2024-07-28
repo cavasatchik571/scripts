@@ -27,14 +27,14 @@ local highlight_refresh_rate = 0.144
 local highlight_transparency = 0.75
 local ih_size_increase = 1.5
 local ih_transparency = 0.24
-local jump_boost = 1.2
+local jump_boost = 1.164
 local line_thickness = 0.24
 local long_range_dist = 400
 local melee_hitbox_extender = 6
 local name_tag_height_offset = 2
 local name_tag_refresh_rate = 1
 local name_tag_thickness = 4
-local speed_boost = 1.314
+local speed_boost = 1.34
 
 local cam = workspace.CurrentCamera
 local cf_new = CFrame.new
@@ -204,6 +204,7 @@ local special_func_checks = {
 			clear(list)
 			adjust_line(line, p0, if result then result.Position else p0 + unit)
 		end)
+
 		line.Adornee, line.Color3, line.Parent = terrain, colors_murderer, parent
 		debris:AddItem(parent, 10)
 		return colors_murderer, ih_transparency
@@ -273,7 +274,6 @@ local function descendant_added_w(e)
 			highlights[child] = new_highlight
 			new_highlight.Parent = ui
 		end
-
 		char.ChildAdded:Connect(child_added)
 		local children = char:GetChildren()
 		for i = 1, #children do child_added(children[i]) end
@@ -344,7 +344,6 @@ local function closest_reachable_spot(char, origin)
 		len += 1
 		points[len] = rr.Position
 	end
-
 	clear(children)
 	if len > 0 then
 		sort(points, function(a, b) return (a - center).Magnitude < (b - center).Magnitude end)
@@ -442,7 +441,18 @@ local function func_management(self, ncm, func, ...)
 	if not func_hooks_enabled then return func(self, ...) end
 	func_hooks_enabled = false
 	local class = self.ClassName
-	if class == 'RemoteFunction' and ncm == 'InvokeServer' then
+	if class == 'RemoteEvent' and ncm == 'FireServer' then
+		local path = get_path(self)
+		if auto_snap_enabled and find(path, 'Knife.Throw', 1, true) then
+			local args = {...}
+			local arg_2 = args[2]
+			if typeof(args[1]) == 'CFrame' and typeof(arg_2) == 'Vector3' then
+				args[2] = get_threat_pos(get_weapon(you)) or arg_2
+				local results = {pcall(self[ncm], self, unpack(args))}
+				if results[1] then remove(results, 1) return unpack(results) end
+			end
+		end
+	elseif class == 'RemoteFunction' and ncm == 'InvokeServer' then
 		local path = get_path(self)
 		if auto_snap_enabled and find(path, 'Gun.KnifeLocal.CreateBeam.RemoteFunction', 1, true) then
 			local args = {...}
