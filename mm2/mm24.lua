@@ -171,7 +171,7 @@ ui.Parent = pcall(tostring, core_gui) and core_gui or you:WaitForChild('PlayerGu
 
 local apos = ui.AbsolutePosition
 local cx, cy = -apos.X, -apos.Y
-local old_i, old_is, old_nc
+local old_fs, old_i, old_is, old_nc
 local rcp_exclude = rcp_new() do rcp_exclude.FilterType, rcp_exclude.IgnoreWater, rcp_exclude.RespectCanCollide = enum_rfi.Exclude, true, false end
 local rcp_include = rcp_new() do rcp_include.FilterType, rcp_include.IgnoreWater, rcp_include.RespectCanCollide = enum_rfi.Include, true, false end
 local set = function(a, b, c) a[b] = c end
@@ -363,6 +363,12 @@ local function get_alive_plrs()
 	return list
 end
 
+local function get_path(inst)
+	if not inst then return end
+	local pn = get_path(inst.Parent)
+	return (if pn then pn .. '.' else '') .. inst.Name
+end
+
 local function get_weapon(plr)
 	local bp = plr:FindFirstChild('Backpack')
 	if bp then
@@ -407,11 +413,10 @@ local function get_threat_pos(weapon)
 	if not weapon then return end
 	local name, origin, pos = weapon.Name, weapon.Handle.Position, nil
 	if name == 'Gun' then
-		pos = nearest_threat(origin, long_range_dist, 'Knife', true)
+		return nearest_threat(origin, long_range_dist, 'Knife', true)
 	elseif name == 'Knife' then
-		pos = nearest_threat(origin, long_range_dist, 'Gun', true) or nearest_threat(origin, long_range_dist, nil, true)
+		return nearest_threat(origin, long_range_dist, 'Gun', true) or nearest_threat(origin, long_range_dist, nil, true)
 	end
-	return pos
 end
 
 local function scripted_shoot()
@@ -432,32 +437,29 @@ old_i = hmm(game, '__index', ncc(function(self, key)
 	return old_i(self, key)
 end))
 
-old_is = hf(inst_new('RemoteFunction').InvokeServer, ncc(function(self, ...)
-	if not shooting_enabled or self.ClassName ~= 'RemoteFunction' then return old_is(self, ...) end
-	local name = self.Name
-	if name == 'RemoteFunction' then
-		local args = {...}
-		local arg_2 = args[2]
-		if args[1] ~= 1 or typeof(arg_2) ~= 'Vector3' or args[3] ~= 'AH2' then return old_is(self, ...) end
-		args[2] = get_threat_pos(get_weapon(you)) or arg_2
-		return old_is(self, unpack(args))
+local function func_management(self, ncm, func, ...)
+	if not shooting_enabled then return func(self, ...) end
+	local class = self.ClassName
+	if class == 'RemoteFunction' and ncm == 'InvokeServer' then
+		local path = get_path(self)
+		if find(path, 'Gun.KnifeLocal.CreateBeam.RemoteFunction', 1, true) then
+			local args = {...}
+			local arg_2 = args[2]
+			if args[1] == 1 and typeof(arg_2) == 'Vector3' and args[3] == 'AH2' then
+				shooting_enabled = false
+				args[2] = get_threat_pos(get_weapon(you)) or arg_2
+				local results = {pcall(func, self, unpack(args))}
+				shooting_enabled = true
+				if results[1] then remove(results, 1) return unpack(results) end
+			end
+		end
 	end
-	return old_is(self, ...)
-end))
+	return func(self, ...)
+end
 
-old_nc = hmm(game, '__namecall', ncc(function(self, ...)
-	if not shooting_enabled or self.ClassName ~= 'RemoteFunction' or gncm() ~= 'InvokeServer' then return old_nc(self, ...) end
-	local name = self.Name
-	if name == 'RemoteFunction' then
-		local args = {...}
-		local arg_2 = args[2]
-		if args[1] ~= 1 or typeof(arg_2) ~= 'Vector3' or args[3] ~= 'AH2' then return old_nc(self, ...) end
-		args[2] = get_threat_pos(get_weapon(you)) or arg_2
-		return old_nc(self, unpack(args))
-	end
-	return old_nc(self, ...)
-end))
-
+old_fs = hf(inst_new('RemoteEvent').FireServer, ncc(function(self, ...) return func_management(self, 'FireServer', old_fs, ...) end))
+old_is = hf(inst_new('RemoteFunction').InvokeServer, ncc(function(self, ...) return func_management(self, 'InvokeServer', old_is, ...) end))
+old_nc = hmm(game, '__namecall', ncc(function(self, ...) return func_management(self, gncm(), old_nc, ...) end))
 ui_btn.Activated:Connect(scripted_shoot)
 uis.InputBegan:Connect(function(input, gpe)
 	if gpe or gs.MenuIsOpen or input.UserInputType ~= keyboard or uis:GetFocusedTextBox() then return end
