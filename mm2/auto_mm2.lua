@@ -419,7 +419,7 @@ while true do
 	else
 		local coin = best_coin()
 		local dist = if prev_coin then (coin.Position - prev_coin.Position).Magnitude else 384
-		local t = if dist >= 384 then 1.44 else dist ^ 0.6 / 1.64
+		local t = min(if dist >= 384 then 1.7 else dist ^ 0.7 / 1.7, 2.514)
 		prev_coin = coin
 
 		while char and char.Parent and t > 0 do
