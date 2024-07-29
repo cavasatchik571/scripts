@@ -175,7 +175,7 @@ end
 local added_at = huge
 local clear = table.clear
 local create = coroutine.create
-local coin_types = {'Coin'}
+local coin_types = {'BeachBall'} ---4
 local coins = {}
 local defer = task.defer
 local remove = table.remove
