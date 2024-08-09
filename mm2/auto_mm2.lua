@@ -435,8 +435,8 @@ while true do
 			for i = 1, len do
 				local part = coins[i]
 				if not part or (part.Position - your_pos).Magnitude > 8 then continue end
-				fti(rp, part, 1)
-				fti(rp, part, 0)
+				pcall(fti, rp, part, 1)
+				pcall(fti, rp, part, 0)
 			end
 		end
 	end
