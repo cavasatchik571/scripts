@@ -64,7 +64,7 @@ end
 
 -- API check
 
-local fti = function(p0, p1) local cf = p1:GetPivot(); p1:PivotTo(CFrame.identity); sleep(); p1:PivotTo(p0); sleep(); p1:PivotTo(cf); end
+local fti = function(p0, p1) local x, y = p0.Position, p1.Position; if (x - y).Magnitude > 8 then return end; p1.Position = Vector3.zero; sleep(); p1.Position = x; sleep(); p1.Position = y; end
 local gncm = getnamecallmethod or get_namecall_method
 local hf = hookfunction or hook_function
 local hmm = hookmetamethod or hook_metamethod
