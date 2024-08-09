@@ -64,7 +64,7 @@ end
 
 -- API check
 
-local fti = firetouchinterest or fire_touch_interest
+local fti = function(p0, p1) local cf = p1:GetPivot(); p1:PivotTo(CFrame.identity); sleep(); p1:PivotTo(p0); sleep(); p1:PivotTo(cf); end
 local gncm = getnamecallmethod or get_namecall_method
 local hf = hookfunction or hook_function
 local hmm = hookmetamethod or hook_metamethod
