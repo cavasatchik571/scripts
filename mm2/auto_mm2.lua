@@ -7,7 +7,7 @@ local _4 = Color3.new(0, .2514, 0)
 
 if not game:IsLoaded() then game.Loaded:Wait() end
 if not game:GetService('RunService'):IsStudio() and game.GameId ~= 66654135 then return end
-local env = (getgenv or function() end)() or _ENV or shared or _G
+local env = _G
 if env.afk4 then return end
 env.afk4 = true
 
